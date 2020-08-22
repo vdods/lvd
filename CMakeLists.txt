@@ -2,14 +2,11 @@
 # LVD (Library of Victor Dods) -- generally useful thingies
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 project(lvd)
+set(lvd_VERSION 0.0.0)
 
 option(LVD_COMPILE_TESTS "Enable compilation of lvd test cases" ON)
-
-# The VERSION argument of cmake's project function is not semver compliant.
-# See https://gitlab.kitware.com/cmake/cmake/issues/16716
-set(PROJECT_VERSION "0.0.0")
 
 # Set and require the C++17 standard
 set(CMAKE_CXX_STANDARD 17)
@@ -76,7 +73,14 @@ set(lvd_SOURCES
 )
 
 add_library(lvd ${lvd_SOURCES})
-target_compile_definitions(lvd PUBLIC PACKAGE_VERSION="${PROJECT_VERSION}")
+
+# Copied from https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#config-file-packages
+set_property(TARGET lvd PROPERTY VERSION ${lvd_VERSION})
+set_property(TARGET lvd PROPERTY SOVERSION 0)
+set_property(TARGET lvd PROPERTY INTERFACE_lvd_MAJOR_VERSION 0)
+set_property(TARGET lvd APPEND PROPERTY COMPATIBLE_INTERFACE_STRING lvd_MAJOR_VERSION)
+
+target_compile_definitions(lvd PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
 if(LVD_COMPILE_TESTS)
     target_compile_definitions(lvd PUBLIC LVD_COMPILE_TESTS=1)
 endif()
@@ -97,7 +101,7 @@ set(lvdtest_SOURCES
     lvdtest/test_util.cpp
 )
 add_executable(lvdtest ${lvdtest_SOURCES})
-target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${PROJECT_VERSION}")
+target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
 target_link_libraries(lvdtest PUBLIC Strict lvd)
 
 ###############################################################################
@@ -116,8 +120,22 @@ install(
     FILES                                       # Important files
 #         LICENSE
         README.md
-        lvd-config.cmake                        # lvd-config.cmake is how find_package(lvd) works.
+        lvd-config.cmake                        # lvd-config[-version].cmake is how find_package(lvd) works.
+        "${CMAKE_CURRENT_BINARY_DIR}/lvd-config-version.cmake"
     DESTINATION lib/lvd                         # This is relative to CMAKE_INSTALL_PREFIX
+)
+
+###############################################################################
+# Package config stuff
+###############################################################################
+
+# See https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#config-file-packages
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/lvd-config-version.cmake"
+    VERSION ${lvd_VERSION}
+    COMPATIBILITY AnyNewerVersion
 )
 
 ###############################################################################
@@ -142,7 +160,7 @@ endif()
 
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Victor Dods")
 
-string(REPLACE "." ";" VERSION_LIST ${PROJECT_VERSION})
+string(REPLACE "." ";" VERSION_LIST ${lvd_VERSION})
 list(GET VERSION_LIST 0 lvd_VERSION_MAJOR)
 list(GET VERSION_LIST 1 lvd_VERSION_MINOR)
 list(GET VERSION_LIST 2 lvd_VERSION_PATCH)
@@ -157,8 +175,8 @@ set(CPACK_PACKAGE_VERSION_PATCH "${lvd_VERSION_PATCH}")
 set(CPACK_RESOURCE_FILE_README "${PROJECT_SOURCE_DIR}/README.md")
 # set(CPACK_RESOURCE_FILE_WELCOME "${PROJECT_SOURCE_DIR}/README.html")
 
-set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${lvd_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${lvd_VERSION}")
 
 set(CPACK_SOURCE_IGNORE_FILES "${PROJECT_SOURCE_DIR}/build/;${PROJECT_SOURCE_DIR}/.git/;${PROJECT_SOURCE_DIR}/.gitignore;${PROJECT_SOURCE_DIR}/lvd.kdev4;${PROJECT_SOURCE_DIR}/.kdev4")
 
