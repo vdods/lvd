@@ -200,7 +200,7 @@ inline void neq_nullptr (
     int line,
     std::string const &func
 ) {
-    verify_condition_1param(param != nullptr, LVD_FMT(param_description << " !== nullptr"), param, param_description, file, line, func);
+    verify_condition_1param(param != nullptr, LVD_FMT(param_description << " != nullptr"), param, param_description, file, line, func);
 }
 
 template <typename Lhs_, typename Rhs_>
