@@ -43,7 +43,6 @@ endif()
 ###############################################################################
 
 set(lvd_SOURCES
-    lvd/core.hpp
     lvd/aliases.hpp
     lvd/ANSIColor.cpp
     lvd/ANSIColor.hpp
@@ -97,6 +96,7 @@ target_link_libraries(lvd PUBLIC Strict)
 
 set(lvdtest_SOURCES
     lvdtest/main.cpp
+    lvdtest/test_Log.cpp
     lvdtest/test_move_cast.cpp
     lvdtest/test_not_null.cpp
     lvdtest/test_OstreamDelegate.cpp

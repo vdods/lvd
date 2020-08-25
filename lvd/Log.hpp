@@ -96,7 +96,42 @@ struct Log
         m_prefix_stack.emplace_back("", 0);
     }
 
-    static size_t indent_space_count () { return 4; }
+    static size_t constexpr INDENT_SPACE_COUNT = 4;
+
+    static auto constexpr CRT_PREFIX = "\033[91;41mCRT:\033[0m ";
+    static auto constexpr CRT_LEVEL = 600;
+
+    static auto constexpr ERR_PREFIX = "\033[91mERR:\033[0m ";
+    static auto constexpr ERR_LEVEL = 500;
+
+    static auto constexpr WRN_PREFIX = "\033[93mWRN:\033[0m ";
+    static auto constexpr WRN_LEVEL = 400;
+
+    static auto constexpr INF_PREFIX = "\033[32mINF:\033[0m ";
+    static auto constexpr INF_LEVEL = 300;
+
+    static auto constexpr DBG_PREFIX = "\033[36mDBG:\033[0m ";
+    static auto constexpr DBG_LEVEL = 200;
+
+    static auto constexpr TRC_PREFIX = "\033[94mTRC:\033[0m ";
+    static auto constexpr TRC_LEVEL = 100;
+
+//     // Log level PrefixGuard functions.  Use these like
+//     //
+//     //     g_log.crt() << "whatever super important message\n";
+//     //     g_log.err() << "something bad happened:\n" << IndentGuard() << value << '\n';
+//     //
+//     // The temporary PrefixGuard will destruct once the statement has executed, and the prefix
+//     // will be popped, returning the prefix to its previous state.
+//     // TODO: Need to make PrefixGuard (and IndentGuard) be the thing returned from these, and
+//     // have it accept operator<< calls.
+//
+//     Log &crt () & { return *this << PrefixGuard(Prefix(CRT_PREFIX, CRT_LEVEL)); }
+//     Log &err () & { return *this << PrefixGuard(Prefix(ERR_PREFIX, ERR_LEVEL)); }
+//     Log &wrn () & { return *this << PrefixGuard(Prefix(WRN_PREFIX, WRN_LEVEL)); }
+//     Log &inf () & { return *this << PrefixGuard(Prefix(INF_PREFIX, INF_LEVEL)); }
+//     Log &dbg () & { return *this << PrefixGuard(Prefix(DBG_PREFIX, DBG_LEVEL)); }
+//     Log &trc () & { return *this << PrefixGuard(Prefix(TRC_PREFIX, TRC_LEVEL)); }
 
     // Log level PrefixGuard functions.  Use these like
     //
@@ -106,12 +141,12 @@ struct Log
     // The temporary PrefixGuard will destruct once the statement has executed, and the prefix
     // will be popped, returning the prefix to its previous state.
 
-    static PrefixGuard crt () { return PrefixGuard(Prefix("\033[91;41mCRT:\033[0m ", 600)); }
-    static PrefixGuard err () { return PrefixGuard(Prefix("\033[91mERR:\033[0m ", 500)); }
-    static PrefixGuard wrn () { return PrefixGuard(Prefix("\033[93mWRN:\033[0m ", 400)); }
-    static PrefixGuard inf () { return PrefixGuard(Prefix("\033[32mINF:\033[0m ", 300)); }
-    static PrefixGuard dbg () { return PrefixGuard(Prefix("\033[36mDBG:\033[0m ", 200)); }
-    static PrefixGuard trc () { return PrefixGuard(Prefix("\033[94mTRC:\033[0m ", 100)); }
+    static PrefixGuard crt () { return PrefixGuard(Prefix(CRT_PREFIX, CRT_LEVEL)); }
+    static PrefixGuard err () { return PrefixGuard(Prefix(ERR_PREFIX, ERR_LEVEL)); }
+    static PrefixGuard wrn () { return PrefixGuard(Prefix(WRN_PREFIX, WRN_LEVEL)); }
+    static PrefixGuard inf () { return PrefixGuard(Prefix(INF_PREFIX, INF_LEVEL)); }
+    static PrefixGuard dbg () { return PrefixGuard(Prefix(DBG_PREFIX, DBG_LEVEL)); }
+    static PrefixGuard trc () { return PrefixGuard(Prefix(TRC_PREFIX, TRC_LEVEL)); }
 
     // Accessors and modifiers
 
@@ -136,7 +171,7 @@ struct Log
         if (p.m_log_level >= m_log_level_threshold)
         {
             if (m_indentation_is_queued)
-                m_out << p.m_text << indentation(m_indent_level, indent_space_count());
+                m_out << p.m_text << indentation(m_indent_level, INDENT_SPACE_COUNT);
             m_out << c;
         }
         m_indentation_is_queued = c == '\n';
