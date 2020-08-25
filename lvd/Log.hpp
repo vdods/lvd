@@ -225,15 +225,12 @@ struct Log
     }
     // Take anything that goes into std::ostream.  The std::enable_if is needed in order for
     // this template to not take precedence over the above overloads of operator<<.
-    // The use of std::remove_reference_t is so that references (e.g. to `std::string const`)
-    // are still detected and properly redirected to the appropriate overloads above.
+    // The use of std::decay_t is so that references (e.g. to `std::string const`) and cv
+    // qualifiers stripped so that proper redirection to the appropriate overloads above happen.
     // Create a template specialization of HasCustomLogOutputOverload in order to specify
     // that another type has an overload of operator<<(Log&, ...) that should be used directly.
-    template <typename T_>
-    typename std::enable_if_t<
-        !HasCustomLogOutputOverload<std::remove_reference_t<T_>>::value,
-        Log
-    > &operator << (T_&& t)
+    template <typename T_, typename = std::enable_if_t<!HasCustomLogOutputOverload<std::decay_t<T_>>::value>>
+    Log &operator << (T_&& t)
     {
         std::ostringstream out;
         out << std::forward<T_>(t);

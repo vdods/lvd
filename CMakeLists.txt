@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 project(lvd)
-set(lvd_VERSION 0.0.0)
+set(lvd_VERSION 0.0.1)
 
 option(LVD_COMPILE_TESTS "Enable compilation of lvd test cases" ON)
 

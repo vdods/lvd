@@ -56,7 +56,7 @@ public:
 //             std::is_same<Deleter_,std::default_delete<Q_>>::value
         >
     >
-    constexpr not_null(std::unique_ptr<Q_> &&other) : ptr_(lvd::static_move_cast<Q_>(std::move(other))) {
+    constexpr not_null(std::unique_ptr<Q_> &&other) : ptr_(lvd::static_move_cast<Q_>(other)) {
         Expects(ptr_ != nullptr);
     }
 
@@ -70,7 +70,7 @@ public:
 //             std::is_same<Deleter_,std::default_delete<Q_>>::value
         >
     >
-    constexpr not_null(not_null<std::unique_ptr<Q_>> &&other) : ptr_(lvd::static_move_cast<Q_>(std::move(other))) {
+    constexpr not_null(not_null<std::unique_ptr<Q_>> &&other) : ptr_(lvd::static_move_cast<Q_>(other)) {
         // This check could theoretically be taken out, since the passed-in not_null should already be good.
         Expects(ptr_ != nullptr);
     }

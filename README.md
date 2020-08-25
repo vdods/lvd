@@ -8,6 +8,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.0.1`|A few bugfixes to `Log` and `not_null<std::unique_ptr<...>>`.|
 |`v0.0.0`|Initial commit.|
 
 ## Building
@@ -84,4 +85,7 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Verify that OstreamDelegate is actually zero-overhead by looking at `test_OstreamDelegate.s`.
 -   Separate util.hpp out into different files, and maybe leave out some of it (e.g. emit_* and remainder)
+-   Figure out how to generate a timestamp and dirhash to append to the `.deb` package version so that
+    intermediate changes between versioned releases can be distinguished.
