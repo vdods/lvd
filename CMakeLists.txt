@@ -97,6 +97,8 @@ target_link_libraries(lvd PUBLIC Strict)
 
 set(lvdtest_SOURCES
     lvdtest/main.cpp
+    lvdtest/test_move_cast.cpp
+    lvdtest/test_not_null.cpp
     lvdtest/test_OstreamDelegate.cpp
     lvdtest/test_util.cpp
 )

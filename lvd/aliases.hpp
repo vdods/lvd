@@ -26,7 +26,8 @@ using nnup = gsl::not_null<std::unique_ptr<T_,Deleter_>>;
 //
 
 // A convenience function for creating a gsl::not_null<std::unique_ptr<T_>>.
-// Note that there's currently no way to specify a custom deleter.
+// Note that there's currently no way to specify a custom deleter.  This is
+// equivalent to lvd::make_not_null_unique_ptr.
 template <typename T_, typename... Args_>
 nnup<T_> make_nnup (Args_&&... args)
 {

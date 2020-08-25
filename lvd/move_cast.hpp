@@ -14,13 +14,15 @@ namespace lvd {
 //
 
 template <typename Target_, typename Source_, typename SourceDeleter_>
-std::unique_ptr<Target_> static_move_cast (std::unique_ptr<Source_,SourceDeleter_> &&p)
+std::unique_ptr<Target_> static_move_cast (std::unique_ptr<Source_,SourceDeleter_> &p)
 {
     return std::unique_ptr<Target_>(static_cast<Target_*>(p.release()));
 }
 
+// NOTE: the passed-in pointer p is garbage after this call, and violates the gsl::not_null
+// contract, so it shouldn't be used at all after this call, or gsl::not_null will cause an error.
 template <typename Target_, typename Source_, typename SourceDeleter_>
-gsl::not_null<std::unique_ptr<Target_>> static_move_cast (gsl::not_null<std::unique_ptr<Source_,SourceDeleter_>> &&p)
+gsl::not_null<std::unique_ptr<Target_>> static_move_cast (gsl::not_null<std::unique_ptr<Source_,SourceDeleter_>> &p)
 {
     return gsl::not_null<std::unique_ptr<Target_>>(static_cast<Target_*>(std::move(p).get().release()));
 }
@@ -31,7 +33,7 @@ gsl::not_null<std::unique_ptr<Target_>> static_move_cast (gsl::not_null<std::uni
 // case, the returned std::unique_ptr is null.  This may not be the most desired behavior though.
 // Up to experimentation and experience.
 template <typename Target_, typename Source_, typename SourceDeleter_>
-std::unique_ptr<Target_> dynamic_move_cast (std::unique_ptr<Source_,SourceDeleter_> &&p)
+std::unique_ptr<Target_> dynamic_move_cast (std::unique_ptr<Source_,SourceDeleter_> &p)
 {
     Target_ *dynamic_cast_p = dynamic_cast<Target_*>(p.get());
     bool dynamic_cast_succeeded = p == nullptr || dynamic_cast_p != nullptr;
@@ -40,8 +42,10 @@ std::unique_ptr<Target_> dynamic_move_cast (std::unique_ptr<Source_,SourceDelete
     return std::unique_ptr<Target_>(dynamic_cast_p);
 }
 
+// NOTE: the passed-in pointer p is garbage after this call, and violates the gsl::not_null
+// contract, so it shouldn't be used at all after this call, or gsl::not_null will cause an error.
 template <typename Target_, typename Source_, typename SourceDeleter_>
-gsl::not_null<std::unique_ptr<Target_>> dynamic_move_cast (gsl::not_null<std::unique_ptr<Source_,SourceDeleter_>> &&p)
+gsl::not_null<std::unique_ptr<Target_>> dynamic_move_cast (gsl::not_null<std::unique_ptr<Source_,SourceDeleter_>> &p)
 {
     // The dynamic_cast is intentionally operating on references so that it will throw if the result is null.
     // std::unique_ptr::release is declared noexcept.

@@ -56,7 +56,7 @@ public:
 //             std::is_same<Deleter_,std::default_delete<Q_>>::value
         >
     >
-    constexpr not_null(std::unique_ptr<Q_> &&other) : ptr_(static_move_cast<Q_>(std::move(other))) {
+    constexpr not_null(std::unique_ptr<Q_> &&other) : ptr_(lvd::static_move_cast<Q_>(std::move(other))) {
         Expects(ptr_ != nullptr);
     }
 
@@ -70,7 +70,7 @@ public:
 //             std::is_same<Deleter_,std::default_delete<Q_>>::value
         >
     >
-    constexpr not_null(not_null<std::unique_ptr<Q_>> &&other) : ptr_(static_move_cast<Q_>(std::move(other))) {
+    constexpr not_null(not_null<std::unique_ptr<Q_>> &&other) : ptr_(lvd::static_move_cast<Q_>(std::move(other))) {
         // This check could theoretically be taken out, since the passed-in not_null should already be good.
         Expects(ptr_ != nullptr);
     }
@@ -200,7 +200,7 @@ private:
     T_ ptr_;
 };
 
-} // end of namespace gsl
+} // end namespace gsl
 
 //
 // Overloads of comparator operators of gsl::not_null with nullptr_t, which can be determined at compile time.
@@ -223,4 +223,16 @@ class pointer_traits<std::unique_ptr<T_,Deleter_>> : public pointer_traits<T_*> 
 template <typename T_>
 class pointer_traits<gsl::not_null<T_>> : public pointer_traits<T_> { };
 
-} // end of namespace std
+} // end namespace std
+
+namespace lvd {
+
+// A convenience function for creating a gsl::not_null<std::unique_ptr<T_>>.
+// Note that there's currently no way to specify a custom deleter.
+template <typename T_, typename... Args_>
+gsl::not_null<std::unique_ptr<T_>> make_not_null_unique (Args_&&... args)
+{
+    return gsl::not_null<std::unique_ptr<T_>>(std::make_unique<T_>(std::forward<Args_>(args)...));
+}
+
+} // end namespace lvd
