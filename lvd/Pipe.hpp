@@ -2,11 +2,15 @@
 
 #pragma once
 
+// NOTE: This source depends on POSIX standard functions, and is not part of the C or C++ standard.
+
 #include "lvd/core.hpp"
-// #include <errno.h>
-// #include <fcntl.h>
-// #include <sys/stat.h>
-// #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdexcept>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace lvd {
 

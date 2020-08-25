@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 project(lvd)
-set(lvd_VERSION 0.0.1)
+set(lvd_VERSION 0.0.2)
 
 option(LVD_COMPILE_TESTS "Enable compilation of lvd test cases" ON)
 
@@ -100,6 +100,7 @@ set(lvdtest_SOURCES
     lvdtest/test_move_cast.cpp
     lvdtest/test_not_null.cpp
     lvdtest/test_OstreamDelegate.cpp
+    lvdtest/test_Pipe.cpp
     lvdtest/test_util.cpp
 )
 add_executable(lvdtest ${lvdtest_SOURCES})
