@@ -14,12 +14,12 @@
 namespace lvd {
 
 // TODO: Use FiLoc instead
-struct FileLocation {
+struct TestFileLocation {
     std::string m_file;
     int m_line;
 };
 
-inline std::ostream &operator << (std::ostream &out, FileLocation const &filoc) {
+inline std::ostream &operator << (std::ostream &out, TestFileLocation const &filoc) {
     return out << filoc.m_file << ':' << filoc.m_line;
 }
 
@@ -47,7 +47,7 @@ public:
     std::string const &name () const { return m_name; }
     template <typename... Args_>
     void set_name (Args_&&... args) { m_name = std::string(std::forward<Args_>(args)...); }
-    FileLocation const &registration_location () const { return m_registration_location; }
+    TestFileLocation const &registration_location () const { return m_registration_location; }
     bool has_parent () const { return m_parent != nullptr; }
     TestGroup const &parent () const { return *m_parent; }
     void set_parent (TestGroup *parent) { m_parent = parent; }
@@ -67,7 +67,7 @@ public:
 private:
 
     std::string m_name;
-    FileLocation m_registration_location;
+    TestFileLocation m_registration_location;
     TestGroup *m_parent;
 };
 
@@ -154,16 +154,10 @@ void call_function_and_expect_exception (std::function<void()> func) {
     throw std::runtime_error("error: no exception occured, but one was expected");
 }
 
-#ifdef LVD_COMPILE_TESTS
-
 // Retrieve the root TestGroup singleton, creating it if necessary.
 TestGroup &root_test_group_singleton ();
 
-// #define LVD_STRINGIFY(x) #x
-// #define LVD_FILE_LOCATION_AS_STRING __FILE__ "__" LVD_STRINGIFY(__LINE__)
-#define LVD_FILE_LOCATION() lvd::FileLocation{__FILE__, __LINE__}
-// #define LVD_TEST_FUNCTION(name, evaluator) lvd::TestFunction(name, LVD_FILE_LOCATION(), evaluator)
-// #define LVD_REGISTER_TEST(path, name, evaluator) lvd::root_test_group_singleton().register_test(path, LVD_TEST_FUNCTION(name, evaluator))
+#define LVD_FILE_LOCATION() lvd::TestFileLocation{__FILE__, __LINE__}
 #define LVD_TEST_FUNCTION(evaluator) lvd::TestFunction(LVD_FILE_LOCATION(), evaluator)
 #define LVD_REGISTER_TEST(path, evaluator) namespace { \
     struct __##path { \
@@ -173,7 +167,5 @@ TestGroup &root_test_group_singleton ();
     }; \
     __##path __##path##__SINGLETON; \
 }
-
-#endif
 
 } // end namespace lvd

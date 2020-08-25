@@ -169,8 +169,6 @@ void TestGroup::print (std::ostream &out) const {
     }
 }
 
-#ifdef LVD_COMPILE_TESTS
-
 std::unique_ptr<TestGroup> g_root_test_group_singleton = nullptr;
 
 TestGroup &root_test_group_singleton () {
@@ -178,7 +176,5 @@ TestGroup &root_test_group_singleton () {
         g_root_test_group_singleton = std::make_unique<TestGroup>();
     return *g_root_test_group_singleton;
 }
-
-#endif
 
 } // end namespace lvd
