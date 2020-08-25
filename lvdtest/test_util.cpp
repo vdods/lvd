@@ -377,13 +377,13 @@ LVD_REGISTER_TEST(100__util__int64_to_string_to_int64, ([](){
     std::vector<lvd::Radix> radices{lvd::Radix::BIN, lvd::Radix::OCT, lvd::Radix::DEC, lvd::Radix::HEX};
 
     for (auto radix : radices) {
-        for (int64_t n = -200; n <= 200; ++n)
+        for (int64_t n = -33; n <= 33; ++n)
             LVD_REQ_EQ(lvd::string_to_int64(lvd::int64_to_string(n, radix, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), lvd::as_radix_flags(radix)), n);
 
-        for (int64_t n = std::numeric_limits<int64_t>::min(); n <= std::numeric_limits<int64_t>::min()+200; ++n)
+        for (int64_t n = std::numeric_limits<int64_t>::min(); n <= std::numeric_limits<int64_t>::min()+33; ++n)
             LVD_REQ_EQ(lvd::string_to_int64(lvd::int64_to_string(n, radix, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), lvd::as_radix_flags(radix)), n);
 
-        for (int64_t n = std::numeric_limits<int64_t>::max(); n >= std::numeric_limits<int64_t>::max()-200; --n)
+        for (int64_t n = std::numeric_limits<int64_t>::max(); n >= std::numeric_limits<int64_t>::max()-33; --n)
             LVD_REQ_EQ(lvd::string_to_int64(lvd::int64_to_string(n, radix, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), lvd::as_radix_flags(radix)), n);
     }
 }));
