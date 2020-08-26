@@ -67,22 +67,22 @@ struct IndentGuard
 //     Log &operator << (Log &out, T const &t)
 //
 // because for some reason the function resolution picks the templatized overload in Log over
-// a global operator overload.  To specify, define one of these with value = true.
-template <typename T_> struct HasCustomLogOutputOverload { static constexpr bool value = false; };
+// a global operator overload.  To specify, inherit std::true_type.
+template <typename T_> struct HasCustomLogOutputOverload : std::false_type { };
 
 //
 // Specific definitions of HasCustomLogOutputOverload for particular types associated with Log.
 //
 
-template <> struct HasCustomLogOutputOverload<char>         { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<std::string>  { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<char const *> { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<Indent>       { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<Unindent>     { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<PushPrefix>   { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<PopPrefix>    { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<PrefixGuard>  { static constexpr bool value = true; };
-template <> struct HasCustomLogOutputOverload<IndentGuard>  { static constexpr bool value = true; };
+template <> struct HasCustomLogOutputOverload<char> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<std::string> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<char const *> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<Indent> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<Unindent> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<PushPrefix> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<PopPrefix> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<PrefixGuard> : std::true_type { };
+template <> struct HasCustomLogOutputOverload<IndentGuard> : std::true_type { };
 
 // This is a refactor of IndentedFormatter designed to have a simpler and more powerful implementation.
 struct Log
@@ -225,11 +225,12 @@ struct Log
     }
     // Take anything that goes into std::ostream.  The std::enable_if is needed in order for
     // this template to not take precedence over the above overloads of operator<<.
-    // The use of std::decay_t is so that references (e.g. to `std::string const`) and cv
-    // qualifiers stripped so that proper redirection to the appropriate overloads above happen.
-    // Create a template specialization of HasCustomLogOutputOverload in order to specify
-    // that another type has an overload of operator<<(Log&, ...) that should be used directly.
-    template <typename T_, typename = std::enable_if_t<!HasCustomLogOutputOverload<std::decay_t<T_>>::value>>
+    // The use of std::remove_cv_t and std::remove_reference_t is so that references (e.g.
+    // `std::string &`) and cv qualifiers (e.g. `int const`) are stripped so that proper
+    // redirection to the appropriate overloads above happen.  Create a template specialization
+    // of HasCustomLogOutputOverload in order to specify that another type has an overload of
+    // operator<<(Log&, ...) that should be used directly.
+    template <typename T_, typename = std::enable_if_t<!HasCustomLogOutputOverload<std::remove_cv_t<std::remove_reference_t<T_>>>::value>>
     Log &operator << (T_&& t)
     {
         std::ostringstream out;

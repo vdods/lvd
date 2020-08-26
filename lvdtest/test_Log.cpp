@@ -5,19 +5,26 @@
 #include "lvd/Test.hpp"
 #include <sstream>
 
+//
+// All these *Thing classes and namespace stuff is to attempt to reproduce this really
+// annoying compile error which happens when moving ostream operator<< code into a
+// library and putting it inside a namespace.  In certain cases, this causes the overload
+// resolution to freak out and not find the intended overload.
+//
+
 // To test out custom print to Log
 struct HippoThing {
     int m;
     HippoThing (int m_) : m(m_) { }
 };
 
-inline lvd::Log &operator << (lvd::Log &out, HippoThing const &h)
+inline lvd::Log &operator << (lvd::Log &out, HippoThing const &x)
 {
-    return out << "HippoThing{" << h.m << '}';
+    return out << "HippoThing{" << x.m << '}';
 }
 
 // For the above operator<< to work, the following needs a definition with value = true.
-template <> struct lvd::HasCustomLogOutputOverload<HippoThing> { static constexpr bool value = true; };
+template <> struct lvd::HasCustomLogOutputOverload<HippoThing> : std::true_type { };
 
 // To test out custom print to Log
 struct OstrichThing {
@@ -25,10 +32,50 @@ struct OstrichThing {
     OstrichThing (int m_) : m(m_) { }
 };
 
-inline std::ostream &operator << (std::ostream &out, OstrichThing const &o)
+inline std::ostream &operator << (std::ostream &out, OstrichThing const &x)
 {
-    return out << "OstrichThing{" << o.m << '}';
+    return out << "OstrichThing{" << x.m << '}';
 }
+
+namespace aaa {
+
+struct DonkeyThing {
+    int m;
+    DonkeyThing (int m_) : m(m_) { }
+};
+
+// Requires lvd::HasCustomLogOutputOverload<aaa::DonkeyThing> specialization.
+inline lvd::Log &operator << (lvd::Log &out, DonkeyThing const &x)
+{
+    return out << "DonkeyThing[LogOverload]{" << x.m << '}';
+}
+
+inline std::ostream &operator << (std::ostream &out, DonkeyThing const &x) // Overload A
+{
+    return out << "DonkeyThing{" << x.m << '}';
+}
+
+} // end namespace aaa
+
+// This is needed for the operator<< overload for Log to work.  This can't be inside a namespace.
+template <> struct lvd::HasCustomLogOutputOverload<aaa::DonkeyThing> : std::true_type { };
+
+// NOTE TO PROGRAMMER: This kind of overload (e.g. for aaa::DonkeyThing) HAS to go within the
+// namespace in which the type is declared, which in this case is aaa.  In a `namespace aaa { ... }`
+// block itself, and not just qualified with `aaa::`.  Thus if you were to comment out Overload A
+// above and uncomment either Overload B or Overload C, it would fail to compile, and worse yet,
+// the error that Overload C produces gives no hint as to what the problem is (the error for
+// Overload B seems to give a direct explanation, at least in g++).
+//
+// inline std::ostream &aaa::operator << (std::ostream &out, DonkeyThing const &x) // Overload B
+// {
+//     return out << "DonkeyThing{" << x.m << '}';
+// }
+//
+// inline std::ostream &operator << (std::ostream &out, aaa::DonkeyThing const &x) // Overload C
+// {
+//     return out << "DonkeyThing{" << x.m << '}';
+// }
 
 LVD_REGISTER_TEST(300__Log__00, ([](){
     std::ostringstream out;
@@ -41,17 +88,32 @@ LVD_REGISTER_TEST(300__Log__00, ([](){
 LVD_REGISTER_TEST(300__Log__01, ([](){
     std::ostringstream out;
     lvd::Log log(out);
-    HippoThing h{123};
-    log << h;
+    HippoThing x{123};
+    log << x;
     LVD_REQ_EQ(out.str(), "HippoThing{123}");
 }));
 
 LVD_REGISTER_TEST(300__Log__02, ([](){
     std::ostringstream out;
     lvd::Log log(out);
-    OstrichThing o{123};
-    log << o;
+    OstrichThing x{123};
+    log << x;
     LVD_REQ_EQ(out.str(), "OstrichThing{123}");
+}));
+
+LVD_REGISTER_TEST(300__Log__03, ([](){
+    std::ostringstream out;
+    aaa::DonkeyThing x{123};
+    out << x;
+    LVD_REQ_EQ(out.str(), "DonkeyThing{123}");
+}));
+
+LVD_REGISTER_TEST(300__Log__04, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    aaa::DonkeyThing x{123};
+    log << x;
+    LVD_REQ_EQ(out.str(), "DonkeyThing[LogOverload]{123}");
 }));
 
 LVD_REGISTER_TEST(300__Log__10__crt, ([](){
