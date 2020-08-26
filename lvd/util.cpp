@@ -482,7 +482,7 @@ uint8_t escaped_char (uint8_t c)
 // than the original string.
 EscapeStringStatus escape_string (std::string &text)
 {
-    EscapeStringReturnCode return_code = ESRC_SUCCESS;
+    auto return_code = EscapeStringReturnCode::SUCCESS;
     std::string::size_type read_cursor = 0;
     std::string::size_type write_cursor = 0;
     uint32_t line_number_offset = 0;
@@ -495,7 +495,7 @@ EscapeStringStatus escape_string (std::string &text)
             // if we're at the end of the string, this is an error.
             if (read_cursor == text.length())
             {
-                return_code = ESRC_UNEXPECTED_EOI;
+                return_code = EscapeStringReturnCode::UNEXPECTED_EOI;
                 break;
             }
             // if there's an x next, we'll expect hex digits after it.
@@ -514,7 +514,7 @@ EscapeStringStatus escape_string (std::string &text)
                     // no hex digits after the x, this is an error.
                     if (read_cursor == text.length() || !IsHexDigit(text[read_cursor]))
                     {
-                        return_code = ESRC_MALFORMED_HEX_CHAR;
+                        return_code = EscapeStringReturnCode::MALFORMED_HEX_CHAR;
                         break;
                     }
                 
@@ -539,9 +539,9 @@ EscapeStringStatus escape_string (std::string &text)
                 if (value >= 256)
                 {
                     if (radix == 16)
-                        return_code = ESRC_HEX_ESCAPE_SEQUENCE_OUT_OF_RANGE;
+                        return_code = EscapeStringReturnCode::HEX_ESCAPE_SEQUENCE_OUT_OF_RANGE;
                     else
-                        return_code = ESRC_OCTAL_ESCAPE_SEQUENCE_OUT_OF_RANGE;
+                        return_code = EscapeStringReturnCode::OCTAL_ESCAPE_SEQUENCE_OUT_OF_RANGE;
                     break;
                 }
 

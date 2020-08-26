@@ -173,17 +173,17 @@ struct Tabs
 
 std::ostream &operator << (std::ostream &out, Tabs const &tabs);
 
-enum EscapeStringReturnCode
+enum class EscapeStringReturnCode : uint8_t
 {
-    ESRC_SUCCESS = 0,
+    SUCCESS = 0,
     // if there's a backslash immediately before the end of the string
-    ESRC_UNEXPECTED_EOI,
+    UNEXPECTED_EOI,
     // if there's \x without a hex digit after it
-    ESRC_MALFORMED_HEX_CHAR,
+    MALFORMED_HEX_CHAR,
     // if the hex code's value exceeded 255
-    ESRC_HEX_ESCAPE_SEQUENCE_OUT_OF_RANGE,
+    HEX_ESCAPE_SEQUENCE_OUT_OF_RANGE,
     // if the octal code's value exceeded 255
-    ESRC_OCTAL_ESCAPE_SEQUENCE_OUT_OF_RANGE
+    OCTAL_ESCAPE_SEQUENCE_OUT_OF_RANGE
 }; // end of enum EscapeStringReturnCode
 
 struct EscapeStringStatus
