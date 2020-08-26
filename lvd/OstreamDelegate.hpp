@@ -4,7 +4,6 @@
 
 #include <any>
 #include <functional>
-#include "lvd/core.hpp"
 #include <ostream>
 
 namespace lvd {
