@@ -65,7 +65,7 @@ inline void verify_condition_1param (
             << "    failed condition: " << condition_description << '\n'
             << "    " << param_description << " was " << param << " (at address " << &param << ")\n";
         std::cerr << out.str();
-        abort();
+        ::abort();
     }
 }
 
@@ -92,7 +92,7 @@ inline void verify_condition_2param (
             << "    " << param0_description << " was " << param0 << " (at address " << &param0 << ")\n"
             << "    " << param1_description << " was " << param1 << " (at address " << &param1 << ")\n";
         std::cerr << out.str();
-        abort();
+        ::abort();
     }
 }
 
@@ -122,7 +122,7 @@ inline void verify_condition_3param (
             << "    " << param1_description << " was " << param1 << " (at address " << &param1 << ")\n"
             << "    " << param2_description << " was " << param2 << " (at address " << &param2 << ")\n";
         std::cerr << out.str();
-        abort();
+        ::abort();
     }
 }
 
@@ -155,7 +155,7 @@ inline void verify_condition_4param (
             << "    " << param2_description << " was " << param2 << " (at address " << &param2 << ")\n"
             << "    " << param3_description << " was " << param3 << " (at address " << &param3 << ")\n";
         std::cerr << out.str();
-        abort();
+        ::abort();
     }
 }
 

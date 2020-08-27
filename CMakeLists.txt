@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 project(lvd)
-set(lvd_VERSION 0.0.2)
+set(lvd_VERSION 0.0.3)
 
 option(LVD_COMPILE_TESTS "Enable compilation of lvd test cases" ON)
 
@@ -96,6 +96,7 @@ target_link_libraries(lvd PUBLIC Strict)
 
 set(lvdtest_SOURCES
     lvdtest/main.cpp
+    lvdtest/test_abort.cpp
     lvdtest/test_Log.cpp
     lvdtest/test_move_cast.cpp
     lvdtest/test_not_null.cpp

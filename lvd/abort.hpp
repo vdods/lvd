@@ -19,10 +19,10 @@ namespace lvd {
 )
 {
     g_log << Log::crt() << file << ':' << line << " - " << func << ": " << (firange.is_valid() ? LVD_FMT(what_arg << "; relevant firange = " << firange) : LVD_FMT(what_arg)) << '\n';
-    abort();
+    ::abort();
 }
 
-#define LVD_ABORT(what_arg) abort(what_arg, FiRange::INVALID, __FILE__, __LINE__, __func__)
+#define LVD_ABORT(what_arg) abort(what_arg, lvd::FiRange::INVALID, __FILE__, __LINE__, __func__)
 #define LVD_ABORT_WITH_FIRANGE(what_arg, firange) abort(what_arg, firange, __FILE__, __LINE__, __func__)
 
 } // end namespace lvd
