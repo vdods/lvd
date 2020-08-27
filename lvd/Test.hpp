@@ -14,6 +14,11 @@
 
 namespace lvd {
 
+enum class TestOutput : uint8_t {
+    TERSE = 0,
+    VERBOSE
+};
+
 class TestFunction;
 class TestGroup;
 
@@ -88,13 +93,13 @@ public:
         assert(m_evaluator != nullptr);
     }
 
-    void operator() () const { m_evaluator(); }
+    void operator() (std::ostream &out) const { m_evaluator(out); }
 
     virtual bool is_test_function () const override { return true; }
 
 private:
 
-    std::function<void()> m_evaluator;
+    std::function<void(std::ostream&)> m_evaluator;
 };
 
 class TestGroup : public TestNode {
@@ -112,7 +117,7 @@ public:
     { }
 
     // filter is an optional prefix to filter test names on.  E.g. "/595" or "/595/" or "/595/serialization"
-    void run (std::ostream &out, std::string const &filter = std::string()) const;
+    void run (std::ostream &out, TestOutput test_output, std::string const &filter = std::string()) const;
     TestGroup &register_test (std::string const &test_function_path, TestFunction &&test_function);
     TestGroup &register_test_impl (
         std::vector<std::string>::const_iterator node_path_begin,
@@ -154,7 +159,7 @@ public:
 
 // Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
 // and LVD_TEST_END closes the lambda.
-#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILOC(), #path, [](){
+#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILOC(), #path, [](std::ostream &test_out){
 #define LVD_TEST_END }}; }
 
 template <typename ExceptionType_>

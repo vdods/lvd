@@ -2,6 +2,7 @@
 
 #include "lvd/Test.hpp"
 
+#include "lvd/NullOstream.hpp"
 #include <regex>
 
 namespace lvd {
@@ -84,7 +85,7 @@ std::ostream &operator << (std::ostream &out, TestNode const &node) {
 // TestGroup
 //
 
-void TestGroup::run (std::ostream &out, std::string const &filter) const {
+void TestGroup::run (std::ostream &out, TestOutput test_output, std::string const &filter) const {
     out << "Running tests at " << *this;
     if (!filter.empty())
         out << " with filter \"" << filter << '"';
@@ -97,13 +98,13 @@ void TestGroup::run (std::ostream &out, std::string const &filter) const {
         if (node->is_test_function()) {
             out << "Running testfunc " << *node << " ...\n";
             auto const &test_function = node->as_test_function();
-            test_function();
+            test_function(test_output == TestOutput::VERBOSE ? out : nout);
             out << "PASSED: testfunc " << *node << "\n";
         } else {
             assert(node->is_test_group());
             // Otherwise that node is a TestGroup, so just recurse to that.
             auto const &test_group = node->as_test_group();
-            test_group.run(out, filter);
+            test_group.run(out, test_output, filter);
         }
     }
     out << "PASSED: tests at " << *this << " ...\n";

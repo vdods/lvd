@@ -9,6 +9,8 @@ int main (int argc, char **argv) {
     std::string filter;
     if (argc >= 2)
         filter = argv[1];
-    lvd::root_test_group_singleton().run(std::cout, filter);
+    // Temp hack to get around the fact that CLI parsing isn't present yet.
+    auto test_output = filter.empty() ? lvd::TestOutput::TERSE : lvd::TestOutput::VERBOSE;
+    lvd::root_test_group_singleton().run(std::cout, test_output, filter);
     return 0;
 }
