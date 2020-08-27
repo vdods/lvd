@@ -58,6 +58,8 @@ set(lvd_SOURCES
     lvd/Log.hpp
     lvd/move_cast.hpp
     lvd/not_null.hpp
+    lvd/NullOstream.cpp
+    lvd/NullOstream.hpp
     lvd/OstreamDelegate.cpp
     lvd/OstreamDelegate.hpp
     lvd/Pipe.hpp
@@ -100,6 +102,7 @@ set(lvdtest_SOURCES
     lvdtest/test_Log.cpp
     lvdtest/test_move_cast.cpp
     lvdtest/test_not_null.cpp
+    lvdtest/test_NullOstream.cpp
     lvdtest/test_OstreamDelegate.cpp
     lvdtest/test_Pipe.cpp
     lvdtest/test_util.cpp
