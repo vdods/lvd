@@ -61,6 +61,13 @@ private:
     std::uint32_t m_column;
 }; // end of class FiPos
 
-std::ostream &operator << (std::ostream &stream, FiPos const &fipos);
+inline std::ostream &operator << (std::ostream &out, FiPos const &fipos)
+{
+    if (fipos.is_valid())
+        out << fipos.line() << ',' << fipos.column();
+    else
+        out << "FiPos::INVALID";
+    return out;
+}
 
 } // end namespace lvd

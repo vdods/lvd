@@ -21,6 +21,8 @@ struct FiRange
     {
         assert(!is_valid());
     }
+    FiRange (FiRange const &) = default;
+    FiRange (FiRange &&) = default;
     FiRange (std::string const &filename)
         :   m_filename(filename)
         ,   m_start(FiPos::INVALID)
@@ -47,13 +49,8 @@ struct FiRange
         assert(is_valid());
     }
 
-    FiRange &operator = (FiRange const &other)
-    {
-        m_filename = other.m_filename;
-        m_start = other.m_start;
-        m_end = other.m_end;
-        return *this;
-    }
+    FiRange &operator = (FiRange const &) = default;
+    FiRange &operator = (FiRange &&) = default;
 
     bool operator == (FiRange const &other) const
     {
@@ -131,6 +128,18 @@ private:
     FiPos m_end;
 }; // end of class FiRange
 
-std::ostream &operator << (std::ostream &stream, FiRange const &firange);
+inline std::ostream &operator << (std::ostream &out, FiRange const &firange)
+{
+    if (firange.is_valid())
+    {
+        if (firange.start() == firange.end())
+            out << firange.filename() << ':' << firange.start();
+        else
+            out << firange.filename() << ':' << firange.start() << '-' << firange.end();
+    }
+    else
+        out << "FiRange::INVALID";
+    return out;
+}
 
 } // end namespace lvd

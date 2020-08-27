@@ -10,10 +10,7 @@ FiPos const FiPos::INVALID;
 
 std::string FiPos::as_string () const
 {
-    if (is_valid())
-        return LVD_FMT(m_line << ',' << m_column);
-    else
-        return std::string("FiPos::INVALID");
+    return LVD_FMT(*this);
 }
 
 void FiPos::decrement_column (std::uint32_t by_value)
@@ -52,11 +49,6 @@ void FiPos::operator += (std::uint32_t increment_column_by_value)
 void FiPos::operator -= (std::uint32_t decrement_column_by_value)
 {
     decrement_column(decrement_column_by_value);
-}
-
-std::ostream &operator << (std::ostream &stream, FiPos const &fipos)
-{
-    return stream << fipos.as_string();
 }
 
 } // end namespace lvd

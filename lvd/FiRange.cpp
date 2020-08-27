@@ -8,22 +8,12 @@ namespace lvd {
 
 FiRange const FiRange::INVALID;
 
-#define DIRECTORY_SLASH_STRING '/'
-
-// Defined in FiLoc.cpp -- should really use std::filesystem
+// Defined in FiLoc.cpp -- should really use std::filesystem::path
 std::string FilenamePortion (std::string const &path);
 
 std::string FiRange::as_string () const
 {
-    if (is_valid())
-    {
-        if (m_start == m_end)
-            return LVD_FMT(m_filename << ':' << m_start);
-        else
-            return LVD_FMT(m_filename << ':' << m_start << '-' << m_end);
-    }
-    else
-        return std::string("FiRange::INVALID");
+    return LVD_FMT(*this);
 }
 
 FiRange FiRange::operator + (std::uint32_t increment_column_by_value) const
@@ -74,11 +64,6 @@ void FiRange::operator -= (std::uint32_t decrement_column_by_value)
 {
     if (is_valid())
         m_start -= decrement_column_by_value;
-}
-
-std::ostream &operator << (std::ostream &stream, FiRange const &firange)
-{
-    return stream << firange.as_string();
 }
 
 } // end namespace lvd
