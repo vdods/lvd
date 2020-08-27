@@ -4,12 +4,12 @@
 #include "lvd/req.hpp"
 #include "lvd/Test.hpp"
 
-LVD_REGISTER_TEST(110__abort, ([](){
+LVD_TEST_BEGIN(110__abort)
     return; // We just want to compile this test, not actually execute it.
     LVD_ABORT("for reasons");
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(110__abort_with_firange, ([](){
+LVD_TEST_BEGIN(110__abort_with_firange)
     return; // We just want to compile this test, not actually execute it.
     LVD_ABORT_WITH_FIRANGE("for reasons", lvd::FiRange("thingy", lvd::FiPos(1,2)));
-}));
+LVD_TEST_END

@@ -9,7 +9,7 @@
 #include "lvd/req.hpp"
 #include "lvd/Test.hpp"
 
-LVD_REGISTER_TEST(200__not_null, ([](){
+LVD_TEST_BEGIN(200__not_null)
     int x = 123;
 
     auto p1 = gsl::not_null<int*>(&x);
@@ -26,4 +26,4 @@ LVD_REGISTER_TEST(200__not_null, ([](){
             lvd::nn<int*>{p3};
         }
     );
-}));
+LVD_TEST_END

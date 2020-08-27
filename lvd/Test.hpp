@@ -139,6 +139,34 @@ private:
     std::map<std::string,TestNodePtr> m_nodes;
 };
 
+// Retrieve the root TestGroup singleton, creating it if necessary.
+TestGroup &root_test_group_singleton ();
+
+// Instantiating a singleton of this class is what registers a test, but use the
+// LVD_TEST_BEGIN and LVD_TEST_END macros to do this, for example:
+//
+//     LVD_TEST_BEGIN(numerics__matrix__det)
+//         auto m = Matrix<double,3,3>::Identity();
+//         LVD_REQ_EQ(m.det(), 1.0);
+//     LVD_TEST_END
+class TestRegistrar {
+public:
+
+    template <typename... Args_>
+    TestRegistrar (TestFileLocation &&reg_loc, std::string const &test_function_path, Args_&&... args) {
+        root_test_group_singleton().register_test(
+            test_function_path,
+            TestFunction(std::move(reg_loc), std::forward<Args_>(args)...)
+        );
+    }
+};
+
+#define LVD_FILE_LOCATION() lvd::TestFileLocation{__FILE__, __LINE__}
+// Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
+// and LVD_TEST_END closes the lambda.
+#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILE_LOCATION(), #path, [](){
+#define LVD_TEST_END }}; }
+
 template <typename ExceptionType_>
 void call_function_and_expect_exception (std::function<void()> func) {
     try {
@@ -152,20 +180,6 @@ void call_function_and_expect_exception (std::function<void()> func) {
         throw std::runtime_error(LVD_FMT("error: did not catch the expected exception type, but caught a non-exception type instead"));
     }
     throw std::runtime_error("error: no exception occured, but one was expected");
-}
-
-// Retrieve the root TestGroup singleton, creating it if necessary.
-TestGroup &root_test_group_singleton ();
-
-#define LVD_FILE_LOCATION() lvd::TestFileLocation{__FILE__, __LINE__}
-#define LVD_TEST_FUNCTION(evaluator) lvd::TestFunction(LVD_FILE_LOCATION(), evaluator)
-#define LVD_REGISTER_TEST(path, evaluator) namespace { \
-    struct __##path { \
-        __##path () { \
-            lvd::root_test_group_singleton().register_test(#path, LVD_TEST_FUNCTION(evaluator)); \
-        } \
-    }; \
-    __##path __##path##__SINGLETON; \
 }
 
 } // end namespace lvd

@@ -4,7 +4,7 @@
 #include "lvd/Test.hpp"
 #include "lvd/util.hpp"
 
-LVD_REGISTER_TEST(100__util__remainder, ([](){
+LVD_TEST_BEGIN(100__util__remainder)
     LVD_REQ_EQ(lvd::remainder(0, 1), size_t(0));
     LVD_REQ_EQ(lvd::remainder(0, 2), size_t(0));
     LVD_REQ_EQ(lvd::remainder(0, 3), size_t(0));
@@ -70,23 +70,23 @@ LVD_REGISTER_TEST(100__util__remainder, ([](){
     LVD_REQ_EQ(lvd::remainder(std::numeric_limits<int64_t>::min(), 9223372036854775807ull), 9223372036854775806ull);
     LVD_REQ_EQ(lvd::remainder(std::numeric_limits<int64_t>::min(), 9223372036854775808ull), size_t(0));
     LVD_REQ_EQ(lvd::remainder(std::numeric_limits<int64_t>::min(), 9223372036854775809ull), size_t(1));
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__as_radix_flags, ([](){
+LVD_TEST_BEGIN(100__util__as_radix_flags)
     LVD_REQ_EQ(lvd::as_radix_flags(lvd::Radix::BIN), lvd::RadixFlags::BIN);
     LVD_REQ_EQ(lvd::as_radix_flags(lvd::Radix::OCT), lvd::RadixFlags::OCT);
     LVD_REQ_EQ(lvd::as_radix_flags(lvd::Radix::DEC), lvd::RadixFlags::DEC);
     LVD_REQ_EQ(lvd::as_radix_flags(lvd::Radix::HEX), lvd::RadixFlags::HEX);
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__as_radix, ([](){
+LVD_TEST_BEGIN(100__util__as_radix)
     LVD_REQ_EQ(lvd::as_radix(lvd::RadixFlags::BIN), lvd::Radix::BIN);
     LVD_REQ_EQ(lvd::as_radix(lvd::RadixFlags::OCT), lvd::Radix::OCT);
     LVD_REQ_EQ(lvd::as_radix(lvd::RadixFlags::DEC), lvd::Radix::DEC);
     LVD_REQ_EQ(lvd::as_radix(lvd::RadixFlags::HEX), lvd::Radix::HEX);
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__string_to_uint64_raw__bin, ([](){
+LVD_TEST_BEGIN(100__util__string_to_uint64_raw__bin)
     LVD_REQ_EQ(lvd::string_to_uint64_raw("0", lvd::Radix::BIN),  uint64_t(0));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("1", lvd::Radix::BIN),  uint64_t(1));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("10", lvd::Radix::BIN), uint64_t(2));
@@ -125,9 +125,9 @@ LVD_REGISTER_TEST(100__util__string_to_uint64_raw__bin, ([](){
     lvd::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("10000000000000000000000000000000000000000000000000000000000000000", lvd::Radix::BIN); // Overflow -- this is 2^64
     });
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__string_to_uint64_raw__oct, ([](){
+LVD_TEST_BEGIN(100__util__string_to_uint64_raw__oct)
     LVD_REQ_EQ(lvd::string_to_uint64_raw("0", lvd::Radix::OCT),   uint64_t(0));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("1", lvd::Radix::OCT),   uint64_t(1));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("7", lvd::Radix::OCT),   uint64_t(7));
@@ -168,9 +168,9 @@ LVD_REGISTER_TEST(100__util__string_to_uint64_raw__oct, ([](){
     lvd::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("2000000000000000000000", lvd::Radix::OCT); // Overflow -- this is 2^64
     });
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__string_to_uint64_raw__dec, ([](){
+LVD_TEST_BEGIN(100__util__string_to_uint64_raw__dec)
     LVD_REQ_EQ(lvd::string_to_uint64_raw("0", lvd::Radix::DEC),   uint64_t(0));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("1", lvd::Radix::DEC),   uint64_t(1));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("7", lvd::Radix::DEC),   uint64_t(7));
@@ -215,9 +215,9 @@ LVD_REGISTER_TEST(100__util__string_to_uint64_raw__dec, ([](){
         uint64_t w = lvd::string_to_uint64_raw("18446744073709551616", lvd::Radix::DEC); // Overflow -- this is 2^64
         std::cerr << "w = " << w << '\n';
     });
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__string_to_uint64_raw__hex, ([](){
+LVD_TEST_BEGIN(100__util__string_to_uint64_raw__hex)
     LVD_REQ_EQ(lvd::string_to_uint64_raw("0", lvd::Radix::HEX),   uint64_t(0));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("1", lvd::Radix::HEX),   uint64_t(1));
     LVD_REQ_EQ(lvd::string_to_uint64_raw("7", lvd::Radix::HEX),   uint64_t(7));
@@ -272,9 +272,9 @@ LVD_REGISTER_TEST(100__util__string_to_uint64_raw__hex, ([](){
     lvd::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("0x10000000000000000", lvd::Radix::HEX); // Overflow -- this is 2^64
     });
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__int64_to_string, ([](){
+LVD_TEST_BEGIN(100__util__int64_to_string)
     LVD_REQ_EQ(lvd::int64_to_string(0, lvd::Radix::BIN, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "0b0");
     LVD_REQ_EQ(lvd::int64_to_string(0, lvd::Radix::OCT, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "0o0");
     LVD_REQ_EQ(lvd::int64_to_string(0, lvd::Radix::DEC, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "0d0");
@@ -309,9 +309,9 @@ LVD_REGISTER_TEST(100__util__int64_to_string, ([](){
     LVD_REQ_EQ(lvd::int64_to_string(std::numeric_limits<int64_t>::max(), lvd::Radix::OCT, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "+0o777777777777777777777");
     LVD_REQ_EQ(lvd::int64_to_string(std::numeric_limits<int64_t>::max(), lvd::Radix::DEC, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "+0d9223372036854775807");
     LVD_REQ_EQ(lvd::int64_to_string(std::numeric_limits<int64_t>::max(), lvd::Radix::HEX, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), "+0x7FFFFFFFFFFFFFFF");
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__string_to_int64, ([](){
+LVD_TEST_BEGIN(100__util__string_to_int64)
     LVD_REQ_EQ(lvd::string_to_int64("0b0", lvd::RadixFlags::BIN), 0);
     LVD_REQ_EQ(lvd::string_to_int64("+0b1", lvd::RadixFlags::BIN), 1);
     LVD_REQ_EQ(lvd::string_to_int64("-0b1", lvd::RadixFlags::BIN), -1);
@@ -371,9 +371,9 @@ LVD_REGISTER_TEST(100__util__string_to_int64, ([](){
     lvd::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("+0b10000000000000000000000000000000000000000000000000000000000000000", lvd::RadixFlags::BIN); // Overflow -- this is 2^64
     });
-}));
+LVD_TEST_END
 
-LVD_REGISTER_TEST(100__util__int64_to_string_to_int64, ([](){
+LVD_TEST_BEGIN(100__util__int64_to_string_to_int64)
     std::vector<lvd::Radix> radices{lvd::Radix::BIN, lvd::Radix::OCT, lvd::Radix::DEC, lvd::Radix::HEX};
 
     for (auto radix : radices) {
@@ -386,4 +386,4 @@ LVD_REGISTER_TEST(100__util__int64_to_string_to_int64, ([](){
         for (int64_t n = std::numeric_limits<int64_t>::max(); n >= std::numeric_limits<int64_t>::max()-33; --n)
             LVD_REQ_EQ(lvd::string_to_int64(lvd::int64_to_string(n, radix, lvd::UseRadixPrefix::YES, lvd::SignOption::ALWAYS_PRINT_SIGN), lvd::as_radix_flags(radix)), n);
     }
-}));
+LVD_TEST_END

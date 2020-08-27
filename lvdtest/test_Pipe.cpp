@@ -4,7 +4,7 @@
 #include "lvd/req.hpp"
 #include "lvd/Test.hpp"
 
-LVD_REGISTER_TEST(310__Pipe, ([](){
+LVD_TEST_BEGIN(310__Pipe)
     lvd::Pipe p;
 
     // Write to one end, then read from the other.
@@ -20,4 +20,4 @@ LVD_REGISTER_TEST(310__Pipe, ([](){
     LVD_REQ_EQ(input_buffer[11], '\0');
     LVD_REQ_EQ(result_buffer[11], '\0');
     LVD_REQ_EQ(std::string(input_buffer), std::string(result_buffer));
-}));
+LVD_TEST_END
