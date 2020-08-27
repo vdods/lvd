@@ -5,6 +5,7 @@
 #include <cassert>
 #include <functional>
 #include "lvd/core.hpp"
+#include "lvd/FiLoc.hpp"
 #include <map>
 #include <memory>
 #include <sstream>
@@ -12,16 +13,6 @@
 #include <vector>
 
 namespace lvd {
-
-// TODO: Use FiLoc instead
-struct TestFileLocation {
-    std::string m_file;
-    int m_line;
-};
-
-inline std::ostream &operator << (std::ostream &out, TestFileLocation const &filoc) {
-    return out << filoc.m_file << ':' << filoc.m_line;
-}
 
 class TestFunction;
 class TestGroup;
@@ -47,7 +38,7 @@ public:
     std::string const &name () const { return m_name; }
     template <typename... Args_>
     void set_name (Args_&&... args) { m_name = std::string(std::forward<Args_>(args)...); }
-    TestFileLocation const &registration_location () const { return m_registration_location; }
+    FiLoc const &registration_location () const { return m_registration_location; }
     bool has_parent () const { return m_parent != nullptr; }
     TestGroup const &parent () const { return *m_parent; }
     void set_parent (TestGroup *parent) { m_parent = parent; }
@@ -67,7 +58,7 @@ public:
 private:
 
     std::string m_name;
-    TestFileLocation m_registration_location;
+    FiLoc m_registration_location;
     TestGroup *m_parent;
 };
 
@@ -153,7 +144,7 @@ class TestRegistrar {
 public:
 
     template <typename... Args_>
-    TestRegistrar (TestFileLocation &&reg_loc, std::string const &test_function_path, Args_&&... args) {
+    TestRegistrar (FiLoc &&reg_loc, std::string const &test_function_path, Args_&&... args) {
         root_test_group_singleton().register_test(
             test_function_path,
             TestFunction(std::move(reg_loc), std::forward<Args_>(args)...)
@@ -161,10 +152,9 @@ public:
     }
 };
 
-#define LVD_FILE_LOCATION() lvd::TestFileLocation{__FILE__, __LINE__}
 // Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
 // and LVD_TEST_END closes the lambda.
-#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILE_LOCATION(), #path, [](){
+#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILOC(), #path, [](){
 #define LVD_TEST_END }}; }
 
 template <typename ExceptionType_>

@@ -8,8 +8,9 @@ namespace lvd {
 
 FiLoc const FiLoc::INVALID;
 
-#define DIRECTORY_SLASH_STRING '/'
+auto constexpr DIRECTORY_SLASH_STRING = '/';
 
+// TODO: Use std::filesystem::path
 std::string FilenamePortion (std::string const &path)
 {
     std::string::size_type last_slash = path.find_last_of(DIRECTORY_SLASH_STRING);
@@ -21,20 +22,7 @@ std::string FilenamePortion (std::string const &path)
 
 std::string FiLoc::as_string () const
 {
-    // assert(this != &INVALID && "can't use FiLoc::INVALID in this manner");
-    // assert(is_valid());
-    if (is_valid())
-    {
-        std::ostringstream out;
-        out << m_filename;
-        if (m_line_number > 0)
-            out << ":" << m_line_number;
-        return out.str();
-    }
-    else
-    {
-        return std::string("FiLoc::INVALID");
-    }
+    return LVD_FMT(*this);
 }
 
 std::string FiLoc::line_directive_string () const
@@ -51,11 +39,6 @@ void FiLoc::increment_line_number (uint32_t by_value)
 {
     assert(m_line_number > 0 && "don't use this on non-line-number-using FiLocs");
     m_line_number += by_value;
-}
-
-std::ostream &operator << (std::ostream &stream, FiLoc const &filoc)
-{
-    return stream << filoc.as_string();
 }
 
 } // end namespace lvd

@@ -18,6 +18,8 @@ struct FiLoc
     {
         assert(!is_valid());
     }
+    FiLoc (FiLoc const &) = default;
+    FiLoc (FiLoc &&) = default;
     FiLoc (std::string const &filename)
         : m_filename(filename)
         , m_line_number(0)
@@ -31,6 +33,9 @@ struct FiLoc
         assert(!m_filename.empty());
         assert(m_line_number > 0);
     }
+
+    FiLoc &operator = (FiLoc const &) = default;
+    FiLoc &operator = (FiLoc &&) = default;
 
     bool is_valid () const { return !m_filename.empty(); }
     bool has_line_number () const { return !m_filename.empty() && m_line_number > 0; }
@@ -58,6 +63,20 @@ private:
     uint32_t m_line_number;
 }; // end of class FiLoc
 
-std::ostream &operator << (std::ostream &stream, FiLoc const &filoc);
+inline std::ostream &operator << (std::ostream &out, FiLoc const &filoc)
+{
+    if (filoc.is_valid())
+    {
+        out << filoc.filename();
+        if (filoc.line_number() > 0)
+            out << ":" << filoc.line_number();
+    }
+    else
+        out << "FiLoc::INVALID";
+    return out;
+}
+
+// Use this macro to create an lvd::FiLoc at the current file:line location in the source file.
+#define LVD_FILOC() lvd::FiLoc{__FILE__, __LINE__}
 
 } // end namespace lvd
