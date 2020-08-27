@@ -85,6 +85,10 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Ensure the following about Log
+    -   The prefix, if exists, is printed in the first line.
+    -   Figure out well-defined rules about how the histogram works (should it only be about PushPrefix?
+        or should it count newlines printed for a given log level?)
 -   Verify that OstreamDelegate is actually zero-overhead by looking at `test_OstreamDelegate.s`.
 -   Separate util.hpp out into different files, and maybe leave out some of it (e.g. emit_* and remainder)
 -   Figure out how to generate a timestamp and dirhash to append to the `.deb` package version so that

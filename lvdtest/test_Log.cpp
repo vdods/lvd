@@ -116,51 +116,70 @@ LVD_REGISTER_TEST(300__Log__04, ([](){
     LVD_REQ_EQ(out.str(), "DonkeyThing[LogOverload]{123}");
 }));
 
-LVD_REGISTER_TEST(300__Log__10__crt, ([](){
+LVD_REGISTER_TEST(300__Log__10__LogLevel__nil, ([](){
     std::ostringstream out;
     lvd::Log log(out);
     std::string message{"hippo mom"};
-    log << lvd::Log::crt() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::CRT_PREFIX+message);
+    log << lvd::Log::nil() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::NIL)+message);
 }));
 
-LVD_REGISTER_TEST(300__Log__20__err, ([](){
-    std::ostringstream out;
-    lvd::Log log(out);
-    std::string message{"hippo mom"};
-    log << lvd::Log::err() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::ERR_PREFIX+message);
-}));
-
-LVD_REGISTER_TEST(300__Log__30__wrn, ([](){
-    std::ostringstream out;
-    lvd::Log log(out);
-    std::string message{"hippo mom"};
-    log << lvd::Log::wrn() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::WRN_PREFIX+message);
-}));
-
-LVD_REGISTER_TEST(300__Log__40__inf, ([](){
-    std::ostringstream out;
-    lvd::Log log(out);
-    std::string message{"hippo mom"};
-    log << lvd::Log::inf() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::INF_PREFIX+message);
-}));
-
-LVD_REGISTER_TEST(300__Log__50__dbg, ([](){
-    std::ostringstream out;
-    lvd::Log log(out);
-    std::string message{"hippo mom"};
-    log << lvd::Log::dbg() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::DBG_PREFIX+message);
-}));
-
-LVD_REGISTER_TEST(300__Log__60__trc, ([](){
+LVD_REGISTER_TEST(300__Log__10__LogLevel__trc, ([](){
     std::ostringstream out;
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::trc() << message;
-    LVD_REQ_EQ(out.str(), lvd::Log::TRC_PREFIX+message);
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::TRC)+message);
+}));
+
+LVD_REGISTER_TEST(300__Log__10__LogLevel__dbg, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    std::string message{"hippo mom"};
+    log << lvd::Log::dbg() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::DBG)+message);
+}));
+
+LVD_REGISTER_TEST(300__Log__10__LogLevel__inf, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    std::string message{"hippo mom"};
+    log << lvd::Log::inf() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::INF)+message);
+}));
+
+LVD_REGISTER_TEST(300__Log__10__LogLevel__wrn, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    std::string message{"hippo mom"};
+    log << lvd::Log::wrn() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::WRN)+message);
+}));
+
+LVD_REGISTER_TEST(300__Log__10__LogLevel__err, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    std::string message{"hippo mom"};
+    log << lvd::Log::err() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::ERR)+message);
+}));
+
+LVD_REGISTER_TEST(300__Log__10__LogLevel__crt, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    std::string message{"hippo mom"};
+    log << lvd::Log::crt() << message;
+    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::CRT)+message);
+}));
+
+
+LVD_REGISTER_TEST(300__Log__70__histogram, ([](){
+    std::ostringstream out;
+    lvd::Log log(out);
+    log << lvd::Log::trc() << "blah\n";
+    log << lvd::Log::dbg() << "thingy stuff\n";
+    log << lvd::Log::dbg() << "uuustuff\n";
+    log << lvd::Log::wrn() << "warning fancy face\n";
+    LVD_REQ_EQ(log.log_level_histogram(), lvd::LogLevelHistogram(0,1,2,0,1,0,0));
 }));
 
