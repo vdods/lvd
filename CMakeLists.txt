@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.18)
 project(lvd)
 set(lvd_VERSION 0.1.0)
 
-option(LVD_COMPILE_TESTS "Enable compilation of lvd test cases" ON)
+option(LVD_BUILD_TESTS "Enable compilation of lvd test binary" ON)
 
 # Set and require the C++17 standard
 set(CMAKE_CXX_STANDARD 17)
@@ -82,9 +82,6 @@ set_property(TARGET lvd PROPERTY INTERFACE_lvd_MAJOR_VERSION 0)
 set_property(TARGET lvd APPEND PROPERTY COMPATIBLE_INTERFACE_STRING lvd_MAJOR_VERSION)
 
 target_compile_definitions(lvd PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
-if(LVD_COMPILE_TESTS)
-    target_compile_definitions(lvd PUBLIC LVD_COMPILE_TESTS=1)
-endif()
 target_include_directories(lvd PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(lvd PUBLIC Strict)
 
