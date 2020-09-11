@@ -4,13 +4,12 @@
 #include <iostream>
 #include "lvd/core.hpp"
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 
 int main (int argc, char **argv) {
-    std::string filter;
+    auto test_context = lvd::test::Context(std::cout);
     if (argc >= 2)
-        filter = argv[1];
-    auto test_context = lvd::TestContext(std::cout, lvd::req::FailureBehavior::THROW, filter);
-    lvd::root_test_group_singleton().run(test_context);
+        test_context.with_filter(argv[1]);
+    lvd::test::root_test_group_singleton().run(test_context);
     return 0;
 }

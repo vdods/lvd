@@ -26,10 +26,33 @@ enum class FailureBehavior : uint8_t {
 class Context {
 public:
 
-    Context (std::ostream &out, FailureBehavior failure_behavior)
+    Context () = delete;
+    Context (Context const &) = delete;
+    Context (Context &&) = default;
+    Context (std::ostream &out)
         :   m_out(out)
-        ,   m_failure_behavior(failure_behavior)
+        ,   m_failure_behavior(FailureBehavior::THROW)
     { }
+
+    Context &operator = (Context const &) = delete;
+    Context &operator = (Context &&) = default;
+
+    //
+    // Builder pattern methods
+    //
+
+    Context &with_failure_behavior (FailureBehavior failure_behavior) & {
+        m_failure_behavior = failure_behavior;
+        return *this;
+    }
+    Context with_failure_behavior (FailureBehavior failure_behavior) && {
+        m_failure_behavior = failure_behavior;
+        return std::move(*this);
+    }
+
+    //
+    // End builder pattern methods
+    //
 
     std::ostream &out () { return m_out; }
     FailureBehavior failure_behavior () const { return m_failure_behavior; }

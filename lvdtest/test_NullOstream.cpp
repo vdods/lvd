@@ -2,7 +2,7 @@
 
 #include "lvd/NullOstream.hpp"
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 
 LVD_TEST_BEGIN(120__NullOstream)
     lvd::NullOstream nout;

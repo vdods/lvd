@@ -1,7 +1,7 @@
 // 2020.04.01 - Victor Dods
 
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 #include "lvd/util.hpp"
 
 LVD_TEST_BEGIN(100__util__remainder)
@@ -101,28 +101,28 @@ LVD_TEST_BEGIN(100__util__string_to_uint64_raw__bin)
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("11\n", lvd::Radix::BIN),      uint64_t(3));
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("    11   ", lvd::Radix::BIN), uint64_t(3));
 
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("", lvd::Radix::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw(" ", lvd::Radix::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t", lvd::Radix::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t\n   ", lvd::Radix::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("2", lvd::Radix::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("3", lvd::Radix::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("11000101011100x", lvd::Radix::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("10000000000000000000000000000000000000000000000000000000000000000", lvd::Radix::BIN); // Overflow -- this is 2^64
     });
 LVD_TEST_END
@@ -144,28 +144,28 @@ LVD_TEST_BEGIN(100__util__string_to_uint64_raw__oct)
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("100\n", lvd::Radix::OCT),      uint64_t(64));
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("    100   ", lvd::Radix::OCT), uint64_t(64));
 
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("", lvd::Radix::OCT); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw(" ", lvd::Radix::OCT); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t", lvd::Radix::OCT); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t\n   ", lvd::Radix::OCT); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("8", lvd::Radix::OCT); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("9", lvd::Radix::OCT); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("1234567x", lvd::Radix::OCT); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("2000000000000000000000", lvd::Radix::OCT); // Overflow -- this is 2^64
     });
 LVD_TEST_END
@@ -189,29 +189,29 @@ LVD_TEST_BEGIN(100__util__string_to_uint64_raw__dec)
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("100\n", lvd::Radix::DEC),      uint64_t(100));
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("    100   ", lvd::Radix::DEC), uint64_t(100));
 
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("", lvd::Radix::DEC); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw(" ", lvd::Radix::DEC); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t", lvd::Radix::DEC); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t\n   ", lvd::Radix::DEC); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("A", lvd::Radix::DEC); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("a", lvd::Radix::DEC); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         uint64_t v = lvd::string_to_uint64_raw("1234567890x", lvd::Radix::DEC); // Invalid digit
         std::cerr << "v = " << v << '\n';
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         uint64_t w = lvd::string_to_uint64_raw("18446744073709551616", lvd::Radix::DEC); // Overflow -- this is 2^64
         std::cerr << "w = " << w << '\n';
     });
@@ -248,28 +248,28 @@ LVD_TEST_BEGIN(100__util__string_to_uint64_raw__hex)
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("100\n", lvd::Radix::HEX),      uint64_t(256));
     LVD_TEST_REQ_EQ(lvd::string_to_uint64_raw("    100   ", lvd::Radix::HEX), uint64_t(256));
 
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("", lvd::Radix::HEX); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw(" ", lvd::Radix::HEX); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t", lvd::Radix::HEX); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("\t\n   ", lvd::Radix::HEX); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("G", lvd::Radix::HEX); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("g", lvd::Radix::HEX); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("1234567890ABCDEFx", lvd::Radix::HEX); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_uint64_raw("0x10000000000000000", lvd::Radix::HEX); // Overflow -- this is 2^64
     });
 LVD_TEST_END
@@ -341,34 +341,34 @@ LVD_TEST_BEGIN(100__util__string_to_int64)
     LVD_TEST_REQ_EQ(lvd::string_to_int64("    +0b11   ", lvd::RadixFlags::BIN), 3);
     LVD_TEST_REQ_EQ(lvd::string_to_int64("    -0b11   ", lvd::RadixFlags::BIN), -3);
 
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("", lvd::RadixFlags::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64(" ", lvd::RadixFlags::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("\t", lvd::RadixFlags::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("\t\n   ", lvd::RadixFlags::BIN); // Empty string
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("+0b2", lvd::RadixFlags::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("-0b2", lvd::RadixFlags::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("+0b3", lvd::RadixFlags::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("-0b3", lvd::RadixFlags::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("+0b11000101011100x", lvd::RadixFlags::BIN); // Invalid digit
     });
-    lvd::call_function_and_expect_exception<std::runtime_error>([](){
+    lvd::test::call_function_and_expect_exception<std::runtime_error>([](){
         lvd::string_to_int64("+0b10000000000000000000000000000000000000000000000000000000000000000", lvd::RadixFlags::BIN); // Overflow -- this is 2^64
     });
 LVD_TEST_END

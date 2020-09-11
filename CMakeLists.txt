@@ -67,8 +67,8 @@ set(lvd_SOURCES
     lvd/req.hpp
     lvd/ScopeGuard.hpp
     lvd/static_if.hpp
-    lvd/Test.cpp
-    lvd/Test.hpp
+    lvd/test.cpp
+    lvd/test.hpp
     lvd/util.cpp
     lvd/util.hpp
 )

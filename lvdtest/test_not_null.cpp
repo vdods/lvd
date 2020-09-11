@@ -7,7 +7,7 @@
 #include "lvd/aliases.hpp"
 #include "lvd/not_null.hpp"
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 
 LVD_TEST_BEGIN(200__not_null)
     int x = 123;
@@ -21,7 +21,7 @@ LVD_TEST_BEGIN(200__not_null)
     LVD_TEST_REQ_EQ(*p2, x);
 
     int *p3 = nullptr;
-    lvd::call_function_and_expect_exception<gsl::fail_fast>(
+    lvd::test::call_function_and_expect_exception<gsl::fail_fast>(
         [p3](){
             lvd::nn<int*>{p3};
         }

@@ -2,7 +2,7 @@
 
 #include "lvd/Pipe.hpp"
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 
 LVD_TEST_BEGIN(310__Pipe)
     lvd::Pipe p;

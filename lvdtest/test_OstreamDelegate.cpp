@@ -3,7 +3,7 @@
 #include <iostream>
 #include "lvd/OstreamDelegate.hpp"
 #include "lvd/req.hpp"
-#include "lvd/Test.hpp"
+#include "lvd/test.hpp"
 #include <sstream>
 #include <vector>
 

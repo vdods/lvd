@@ -14,35 +14,58 @@
 #include <vector>
 
 namespace lvd {
+namespace test {
 
-enum class TestOutput : uint8_t {
-    TERSE = 0,
-    VERBOSE
-};
+class Function;
+class Group;
 
-class TestFunction;
-class TestGroup;
-
-class TestContext {
+class Context {
 public:
 
-    TestContext () = delete;
-    TestContext (TestContext const &) = delete;
-    TestContext (TestContext &&) = delete;
-    // filter is an optional prefix to filter test names on.  E.g. "/595" or "/595/" or "/595/serialization"
-    TestContext (std::ostream &out, req::FailureBehavior failure_behavior, std::string const &filter = std::string())
-        :   m_req_context(out, failure_behavior)
-        ,   m_filter(filter)
+    Context () = delete;
+    Context (Context const &) = delete;
+    Context (Context &&) = default;
+    Context (std::ostream &out)
+        :   m_req_context(out)
     { }
 
-    bool operator = (TestContext const &) = delete;
-    bool operator = (TestContext &&) = delete;
+    Context &operator = (Context const &) = delete;
+    Context &operator = (Context &&) = default;
+
+    //
+    // Builder pattern methods
+    //
+
+    Context &with_failure_behavior (req::FailureBehavior failure_behavior) & {
+        m_req_context.with_failure_behavior(failure_behavior);
+        return *this;
+    }
+    Context with_failure_behavior (req::FailureBehavior failure_behavior) && {
+        m_req_context.with_failure_behavior(failure_behavior);
+        return std::move(*this);
+    }
+    // filter is an optional prefix to filter test names on.  E.g. "/595" or "/595/" or "/595/serialization".
+    // If empty, then no filtering will be performed.
+    template <typename Filter_>
+    Context &with_filter (Filter_ &&filter) & {
+        m_filter = std::forward<Filter_>(filter);
+        return *this;
+    }
+    template <typename Filter_>
+    Context with_filter (Filter_ &&filter) && {
+        m_filter = std::forward<Filter_>(filter);
+        return std::move(*this);
+    }
+
+    //
+    // End builder pattern methods
+    //
+
+    req::Context &req_context () { return m_req_context; }
+    std::string const &filter () const { return m_filter; }
 
     std::ostream &out () { return m_req_context.out(); }
     req::FailureBehavior failure_behavior () const { return m_req_context.failure_behavior(); }
-    std::string const &filter () const { return m_filter; }
-
-    req::Context &req_context () { return m_req_context; }
 
 private:
 
@@ -50,17 +73,17 @@ private:
     std::string m_filter;
 };
 
-class TestNode {
+class Node {
 public:
 
-    TestNode () : m_parent(nullptr) { }
-    TestNode (TestNode const &) = default;
-    TestNode (TestNode &&) noexcept = default;
+    Node () : m_parent(nullptr) { }
+    Node (Node const &) = default;
+    Node (Node &&) noexcept = default;
 
-    virtual ~TestNode () { }
+    virtual ~Node () { }
 
     template <typename Name_, typename RegLoc_>
-    TestNode (Name_ &&name, RegLoc_ &&reg_loc, TestGroup *parent)
+    Node (Name_ &&name, RegLoc_ &&reg_loc, Group *parent)
     :   m_name(std::forward<Name_>(name))
     ,   m_registration_location(std::forward<RegLoc_>(reg_loc))
     ,   m_parent(parent)
@@ -71,96 +94,96 @@ public:
     void set_name (Args_&&... args) { m_name = std::string(std::forward<Args_>(args)...); }
     FiLoc const &registration_location () const { return m_registration_location; }
     bool has_parent () const { return m_parent != nullptr; }
-    TestGroup const &parent () const { return *m_parent; }
-    void set_parent (TestGroup *parent) { m_parent = parent; }
+    Group const &parent () const { return *m_parent; }
+    void set_parent (Group *parent) { m_parent = parent; }
     std::vector<std::string> path () const;
     bool passes_filter (std::string const &filter) const;
 
     virtual bool is_test_function () const { return false; }
     virtual bool is_test_group () const { return false; }
-    virtual void run (TestContext &test_context) const = 0;
+    virtual void run (Context &context) const = 0;
     virtual void print (std::ostream &out) const;
 
-    TestFunction const &as_test_function () const &;
-    TestFunction &as_test_function () &;
-    TestGroup const &as_test_group () const &;
-    TestGroup &as_test_group () &;
+    Function const &as_test_function () const &;
+    Function &as_test_function () &;
+    Group const &as_test_group () const &;
+    Group &as_test_group () &;
 
 private:
 
     std::string m_name;
     FiLoc m_registration_location;
-    TestGroup *m_parent;
+    Group *m_parent;
 };
 
-std::ostream &operator << (std::ostream &out, TestNode const &node);
+std::ostream &operator << (std::ostream &out, Node const &node);
 
-class TestFunction : public TestNode {
+class Function : public Node {
 public:
 
-    TestFunction () = delete;
-    TestFunction (TestFunction const &) = default;
-    TestFunction (TestFunction &&) noexcept = default;
+    Function () = delete;
+    Function (Function const &) = default;
+    Function (Function &&) noexcept = default;
 
-    virtual ~TestFunction () { }
+    virtual ~Function () { }
 
     template <typename RegLoc_, typename Evaluator_>
-    TestFunction (RegLoc_ &&reg_loc, Evaluator_ &&evaluator)
-    :   TestNode("", std::forward<RegLoc_>(reg_loc), nullptr)
+    Function (RegLoc_ &&reg_loc, Evaluator_ &&evaluator)
+    :   Node("", std::forward<RegLoc_>(reg_loc), nullptr)
     ,   m_evaluator(std::forward<Evaluator_>(evaluator))
     {
         assert(m_evaluator != nullptr);
     }
     template <typename Name_, typename RegLoc_, typename Evaluator_>
-    TestFunction (Name_ &&name, RegLoc_ &&reg_loc, Evaluator_ &&evaluator)
-    :   TestNode(std::forward<Name_>(name), std::forward<RegLoc_>(reg_loc), nullptr)
+    Function (Name_ &&name, RegLoc_ &&reg_loc, Evaluator_ &&evaluator)
+    :   Node(std::forward<Name_>(name), std::forward<RegLoc_>(reg_loc), nullptr)
     ,   m_evaluator(std::forward<Evaluator_>(evaluator))
     {
         assert(m_evaluator != nullptr);
     }
 
     virtual bool is_test_function () const override { return true; }
-    virtual void run (TestContext &test_context) const override;
+    virtual void run (Context &context) const override;
 
 private:
 
     std::function<void(std::ostream&,req::Context&)> m_evaluator;
 };
 
-class TestGroup : public TestNode {
+class Group : public Node {
 public:
 
-    TestGroup () = default;
-    TestGroup (TestGroup const &) = delete;
-    TestGroup (TestGroup &&) = delete;
+    Group () = default;
+    Group (Group const &) = delete;
+    Group (Group &&) = delete;
 
-    virtual ~TestGroup () { }
+    virtual ~Group () { }
 
     template <typename Name_, typename RegLoc_>
-    TestGroup (Name_ &&name, RegLoc_ &&reg_loc, TestGroup *parent)
-    :   TestNode(std::forward<Name_>(name), std::forward<RegLoc_>(reg_loc), parent)
+    Group (Name_ &&name, RegLoc_ &&reg_loc, Group *parent)
+    :   Node(std::forward<Name_>(name), std::forward<RegLoc_>(reg_loc), parent)
     { }
 
     virtual bool is_test_group () const override { return true; }
-    virtual void run (TestContext &test_context) const override;
+    virtual void run (Context &context) const override;
     virtual void print (std::ostream &out) const override;
 
-    TestGroup &register_test (std::string const &test_function_path, TestFunction &&test_function);
-    TestGroup &register_test_impl (
+    Group &register_test (std::string const &test_function_path, Function &&test_function);
+    Group &register_test_impl (
         std::vector<std::string>::const_iterator node_path_begin,
         std::vector<std::string>::const_iterator node_path_end,
-        TestFunction &&test_function
+        Function &&test_function
     );
 
 private:
 
-    using TestNodePtr = std::unique_ptr<TestNode>;
+    using TestNodePtr = std::unique_ptr<Node>;
 
     std::map<std::string,TestNodePtr> m_nodes;
 };
 
-// Retrieve the root TestGroup singleton, creating it if necessary.
-TestGroup &root_test_group_singleton ();
+// Retrieve the root Group singleton, creating it if necessary.
+Group &root_test_group_singleton ();
 
 // Instantiating a singleton of this class is what registers a test, but use the
 // LVD_TEST_BEGIN and LVD_TEST_END macros to do this, for example:
@@ -169,21 +192,21 @@ TestGroup &root_test_group_singleton ();
 //         auto m = Matrix<double,3,3>::Identity();
 //         LVD_REQ_EQ(m.det(), 1.0);
 //     LVD_TEST_END
-class TestRegistrar {
+class Registrar {
 public:
 
     template <typename... Args_>
-    TestRegistrar (FiLoc &&reg_loc, std::string const &test_function_path, Args_&&... args) {
+    Registrar (FiLoc &&reg_loc, std::string const &test_function_path, Args_&&... args) {
         root_test_group_singleton().register_test(
             test_function_path,
-            TestFunction(std::move(reg_loc), std::forward<Args_>(args)...)
+            Function(std::move(reg_loc), std::forward<Args_>(args)...)
         );
     }
 };
 
 // Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
 // and LVD_TEST_END closes the lambda.
-#define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILOC(), #path, [](std::ostream &test_out, lvd::req::Context &req_context){
+#define LVD_TEST_BEGIN(path) namespace { lvd::test::Registrar __##path{LVD_FILOC(), #path, [](std::ostream &test_out, lvd::req::Context &req_context){
 #define LVD_TEST_END }}; }
 
 //
@@ -232,4 +255,5 @@ void call_function_and_expect_exception (std::function<void()> func) {
     throw std::runtime_error("error: no exception occured, but one was expected");
 }
 
+} // end namespace test
 } // end namespace lvd
