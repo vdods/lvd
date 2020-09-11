@@ -82,32 +82,45 @@ std::ostream &operator << (std::ostream &out, TestNode const &node) {
 }
 
 //
+// TestFunction
+//
+
+void TestFunction::run (TestContext &test_context) const {
+    try {
+        test_context.out() << "Running testfunc " << *this << " ...\n";
+        m_evaluator(test_context.out());
+        test_context.out() << "PASSED: testfunc " << *this << "\n";
+    } catch (std::exception const &e) {
+        // TODO: Recording the result more robustly
+        test_context.out() << "FAILED: testfunc " << *this << " -- exception was:\n" << e.what() << '\n';
+    } catch (...) {
+        test_context.out() << "FAILED: testfunc " << *this << " -- non-exception was thrown\n";
+    }
+}
+
+//
 // TestGroup
 //
 
-void TestGroup::run (std::ostream &out, TestOutput test_output, std::string const &filter) const {
-    out << "Running tests at " << *this;
-    if (!filter.empty())
-        out << " with filter \"" << filter << '"';
-    out << " ...\n";
+void TestGroup::run (TestContext &test_context) const {
+    test_context.out() << "Running tests at " << *this;
+    if (!test_context.filter().empty())
+        test_context.out() << " with filter \"" << test_context.filter() << '"';
+    test_context.out() << " ...\n";
     for (auto const &[name, node] : m_nodes) {
         assert(!name.empty());
-        if (!node->passes_filter(filter))
-            continue;
-
-        if (node->is_test_function()) {
-            out << "Running testfunc " << *node << " ...\n";
-            auto const &test_function = node->as_test_function();
-            test_function(test_output == TestOutput::VERBOSE ? out : nout);
-            out << "PASSED: testfunc " << *node << "\n";
-        } else {
-            assert(node->is_test_group());
-            // Otherwise that node is a TestGroup, so just recurse to that.
-            auto const &test_group = node->as_test_group();
-            test_group.run(out, test_output, filter);
-        }
+        if (node->passes_filter(test_context.filter()))
+            node->run(test_context);
     }
-    out << "PASSED: tests at " << *this << " ...\n";
+    test_context.out() << "PASSED: tests at " << *this << " ...\n";
+}
+
+void TestGroup::print (std::ostream &out) const {
+    TestNode::print(out);
+    for (auto const &[name, node] : m_nodes) {
+        std::ignore = name;
+        node->print(out);
+    }
 }
 
 TestGroup &TestGroup::register_test (std::string const &test_function_path, TestFunction &&test_function) {
@@ -162,13 +175,9 @@ TestGroup &TestGroup::register_test_impl (
     return *this;
 }
 
-void TestGroup::print (std::ostream &out) const {
-    TestNode::print(out);
-    for (auto const &[name, node] : m_nodes) {
-        std::ignore = name;
-        node->print(out);
-    }
-}
+//
+// Root TestGroup singleton and lazy-initializing accessor
+//
 
 std::unique_ptr<TestGroup> g_root_test_group_singleton = nullptr;
 

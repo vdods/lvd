@@ -22,6 +22,30 @@ enum class TestOutput : uint8_t {
 class TestFunction;
 class TestGroup;
 
+class TestContext {
+public:
+
+    TestContext () = delete;
+    TestContext (TestContext const &) = delete;
+    TestContext (TestContext &&) = delete;
+    // filter is an optional prefix to filter test names on.  E.g. "/595" or "/595/" or "/595/serialization"
+    TestContext (std::ostream &out, std::string const &filter = std::string())
+        :   m_out(out)
+        ,   m_filter(filter)
+    { }
+
+    bool operator = (TestContext const &) = delete;
+    bool operator = (TestContext &&) = delete;
+
+    std::ostream &out () { return m_out; }
+    std::string const &filter () const { return m_filter; }
+
+private:
+
+    std::ostream &m_out;
+    std::string m_filter;
+};
+
 class TestNode {
 public:
 
@@ -50,7 +74,7 @@ public:
 
     virtual bool is_test_function () const { return false; }
     virtual bool is_test_group () const { return false; }
-
+    virtual void run (TestContext &test_context) const = 0;
     virtual void print (std::ostream &out) const;
 
     TestFunction const &as_test_function () const &;
@@ -91,9 +115,8 @@ public:
         assert(m_evaluator != nullptr);
     }
 
-    void operator() (std::ostream &out) const { m_evaluator(out); }
-
     virtual bool is_test_function () const override { return true; }
+    virtual void run (TestContext &test_context) const override;
 
 private:
 
@@ -114,17 +137,16 @@ public:
     :   TestNode(std::forward<Name_>(name), std::forward<RegLoc_>(reg_loc), parent)
     { }
 
-    // filter is an optional prefix to filter test names on.  E.g. "/595" or "/595/" or "/595/serialization"
-    void run (std::ostream &out, TestOutput test_output, std::string const &filter = std::string()) const;
+    virtual bool is_test_group () const override { return true; }
+    virtual void run (TestContext &test_context) const override;
+    virtual void print (std::ostream &out) const override;
+
     TestGroup &register_test (std::string const &test_function_path, TestFunction &&test_function);
     TestGroup &register_test_impl (
         std::vector<std::string>::const_iterator node_path_begin,
         std::vector<std::string>::const_iterator node_path_end,
         TestFunction &&test_function
     );
-
-    virtual bool is_test_group () const override { return true; }
-    virtual void print (std::ostream &out) const override;
 
 private:
 

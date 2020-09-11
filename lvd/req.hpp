@@ -8,12 +8,23 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace lvd {
 namespace req {
 
-// TODO: Maybe throw an exception of type failed_requirement which derives from std::runtime_error.
+class failure : public std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+
+enum class FailureBehavior : uint8_t {
+    ABORT = 0,
+    THROW = 1
+};
+
+// Must be defined in the app that uses this.
+extern FailureBehavior g_failure_behavior;
 
 //
 // Use these macros to get nice, descriptive output.
@@ -64,9 +75,13 @@ inline void verify_condition_1param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    " << param_description << " was " << param << " (at address " << &param << ")\n";
-        out << str_out.str();
-        ::abort();
+            << "    expression `" << param_description << "` had value `" << param << "` (at address " << &param << ")\n";
+        if (g_failure_behavior == FailureBehavior::ABORT) {
+            out << str_out.str();
+            out.flush();
+            ::abort();
+        } else
+            throw failure(str_out.str());
     }
 }
 
@@ -91,10 +106,14 @@ inline void verify_condition_2param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    " << param0_description << " was " << param0 << " (at address " << &param0 << ")\n"
-            << "    " << param1_description << " was " << param1 << " (at address " << &param1 << ")\n";
-        out << str_out.str();
-        ::abort();
+            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n";
+        if (g_failure_behavior == FailureBehavior::ABORT) {
+            out << str_out.str();
+            out.flush();
+            ::abort();
+        } else
+            throw failure(str_out.str());
     }
 }
 
@@ -121,11 +140,15 @@ inline void verify_condition_3param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    " << param0_description << " was " << param0 << " (at address " << &param0 << ")\n"
-            << "    " << param1_description << " was " << param1 << " (at address " << &param1 << ")\n"
-            << "    " << param2_description << " was " << param2 << " (at address " << &param2 << ")\n";
-        out << str_out.str();
-        ::abort();
+            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
+            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n";
+        if (g_failure_behavior == FailureBehavior::ABORT) {
+            out << str_out.str();
+            out.flush();
+            ::abort();
+        } else
+            throw failure(str_out.str());
     }
 }
 
@@ -154,12 +177,16 @@ inline void verify_condition_4param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    " << param0_description << " was " << param0 << " (at address " << &param0 << ")\n"
-            << "    " << param1_description << " was " << param1 << " (at address " << &param1 << ")\n"
-            << "    " << param2_description << " was " << param2 << " (at address " << &param2 << ")\n"
-            << "    " << param3_description << " was " << param3 << " (at address " << &param3 << ")\n";
-        out << str_out.str();
-        ::abort();
+            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
+            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n"
+            << "    expression `" << param3_description << "` had value `" << param3 << "` (at address " << &param3 << ")\n";
+        if (g_failure_behavior == FailureBehavior::ABORT) {
+            out << str_out.str();
+            out.flush();
+            ::abort();
+        } else
+            throw failure(str_out.str());
     }
 }
 
