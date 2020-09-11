@@ -223,6 +223,7 @@ struct Log
     }
     void pop_prefix () { assert(!m_prefix_stack.empty()); if (m_prefix_stack.size() > 1) m_prefix_stack.pop_back(); }
     void set_log_level_threshold (LogLevel log_level_threshold) { m_log_level_threshold = log_level_threshold; }
+    void flush () { m_out.flush(); }
 
     // Make overloads of operator<< for basic char and string types.
 
