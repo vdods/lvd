@@ -36,9 +36,7 @@ public:
     :   m_name(std::forward<Name_>(name))
     ,   m_registration_location(std::forward<RegLoc_>(reg_loc))
     ,   m_parent(parent)
-    {
-//         assert(!m_name.empty());
-    }
+    { }
 
     std::string const &name () const { return m_name; }
     template <typename... Args_>
@@ -162,6 +160,37 @@ public:
 #define LVD_TEST_BEGIN(path) namespace { lvd::TestRegistrar __##path{LVD_FILOC(), #path, [](std::ostream &test_out){
 #define LVD_TEST_END }}; }
 
+//
+// For use with lvd/req.hpp -- these bind test_out to the out parameter of the LVD_REQ_* macros.
+//
+
+#define LVD_TEST_REQ_CONDITION_1PARAM(cond, param) lvd::req::verify_condition_1param(cond, #cond, param, #param, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_CONDITION_2PARAM(cond, param0, param1) lvd::req::verify_condition_2param(cond, #cond, param0, #param0, param1, #param1, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_CONDITION_3PARAM(cond, param0, param1, param2) lvd::req::verify_condition_3param(cond, #cond, param0, #param0, param1, #param1, param2, #param2, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_CONDITION_4PARAM(cond, param0, param1, param2, param3) lvd::req::verify_condition_4param(cond, #cond, param0, #param0, param1, #param1, param2, #param2, param3, #param3, __FILE__, __LINE__, __func__, test_out)
+
+#define LVD_TEST_REQ_IS_TRUE(param) lvd::req::is_true(param, #param, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_IS_FALSE(param) lvd::req::is_false(param, #param, __FILE__, __LINE__, __func__, test_out)
+
+#define LVD_TEST_REQ_EQ_NULLPTR(param) lvd::req::eq_nullptr(param, #param, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_NEQ_NULLPTR(param) lvd::req::neq_nullptr(param, #param, __FILE__, __LINE__, __func__, test_out)
+
+#define LVD_TEST_REQ_EQ(lhs, rhs) lvd::req::eq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_NEQ(lhs, rhs) lvd::req::neq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_LT(lhs, rhs) lvd::req::lt(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_LEQ(lhs, rhs) lvd::req::leq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_GT(lhs, rhs) lvd::req::gt(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_GEQ(lhs, rhs) lvd::req::geq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+
+#define LVD_TEST_REQ_COMPARE(lhs, rhs, expected) lvd::req::compare(lhs, rhs, expected, #lhs, #rhs, #expected, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_EQ(lhs, rhs) lvd::req::compare_is_eq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_NEQ(lhs, rhs) lvd::req::compare_is_neq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_LT(lhs, rhs) lvd::req::compare_is_lt(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_LEQ(lhs, rhs) lvd::req::compare_is_leq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_GT(lhs, rhs) lvd::req::compare_is_gt(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+#define LVD_TEST_REQ_COMPARE_IS_GEQ(lhs, rhs) lvd::req::compare_is_geq(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, test_out)
+
+// For verifying that a piece of code throws a particular exception type.
 template <typename ExceptionType_>
 void call_function_and_expect_exception (std::function<void()> func) {
     try {

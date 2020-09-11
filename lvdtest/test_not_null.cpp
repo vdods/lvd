@@ -13,12 +13,12 @@ LVD_TEST_BEGIN(200__not_null)
     int x = 123;
 
     auto p1 = gsl::not_null<int*>(&x);
-    LVD_REQ_NEQ_NULLPTR(p1);
-    LVD_REQ_EQ(*p1, x);
+    LVD_TEST_REQ_NEQ_NULLPTR(p1);
+    LVD_TEST_REQ_EQ(*p1, x);
 
     auto p2 = lvd::nn<int*>(&x);
-    LVD_REQ_NEQ_NULLPTR(p2);
-    LVD_REQ_EQ(*p2, x);
+    LVD_TEST_REQ_NEQ_NULLPTR(p2);
+    LVD_TEST_REQ_EQ(*p2, x);
 
     int *p3 = nullptr;
     lvd::call_function_and_expect_exception<gsl::fail_fast>(

@@ -99,54 +99,54 @@ LVD_TEST_BEGIN(000__OstreamDelegate__0__0)
     auto x = Ostrich{1, 2, 4, 8};
     std::ostringstream string_out;
     string_out << x;
-    LVD_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__0__1)
     auto x = Ostrich{1, 2, 4, 8};
     std::ostringstream string_out;
     print_Ostrich(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__0__2)
     auto x = Ostrich{1, 2, 4, 8};
     std::ostringstream string_out;
     hippo::print_Ostrich_in_hippo(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__0__3)
     auto x = Ostrich{1, 2, 4, 8};
     std::ostringstream string_out;
     platypus::print_Ostrich_in_platypus(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Ostrich(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__1__0)
     auto x = hippo::Donkey{1, 2, 4, 8};
     std::ostringstream string_out;
     string_out << x;
-    LVD_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__1__1)
     auto x = hippo::Donkey{1, 2, 4, 8};
     std::ostringstream string_out;
     print_hippo_Donkey(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__1__2)
     auto x = hippo::Donkey{1, 2, 4, 8};
     std::ostringstream string_out;
     hippo::print_hippo_Donkey_in_hippo(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(000__OstreamDelegate__1__3)
     auto x = hippo::Donkey{1, 2, 4, 8};
     std::ostringstream string_out;
     platypus::print_hippo_Donkey_in_platypus(string_out, x);
-    LVD_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
+    LVD_TEST_REQ_EQ(string_out.str(), "Donkey(1, 2, 4, 8)");
 LVD_TEST_END

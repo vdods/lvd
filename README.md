@@ -93,3 +93,14 @@ files that were listed in the log.
 -   Separate util.hpp out into different files, and maybe leave out some of it (e.g. emit_* and remainder)
 -   Figure out how to generate a timestamp and dirhash to append to the `.deb` package version so that
     intermediate changes between versioned releases can be distinguished.
+-   Make test run method indicate errors if any occur.
+-   Make fancier version of Test where Log is used for output, verbosity, and error tracking.  Though
+    probably each test's Log object should output to a separate std::ostringstream, perhaps recorded
+    to a file.
+-   Maybe add formal test dependency tracking for fancier version of Test, where there's no need to
+    explicitly number stuff to enforce an order of execution that respects dependencies between tests.
+-   Make an analog of req.hpp called check.hpp which causes non-fatal errors that just print stuff,
+    but have an option of triggering an abort/exception if desired.
+-   Make test framework able to run in "child process" mode, where it can isolate abort/crash errors,
+    and run all tests, instead of a single crash blocking the rest of them.  This would also allow for
+    tests that expect a crash to occur.

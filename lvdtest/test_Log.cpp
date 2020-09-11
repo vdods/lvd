@@ -82,7 +82,7 @@ LVD_TEST_BEGIN(300__Log__00)
     lvd::Log log(out);
     log << "blah\n" << lvd::IndentGuard() << "hippo\n";
     log << "thingy";
-    LVD_REQ_EQ(out.str(), "blah\n    hippo\nthingy");
+    LVD_TEST_REQ_EQ(out.str(), "blah\n    hippo\nthingy");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__01)
@@ -90,7 +90,7 @@ LVD_TEST_BEGIN(300__Log__01)
     lvd::Log log(out);
     HippoThing x{123};
     log << x;
-    LVD_REQ_EQ(out.str(), "HippoThing{123}");
+    LVD_TEST_REQ_EQ(out.str(), "HippoThing{123}");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__02)
@@ -98,14 +98,14 @@ LVD_TEST_BEGIN(300__Log__02)
     lvd::Log log(out);
     OstrichThing x{123};
     log << x;
-    LVD_REQ_EQ(out.str(), "OstrichThing{123}");
+    LVD_TEST_REQ_EQ(out.str(), "OstrichThing{123}");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__03)
     std::ostringstream out;
     aaa::DonkeyThing x{123};
     out << x;
-    LVD_REQ_EQ(out.str(), "DonkeyThing{123}");
+    LVD_TEST_REQ_EQ(out.str(), "DonkeyThing{123}");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__04)
@@ -113,7 +113,7 @@ LVD_TEST_BEGIN(300__Log__04)
     lvd::Log log(out);
     aaa::DonkeyThing x{123};
     log << x;
-    LVD_REQ_EQ(out.str(), "DonkeyThing[LogOverload]{123}");
+    LVD_TEST_REQ_EQ(out.str(), "DonkeyThing[LogOverload]{123}");
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__nil)
@@ -121,7 +121,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__nil)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::nil() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::NIL)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::NIL)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__trc)
@@ -129,7 +129,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__trc)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::trc() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::TRC)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::TRC)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__dbg)
@@ -137,7 +137,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__dbg)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::dbg() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::DBG)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::DBG)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__inf)
@@ -145,7 +145,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__inf)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::inf() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::INF)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::INF)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__wrn)
@@ -153,7 +153,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__wrn)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::wrn() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::WRN)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::WRN)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__err)
@@ -161,7 +161,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__err)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::err() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::ERR)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::ERR)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__10__LogLevel__crt)
@@ -169,7 +169,7 @@ LVD_TEST_BEGIN(300__Log__10__LogLevel__crt)
     lvd::Log log(out);
     std::string message{"hippo mom"};
     log << lvd::Log::crt() << message;
-    LVD_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::CRT)+message);
+    LVD_TEST_REQ_EQ(out.str(), lvd::prefix_text(lvd::LogLevel::CRT)+message);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(300__Log__70__histogram)
@@ -179,5 +179,5 @@ LVD_TEST_BEGIN(300__Log__70__histogram)
     log << lvd::Log::dbg() << "thingy stuff\n";
     log << lvd::Log::dbg() << "uuustuff\n";
     log << lvd::Log::wrn() << "warning fancy face\n";
-    LVD_REQ_EQ(log.log_level_histogram(), lvd::LogLevelHistogram(0,1,2,0,1,0,0));
+    LVD_TEST_REQ_EQ(log.log_level_histogram(), lvd::LogLevelHistogram(0,1,2,0,1,0,0));
 LVD_TEST_END
