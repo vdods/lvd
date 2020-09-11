@@ -6,14 +6,11 @@
 #include "lvd/req.hpp"
 #include "lvd/Test.hpp"
 
-// lvd::req::FailureBehavior lvd::req::g_failure_behavior = lvd::req::FailureBehavior::ABORT;
-lvd::req::FailureBehavior lvd::req::g_failure_behavior = lvd::req::FailureBehavior::THROW;
-
 int main (int argc, char **argv) {
     std::string filter;
     if (argc >= 2)
         filter = argv[1];
-    auto test_context = lvd::TestContext(std::cout, filter);
+    auto test_context = lvd::TestContext(std::cout, lvd::req::FailureBehavior::THROW, filter);
     lvd::root_test_group_singleton().run(test_context);
     return 0;
 }

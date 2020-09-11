@@ -88,7 +88,7 @@ std::ostream &operator << (std::ostream &out, TestNode const &node) {
 void TestFunction::run (TestContext &test_context) const {
     try {
         test_context.out() << "Running testfunc " << *this << " ...\n";
-        m_evaluator(test_context.out());
+        m_evaluator(test_context.out(), test_context.req_context());
         test_context.out() << "PASSED: testfunc " << *this << "\n";
     } catch (std::exception const &e) {
         // TODO: Recording the result more robustly
