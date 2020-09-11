@@ -6,6 +6,7 @@
 #include <functional>
 #include "lvd/core.hpp"
 #include "lvd/FiLoc.hpp"
+#include "lvd/Log.hpp"
 #include "lvd/req.hpp"
 #include <map>
 #include <memory>
@@ -25,8 +26,9 @@ public:
     Context () = delete;
     Context (Context const &) = delete;
     Context (Context &&) = default;
-    Context (std::ostream &out)
+    Context (Log &out)
         :   m_req_context(out)
+        ,   m_test_count(0)
     { }
 
     Context &operator = (Context const &) = delete;
@@ -64,13 +66,22 @@ public:
     req::Context &req_context () { return m_req_context; }
     std::string const &filter () const { return m_filter; }
 
-    std::ostream &out () { return m_req_context.out(); }
+    Log &out () { return m_req_context.out(); }
     req::FailureBehavior failure_behavior () const { return m_req_context.failure_behavior(); }
+
+    size_t test_count () const { return m_test_count; }
+    std::vector<std::string> const &failure_paths () const { return m_failure_paths; }
+
+    void increment_test_count () { ++m_test_count; }
+    template <typename T_>
+    void record_failure_path (T_ &&path) { m_failure_paths.emplace_back(std::forward<T_>(path)); }
 
 private:
 
     req::Context m_req_context;
     std::string m_filter;
+    size_t m_test_count;
+    std::vector<std::string> m_failure_paths;
 };
 
 class Node {
@@ -147,7 +158,7 @@ public:
 
 private:
 
-    std::function<void(std::ostream&,req::Context&)> m_evaluator;
+    std::function<void(Log&,req::Context&)> m_evaluator;
 };
 
 class Group : public Node {
@@ -206,7 +217,7 @@ public:
 
 // Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
 // and LVD_TEST_END closes the lambda.
-#define LVD_TEST_BEGIN(path) namespace { lvd::test::Registrar __##path{LVD_FILOC(), #path, [](std::ostream &test_out, lvd::req::Context &req_context){
+#define LVD_TEST_BEGIN(path) namespace { lvd::test::Registrar __##path{LVD_FILOC(), #path, [](lvd::Log &test_out, lvd::req::Context &req_context){
 #define LVD_TEST_END }}; }
 
 //

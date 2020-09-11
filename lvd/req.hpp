@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/core.hpp"
+#include "lvd/Log.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <iomanip>
@@ -29,7 +30,7 @@ public:
     Context () = delete;
     Context (Context const &) = delete;
     Context (Context &&) = default;
-    Context (std::ostream &out)
+    Context (Log &out)
         :   m_out(out)
         ,   m_failure_behavior(FailureBehavior::THROW)
     { }
@@ -54,12 +55,12 @@ public:
     // End builder pattern methods
     //
 
-    std::ostream &out () { return m_out; }
+    Log &out () { return m_out; }
     FailureBehavior failure_behavior () const { return m_failure_behavior; }
 
 private:
 
-    std::ostream &m_out;
+    Log &m_out;
     FailureBehavior m_failure_behavior;
 };
 
@@ -112,9 +113,9 @@ inline void verify_condition_1param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param_description << "` had value `" << param << "` (at address " << &param << ")\n";
+            << "    expression `" << param_description << "` had value `" << param << "` (at address " << &param << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << str_out.str();
+            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.out().flush();
             ::abort();
         } else
@@ -144,9 +145,9 @@ inline void verify_condition_2param (
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
             << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
-            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n";
+            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << str_out.str();
+            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.out().flush();
             ::abort();
         } else
@@ -179,9 +180,9 @@ inline void verify_condition_3param (
             << "    failed condition: " << condition_description << '\n'
             << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
             << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
-            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n";
+            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << str_out.str();
+            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.out().flush();
             ::abort();
         } else
@@ -217,9 +218,9 @@ inline void verify_condition_4param (
             << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
             << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
             << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n"
-            << "    expression `" << param3_description << "` had value `" << param3 << "` (at address " << &param3 << ")\n";
+            << "    expression `" << param3_description << "` had value `" << param3 << "` (at address " << &param3 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << str_out.str();
+            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.out().flush();
             ::abort();
         } else
