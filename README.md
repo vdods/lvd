@@ -8,6 +8,10 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.2.0`|Added `NullOstream`, added `test_out` param to test bodies, renamed `lvd/Test.?pp` to `lvd/test.?pp`, moved test code into `test` namespace, added context objects to `test` and `req` code, made `req` configurable so it can throw or abort, did other misc code cleanup.|
+|`v0.1.0`|Added tracking of log level message count to `Log`.  Improved how tests are declared/registered.  Improved `FiLoc` and integrated it into `lvd/Test.hpp`.  Improved `FiPos` and `FiRange`.|
+|`v0.0.3`|Fixed `lvd/abort.hpp` and added some more tests.|
+|`v0.0.2`|A few minor improvements, fixed some missing headers, added some more tests.|
 |`v0.0.1`|A few bugfixes to `Log` and `not_null<std::unique_ptr<...>>`.|
 |`v0.0.0`|Initial commit.|
 
