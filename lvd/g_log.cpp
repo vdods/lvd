@@ -7,6 +7,6 @@
 namespace lvd {
 
 // Global log singleton instance.
-Log g_log(std::cout);
+Log g_log(std::cerr);
 
 } // end namespace lvd
