@@ -217,11 +217,11 @@ public:
 
 // Use these macros to define a test.  LVD_TEST_BEGIN opens a lambda which is used as the test body
 // and LVD_TEST_END closes the lambda.
-#define LVD_TEST_BEGIN(path) namespace { lvd::test::Registrar __##path{LVD_FILOC(), #path, [](lvd::Log &test_out, lvd::req::Context &req_context){
+#define LVD_TEST_BEGIN(path) namespace { lvd::test::Registrar __##path{LVD_FILOC(), #path, [](lvd::Log &test_log, lvd::req::Context &req_context){
 #define LVD_TEST_END }}; }
 
 //
-// For use with lvd/req.hpp -- these bind test_out to the out parameter of the LVD_REQ_* macros.
+// For use with lvd/req.hpp -- these bind test_log to the out parameter of the LVD_REQ_* macros.
 //
 
 #define LVD_TEST_REQ_CONDITION_1PARAM(cond, param) lvd::req::verify_condition_1param(req_context, cond, #cond, param, #param, __FILE__, __LINE__, __func__)
