@@ -30,8 +30,8 @@ public:
     Context () = delete;
     Context (Context const &) = delete;
     Context (Context &&) = default;
-    Context (Log &out)
-        :   m_out(out)
+    Context (Log &log)
+        :   m_log(log)
         ,   m_failure_behavior(FailureBehavior::THROW)
     { }
 
@@ -55,12 +55,12 @@ public:
     // End builder pattern methods
     //
 
-    Log &out () { return m_out; }
+    Log &log () { return m_log; }
     FailureBehavior failure_behavior () const { return m_failure_behavior; }
 
 private:
 
-    Log &m_out;
+    Log &m_log;
     FailureBehavior m_failure_behavior;
 };
 
@@ -115,8 +115,8 @@ inline void verify_condition_1param (
             << "    failed condition: " << condition_description << '\n'
             << "    expression `" << param_description << "` had value `" << param << "` (at address " << &param << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
-            context.out().flush();
+            context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
+            context.log().flush();
             ::abort();
         } else
             throw Failure(str_out.str());
@@ -147,8 +147,8 @@ inline void verify_condition_2param (
             << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
             << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
-            context.out().flush();
+            context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
+            context.log().flush();
             ::abort();
         } else
             throw Failure(str_out.str());
@@ -182,8 +182,8 @@ inline void verify_condition_3param (
             << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
             << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
-            context.out().flush();
+            context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
+            context.log().flush();
             ::abort();
         } else
             throw Failure(str_out.str());
@@ -220,8 +220,8 @@ inline void verify_condition_4param (
             << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n"
             << "    expression `" << param3_description << "` had value `" << param3 << "` (at address " << &param3 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
-            context.out() << Log::crt() << IndentGuard() << str_out.str() << '\n';
-            context.out().flush();
+            context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
+            context.log().flush();
             ::abort();
         } else
             throw Failure(str_out.str());
@@ -237,7 +237,7 @@ inline void is_true (
     int line,
     std::string const &func
 ) {
-    verify_condition_1param(context, bool(param), LVD_FMT("bool(" << param_description << ')'), param, param_description, file, line, func);
+    verify_condition_1param(context, bool(param), LVD_FMT("bool(" << param_description << ") == true"), param, param_description, file, line, func);
 }
 
 template <typename Param_>
@@ -249,7 +249,7 @@ inline void is_false (
     int line,
     std::string const &func
 ) {
-    verify_condition_1param(context, !bool(param), LVD_FMT("!bool(" << param_description << ')'), param, param_description, file, line, func);
+    verify_condition_1param(context, !bool(param), LVD_FMT("bool(" << param_description << ") == false"), param, param_description, file, line, func);
 }
 
 template <typename Param_>

@@ -26,8 +26,8 @@ public:
     Context () = delete;
     Context (Context const &) = delete;
     Context (Context &&) = default;
-    Context (Log &out)
-        :   m_req_context(out)
+    Context (Log &log)
+        :   m_req_context(log)
         ,   m_test_count(0)
     { }
 
@@ -66,7 +66,7 @@ public:
     req::Context &req_context () { return m_req_context; }
     std::string const &filter () const { return m_filter; }
 
-    Log &out () { return m_req_context.out(); }
+    Log &log () { return m_req_context.log(); }
     req::FailureBehavior failure_behavior () const { return m_req_context.failure_behavior(); }
 
     size_t test_count () const { return m_test_count; }
@@ -221,7 +221,7 @@ public:
 #define LVD_TEST_END }}; }
 
 //
-// For use with lvd/req.hpp -- these bind test_log to the out parameter of the LVD_REQ_* macros.
+// For use with lvd/req.hpp -- these bind req_context to the context parameter of the LVD_REQ_* macros.
 //
 
 #define LVD_TEST_REQ_CONDITION_1PARAM(cond, param) lvd::req::verify_condition_1param(req_context, cond, #cond, param, #param, __FILE__, __LINE__, __func__)

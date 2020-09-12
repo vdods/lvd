@@ -87,16 +87,16 @@ std::ostream &operator << (std::ostream &out, Node const &node) {
 
 void Function::run (Context &context) const {
     try {
-        context.out() << Log::inf() << "Running testfunc " << *this << " ...\n";
+        context.log() << Log::inf() << "Running testfunc " << *this << " ...\n";
         context.increment_test_count();
-        m_evaluator(context.out(), context.req_context());
-        context.out() << Log::inf() << "Passed: testfunc " << *this << "\n";
+        m_evaluator(context.log(), context.req_context());
+        context.log() << Log::inf() << "Passed: testfunc " << *this << "\n";
     } catch (std::exception const &e) {
         context.record_failure_path(LVD_FMT(*this));
-        context.out() << Log::err() << "Failed: testfunc " << *this << " -- exception was:\n" << IndentGuard() << e.what() << '\n';
+        context.log() << Log::err() << "Failed: testfunc " << *this << " -- exception was:\n" << IndentGuard() << e.what() << '\n';
     } catch (...) {
         context.record_failure_path(LVD_FMT(*this));
-        context.out() << Log::err() << "Failed: testfunc " << *this << " -- non-exception was thrown\n";
+        context.log() << Log::err() << "Failed: testfunc " << *this << " -- non-exception was thrown\n";
     }
 }
 
@@ -108,10 +108,10 @@ void Group::run (Context &context) const {
     auto previous_test_count = context.test_count();
     auto previous_failure_path_count = context.failure_paths().size();
 
-    context.out() << Log::inf() << "Running tests at " << *this;
+    context.log() << Log::inf() << "Running tests at " << *this;
     if (!context.filter().empty())
-        context.out() << " with filter \"" << context.filter() << '"';
-    context.out() << " ...\n";
+        context.log() << " with filter \"" << context.filter() << '"';
+    context.log() << " ...\n";
     for (auto const &[name, node] : m_nodes) {
         assert(!name.empty());
         if (node->passes_filter(context.filter()))
@@ -125,20 +125,20 @@ void Group::run (Context &context) const {
     auto subordinate_test_count = current_test_count - previous_test_count;
     auto subordinate_test_failure_count = current_failure_path_count - previous_failure_path_count;
     if (subordinate_test_failure_count > 0)
-        context.out() << Log::err() << "Failed: " << subordinate_test_failure_count << " out of " << subordinate_test_count << " tests under " << *this << '\n';
+        context.log() << Log::err() << "Failed: " << subordinate_test_failure_count << " out of " << subordinate_test_count << " tests under " << *this << '\n';
     else
-        context.out() << Log::inf() << "Passed: all " << subordinate_test_count << " tests under " << *this << '\n';
+        context.log() << Log::inf() << "Passed: all " << subordinate_test_count << " tests under " << *this << '\n';
 
     // If this is the root Group, print a summary.
     if (!has_parent()) {
         if (subordinate_test_failure_count > 0) {
-            context.out() << Log::err() << "\nSummary: " << subordinate_test_failure_count << " out of " << subordinate_test_count << " tests failed:\n";
-            IndentGuard ig(context.out());
+            context.log() << Log::err() << "\nSummary: " << subordinate_test_failure_count << " out of " << subordinate_test_count << " tests failed:\n";
+            IndentGuard ig(context.log());
             for (auto const &failure_path : context.failure_paths()) {
-                context.out() << Log::err() << failure_path << '\n';
+                context.log() << Log::err() << failure_path << '\n';
             }
         } else {
-            context.out() << Log::inf() << "\nSummary: all " << subordinate_test_count << " tests passed.\n";
+            context.log() << Log::inf() << "\nSummary: all " << subordinate_test_count << " tests passed.\n";
         }
     }
 }
