@@ -76,7 +76,7 @@ public:
     LogLevelHistogram (LogLevelHistogram const &) = default;
     LogLevelHistogram (LogLevelHistogram &&) = default;
     template <typename... Args_>
-    LogLevelHistogram (Args_&&... args) : m_buckets(std::experimental::make_array<size_t>(std::forward<Args_>(args)...)) {  }
+    explicit LogLevelHistogram (Args_&&... args) : m_buckets(std::experimental::make_array<size_t>(std::forward<Args_>(args)...)) {  }
 
     bool operator == (LogLevelHistogram const &other) const { return m_buckets == other.m_buckets; }
 
