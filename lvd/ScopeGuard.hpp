@@ -3,7 +3,7 @@
 #pragma once
 
 #include <functional>
-#include "lvd/core.hpp"
+#include "lvd/fmt.hpp"
 
 namespace lvd {
 

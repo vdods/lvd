@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "lvd/core.hpp"
 #include "lvd/FiRange.hpp"
+#include "lvd/fmt.hpp"
 #include "lvd/g_log.hpp"
 #include "lvd/Log.hpp"
 #include <string>

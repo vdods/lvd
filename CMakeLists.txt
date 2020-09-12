@@ -46,13 +46,13 @@ set(lvd_SOURCES
     lvd/aliases.hpp
     lvd/ANSIColor.cpp
     lvd/ANSIColor.hpp
-    lvd/core.hpp
     lvd/FiLoc.cpp
     lvd/FiLoc.hpp
     lvd/FiPos.cpp
     lvd/FiPos.hpp
     lvd/FiRange.cpp
     lvd/FiRange.hpp
+    lvd/fmt.hpp
     lvd/g_log.cpp
     lvd/g_log.hpp
     lvd/Log.hpp

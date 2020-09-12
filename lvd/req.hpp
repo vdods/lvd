@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "lvd/core.hpp"
+#include "lvd/fmt.hpp"
 #include "lvd/Log.hpp"
 #include <cassert>
 #include <cstdlib>

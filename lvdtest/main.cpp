@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <iostream>
-#include "lvd/core.hpp"
+#include "lvd/fmt.hpp"
 #include "lvd/g_log.hpp"
 #include "lvd/req.hpp"
 #include "lvd/test.hpp"

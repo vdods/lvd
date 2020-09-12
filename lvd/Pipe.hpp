@@ -4,9 +4,9 @@
 
 // NOTE: This source depends on POSIX standard functions, and is not part of the C or C++ standard.
 
-#include "lvd/core.hpp"
 #include <errno.h>
 #include <fcntl.h>
+#include "lvd/fmt.hpp"
 #include <stdexcept>
 #include <string.h>
 #include <sys/stat.h>

@@ -4,8 +4,8 @@
 
 #include <cassert>
 #include <functional>
-#include "lvd/core.hpp"
 #include "lvd/FiLoc.hpp"
+#include "lvd/fmt.hpp"
 #include "lvd/Log.hpp"
 #include "lvd/req.hpp"
 #include <map>

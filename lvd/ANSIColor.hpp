@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "lvd/core.hpp"
+#include "lvd/fmt.hpp"
 #include <stdexcept>
 
 namespace lvd {

@@ -4,8 +4,8 @@
 
 #include <cstdint>
 #include <limits>
-#include "lvd/core.hpp"
 #include "lvd/FiLoc.hpp"
+#include "lvd/fmt.hpp"
 #include "lvd/Range_t.hpp"
 #include <sstream>
 #include <string>

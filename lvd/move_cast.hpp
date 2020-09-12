@@ -3,7 +3,7 @@
 #pragma once
 
 #include <gsl/gsl>
-#include "lvd/core.hpp"
+#include "lvd/fmt.hpp"
 #include <memory>
 
 namespace lvd {
