@@ -242,14 +242,6 @@ public:
 #define LVD_TEST_REQ_GT(lhs, rhs) lvd::req::gt(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
 #define LVD_TEST_REQ_GEQ(lhs, rhs) lvd::req::geq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
 
-#define LVD_TEST_REQ_COMPARE(lhs, rhs, expected) lvd::req::compare(req_context, lhs, rhs, expected, #lhs, #rhs, #expected, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_EQ(lhs, rhs) lvd::req::compare_is_eq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_NEQ(lhs, rhs) lvd::req::compare_is_neq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_LT(lhs, rhs) lvd::req::compare_is_lt(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_LEQ(lhs, rhs) lvd::req::compare_is_leq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_GT(lhs, rhs) lvd::req::compare_is_gt(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_TEST_REQ_COMPARE_IS_GEQ(lhs, rhs) lvd::req::compare_is_geq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-
 // For verifying that a piece of code throws a particular exception type.
 template <typename ExceptionType_>
 void call_function_and_expect_exception (std::function<void()> func) {

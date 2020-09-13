@@ -86,14 +86,6 @@ private:
 #define LVD_REQ_GT(context, lhs, rhs) lvd::req::gt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
 #define LVD_REQ_GEQ(context, lhs, rhs) lvd::req::geq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
 
-#define LVD_REQ_COMPARE(context, lhs, rhs, expected) lvd::req::compare(context, lhs, rhs, expected, #lhs, #rhs, #expected, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_EQ(context, lhs, rhs) lvd::req::compare_is_eq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_NEQ(context, lhs, rhs) lvd::req::compare_is_neq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_LT(context, lhs, rhs) lvd::req::compare_is_lt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_LEQ(context, lhs, rhs) lvd::req::compare_is_leq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_GT(context, lhs, rhs) lvd::req::compare_is_gt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_COMPARE_IS_GEQ(context, lhs, rhs) lvd::req::compare_is_geq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-
 template <typename Param_>
 inline void verify_condition_1param (
     Context &context,
