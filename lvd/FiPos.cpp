@@ -2,7 +2,7 @@
 
 #include "lvd/FiPos.hpp"
 
-#include <sstream>
+#include "lvd/fmt.hpp"
 
 namespace lvd {
 

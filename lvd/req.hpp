@@ -3,12 +3,12 @@
 #pragma once
 
 #include "lvd/fmt.hpp"
+#include "lvd/literal.hpp"
 #include "lvd/Log.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -105,7 +105,7 @@ inline void verify_condition_1param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param_description << "` had value `" << param << "` (at address " << &param << ")";
+            << "    expression `" << param_description << "` had value " << literal_of(param) << " (at address " << &param << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -136,8 +136,8 @@ inline void verify_condition_2param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
-            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")";
+            << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -170,9 +170,9 @@ inline void verify_condition_3param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
-            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
-            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")";
+            << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")\n"
+            << "    expression `" << param2_description << "` had value " << literal_of(param2) << " (at address " << &param2 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -207,10 +207,10 @@ inline void verify_condition_4param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param0_description << "` had value `" << param0 << "` (at address " << &param0 << ")\n"
-            << "    expression `" << param1_description << "` had value `" << param1 << "` (at address " << &param1 << ")\n"
-            << "    expression `" << param2_description << "` had value `" << param2 << "` (at address " << &param2 << ")\n"
-            << "    expression `" << param3_description << "` had value `" << param3 << "` (at address " << &param3 << ")";
+            << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
+            << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")\n"
+            << "    expression `" << param2_description << "` had value " << literal_of(param2) << " (at address " << &param2 << ")\n"
+            << "    expression `" << param3_description << "` had value " << literal_of(param3) << " (at address " << &param3 << ")";
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();

@@ -5,7 +5,6 @@
 #include <cassert>
 #include <cstdint>
 #include "lvd/FiPos.hpp"
-#include "lvd/fmt.hpp"
 #include <ostream>
 
 namespace lvd {

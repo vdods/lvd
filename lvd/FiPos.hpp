@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <cstdint>
-#include "lvd/fmt.hpp"
 #include <ostream>
 
 namespace lvd {

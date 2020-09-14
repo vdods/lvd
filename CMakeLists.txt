@@ -55,6 +55,8 @@ set(lvd_SOURCES
     lvd/fmt.hpp
     lvd/g_log.cpp
     lvd/g_log.hpp
+    lvd/literal.cpp
+    lvd/literal.hpp
     lvd/Log.hpp
     lvd/move_cast.hpp
     lvd/not_null.hpp

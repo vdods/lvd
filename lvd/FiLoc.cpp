@@ -2,7 +2,7 @@
 
 #include "lvd/FiLoc.hpp"
 
-#include <sstream>
+#include "lvd/fmt.hpp"
 
 namespace lvd {
 
