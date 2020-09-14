@@ -98,6 +98,7 @@ target_link_libraries(lvd PUBLIC Strict)
 set(lvdtest_SOURCES
     lvdtest/main.cpp
     lvdtest/test_abort.cpp
+    lvdtest/test_ANSIColor.cpp
     lvdtest/test_Log.cpp
     lvdtest/test_move_cast.cpp
     lvdtest/test_not_null.cpp

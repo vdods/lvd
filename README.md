@@ -91,6 +91,8 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Ideally, Log would implement std::ostream, and then all this business about HasCustomLogOutputOverload
+    would go away.
 -   Ensure the following about Log
     -   The prefix, if exists, is printed in the first line.
     -   Figure out well-defined rules about how the histogram works (should it only be about PushPrefix?

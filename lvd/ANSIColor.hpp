@@ -88,10 +88,11 @@ std::ostream &operator << (std::ostream &out, ANSIColorCode const &ansi_color_co
 //     }
 // };
 
+template <typename T_>
 struct ANSIColorGuard
 {
     ANSIColorCode m_ansi_color_code;
-    mutable std::ostream *m_out;
+    mutable T_ *m_out;
 
     template <typename... Args_>
     explicit ANSIColorGuard (Args_&&... args)
@@ -106,7 +107,8 @@ struct ANSIColorGuard
     }
 };
 
-inline std::ostream &operator << (std::ostream &out, ANSIColorGuard const &g)
+template <typename T_>
+std::ostream &operator << (T_ &out, ANSIColorGuard<T_> const &g)
 {
     g.m_out = &out;
     return out << g.m_ansi_color_code;

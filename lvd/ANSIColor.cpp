@@ -103,14 +103,24 @@ std::ostream &operator << (std::ostream &out, ANSIColorCode const &ansi_color_co
 {
     assert(ansi_color_code.m_foreground != ANSIColor::RESET_TO_NORMAL || ansi_color_code.m_background == ANSIColor::NONE);
     out << "\033[";
-    if (ansi_color_code.m_foreground == ANSIColor::RESET_TO_NORMAL)
+
+    bool foreground_set = false;
+
+    if (ansi_color_code.m_foreground == ANSIColor::RESET_TO_NORMAL) {
         out << '0';
-    else if (ansi_color_code.m_foreground != ANSIColor::NONE)
+        foreground_set = true;
+    } else if (ansi_color_code.m_foreground != ANSIColor::NONE) {
         out << uint32_t(ansi_color_code_foreground(ansi_color_code.m_foreground));
-    if (ansi_color_code.m_background != ANSIColor::NONE)
-        out << uint32_t(ansi_color_code_foreground(ansi_color_code.m_background));
+        foreground_set = true;
+    }
+
+    if (ansi_color_code.m_background != ANSIColor::NONE) {
+        if (foreground_set)
+            out << ';';
+        out << uint32_t(ansi_color_code_background(ansi_color_code.m_background));
+    }
+
     return out << 'm';
-    return out;
 }
 
 } // end namespace lvd
