@@ -183,13 +183,22 @@ LVD_TEST_BEGIN(300__Log__70__histogram)
     LVD_TEST_REQ_EQ(log.log_level_histogram(), lvd::LogLevelHistogram(0,1,2,0,1,0,0));
 LVD_TEST_END
 
-void test_Log_ANSIColor_case (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string) {
-    std::ostringstream out;
-    lvd::Log log(out);
-    log << lvd::ANSIColorCode(fg, bg);
-    auto s = out.str();
-    req_context.log() << lvd::Log::dbg() << s << "A MAD HIPPO IS A GLAD HIPPO\033[0m\n";
-    LVD_TEST_REQ_EQ(s, expected_string);
+void test_Log_ANSIColor_case (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string_) {
+    auto expected_string = expected_string_ + "A MAD HIPPO IS A GLAD HIPPO\033[0m";
+
+    // Try two ways -- one using Log directly, the other using LVD_LOG_FMT, which is a fancy macro.
+    {
+        std::ostringstream out;
+        lvd::Log log(out);
+        log << lvd::ANSIColorCode(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO" << lvd::ANSIColorCode(lvd::ANSIColor::RESET_TO_NORMAL);
+        auto s = out.str();
+        req_context.log() << lvd::Log::dbg() << s << '\n';
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
+    {
+        auto s = LVD_LOG_FMT(lvd::ANSIColorCode(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO" << lvd::ANSIColorCode(lvd::ANSIColor::RESET_TO_NORMAL));
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
 }
 
 #define TEST_LOG_ANSI_COLOR_CASE(fg, bg, expected_string) test_Log_ANSIColor_case(req_context, fg, bg, expected_string);
@@ -241,15 +250,23 @@ LVD_TEST_BEGIN(300__Log__80__ANSIColorCode)
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_BLUE, lvd::ANSIColor::DARK_RED, "\033[34;41m");
 LVD_TEST_END
 
-#if 0
-// Can't seem to get this to compile
-void test_Log_ANSIColorGuard_case (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string) {
-    std::ostringstream out;
-    lvd::Log log(out);
-    log << lvd::ANSIColorGuard<lvd::Log>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO";
-    auto s = out.str();
-    req_context.log() << lvd::Log::dbg() << s << '\n';
-    LVD_TEST_REQ_EQ(s, expected_string+"A MAD HIPPO IS A GLAD HIPPO\033[0m");
+void test_Log_ANSIColorGuard_case (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string_) {
+    auto expected_string = expected_string_ + "A MAD HIPPO IS A GLAD HIPPO\033[0m";
+
+    // Try two ways -- one using Log directly, the other using LVD_LOG_FMT, which is a fancy macro.
+    {
+        std::ostringstream out;
+        lvd::Log log(out);
+        log << lvd::ANSIColorGuard<lvd::Log>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO";
+        auto s = out.str();
+        req_context.log() << lvd::Log::dbg() << s << '\n';
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
+    {
+        auto s = LVD_LOG_FMT(lvd::ANSIColorGuard<lvd::Log>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO");
+        req_context.log() << lvd::Log::dbg() << s << '\n';
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
 }
 
 #define TEST_LOG_ANSI_COLOR_CASE(fg, bg, expected_string) test_Log_ANSIColor_case(req_context, fg, bg, expected_string);
@@ -300,4 +317,3 @@ LVD_TEST_BEGIN(300__Log__90__ANSIColorGuard)
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_RED, lvd::ANSIColor::DARK_BLUE, "\033[31;44m");
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_BLUE, lvd::ANSIColor::DARK_RED, "\033[34;41m");
 LVD_TEST_END
-#endif

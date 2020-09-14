@@ -12,10 +12,21 @@ LVD_TEST_BEGIN(250__ANSIColor__00)
     LVD_TEST_REQ_EQ(out.str(), "\033[0mblah");
 LVD_TEST_END
 
-void test_ANSIColorCode (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string) {
-    auto s = LVD_FMT(lvd::ANSIColorCode(fg, bg));
-    req_context.log() << lvd::Log::dbg() << s << "A MAD HIPPO IS A GLAD HIPPO\033[0m\n";
-    LVD_TEST_REQ_EQ(s, expected_string);
+void test_ANSIColorCode (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string_) {
+    auto expected_string = expected_string_ + "A MAD HIPPO IS A GLAD HIPPO\033[0m";
+
+    // Try two ways -- one using std::ostringstream directly, the other using LVD_FMT, which is a fancy macro.
+    {
+        std::ostringstream out;
+        out << lvd::ANSIColorCode(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO" << lvd::ANSIColorCode(lvd::ANSIColor::RESET_TO_NORMAL);
+        auto s = out.str();
+        req_context.log() << lvd::Log::dbg() << s << '\n';
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
+    {
+        auto s = LVD_FMT(lvd::ANSIColorCode(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO" << lvd::ANSIColorCode(lvd::ANSIColor::RESET_TO_NORMAL));
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
 }
 
 #define TEST_ANSI_COLOR_CASE(fg, bg, expected_string) test_ANSIColorCode(req_context, fg, bg, expected_string);
@@ -67,14 +78,24 @@ LVD_TEST_BEGIN(250__ANSIColor__01__ANSIColorCode)
     TEST_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_BLUE, lvd::ANSIColor::DARK_RED, "\033[34;41m");
 LVD_TEST_END
 
-void test_ANSIColorGuard (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string) {
-    std::ostringstream out;
-    out << lvd::ANSIColorGuard<std::ostringstream>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO";
+void test_ANSIColorGuard (lvd::req::Context &req_context, lvd::ANSIColor fg, lvd::ANSIColor bg, std::string const &expected_string_) {
+    auto expected_string = expected_string_ + "A MAD HIPPO IS A GLAD HIPPO\033[0m";
 
-//     auto s = LVD_FMT(lvd::ANSIColorGuard<std::ostream>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO");
-    auto s = out.str();
-    req_context.log() << lvd::Log::dbg() << s << '\n';
-    LVD_TEST_REQ_EQ(s, expected_string+"A MAD HIPPO IS A GLAD HIPPO\033[0m");
+    // Try two ways -- one using std::ostringstream directly, the other using LVD_FMT, which is a fancy macro.
+    {
+        std::ostringstream out;
+        out << lvd::ANSIColorGuard<std::ostringstream>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO";
+        auto s = out.str();
+        req_context.log() << lvd::Log::dbg() << s << '\n';
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
+#if 0
+    // NOTE: This one doesn't work because ANSIColorGuard isn't destructed before the std::ostringstream (probably).
+    {
+        auto s = LVD_FMT(lvd::ANSIColorGuard<std::ostream>(fg, bg) << "A MAD HIPPO IS A GLAD HIPPO");
+        LVD_TEST_REQ_EQ(s, expected_string);
+    }
+#endif
 }
 
 #define TEST_ANSI_COLOR_GUARD(fg, bg, expected_string) test_ANSIColorGuard(req_context, fg, bg, expected_string);

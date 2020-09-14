@@ -293,6 +293,12 @@ struct Log
         m_out << c;
         return *this;
     }
+    Log &operator << (ANSIColorGuard<Log> const &g)
+    {
+        g.m_out = this;
+        m_out << g.m_ansi_color_code;
+        return *this;
+    }
     // Take anything that goes into std::ostream.  The std::enable_if is needed in order for
     // this template to not take precedence over the above overloads of operator<<.
     // The use of std::remove_cv_t and std::remove_reference_t is so that references (e.g.
