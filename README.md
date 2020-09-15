@@ -92,6 +92,8 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Is there a way to print the values of all parameters of the current function?  This would be a nice
+    way to make something a little more verbose than LVD_CALL_SITE() for caveman debugging purposes.
 -   Ideally, Log would implement std::ostream, and then all this business about HasCustomLogOutputOverload
     would go away.
 -   Ensure the following about Log
