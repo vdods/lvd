@@ -173,7 +173,6 @@ template <> struct HasCustomLogOutputOverload<PushPrefix> : std::true_type { };
 template <> struct HasCustomLogOutputOverload<PopPrefix> : std::true_type { };
 template <> struct HasCustomLogOutputOverload<PrefixGuard> : std::true_type { };
 template <> struct HasCustomLogOutputOverload<IndentGuard> : std::true_type { };
-template <> struct HasCustomLogOutputOverload<ANSIColorCode> : std::true_type { };
 template <> struct HasCustomLogOutputOverload<ANSIColorGuard<Log>> : std::true_type { };
 
 // This is a refactor of IndentedFormatter designed to have a simpler and more powerful implementation.
@@ -286,17 +285,6 @@ struct Log
     {
         indent(g.m_indent.m_count);
         g.m_log = this;
-        return *this;
-    }
-    Log &operator << (ANSIColorCode c)
-    {
-        m_out << c;
-        return *this;
-    }
-    Log &operator << (ANSIColorGuard<Log> const &g)
-    {
-        g.m_out = this;
-        m_out << g.m_ansi_color_code;
         return *this;
     }
     // Take anything that goes into std::ostream.  The std::enable_if is needed in order for

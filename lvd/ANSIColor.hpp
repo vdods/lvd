@@ -108,7 +108,7 @@ struct ANSIColorGuard
 };
 
 template <typename T_>
-std::ostream &operator << (T_ &out, ANSIColorGuard<T_> const &g)
+auto &operator << (T_ &out, ANSIColorGuard<T_> const &g)
 {
     g.m_out = &out;
     return out << g.m_ansi_color_code;

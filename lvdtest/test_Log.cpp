@@ -271,7 +271,7 @@ void test_Log_ANSIColorGuard_case (lvd::req::Context &req_context, lvd::ANSIColo
 
 #define TEST_LOG_ANSI_COLOR_CASE(fg, bg, expected_string) test_Log_ANSIColor_case(req_context, fg, bg, expected_string);
 
-LVD_TEST_BEGIN(300__Log__90__ANSIColorGuard)
+LVD_TEST_BEGIN(300__Log__90__ANSIColorGuard__00)
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::RESET_TO_NORMAL, lvd::ANSIColor::NONE, "\033[0m");
 
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_BLACK, lvd::ANSIColor::NONE, "\033[30m");
@@ -316,4 +316,16 @@ LVD_TEST_BEGIN(300__Log__90__ANSIColorGuard)
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::BRIGHT_WHITE, lvd::ANSIColor::BRIGHT_CYAN, "\033[97;106m");
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_RED, lvd::ANSIColor::DARK_BLUE, "\033[31;44m");
     TEST_LOG_ANSI_COLOR_CASE(lvd::ANSIColor::DARK_BLUE, lvd::ANSIColor::DARK_RED, "\033[34;41m");
+LVD_TEST_END
+
+LVD_TEST_BEGIN(300__Log__90__ANSIColorGuard__01)
+    std::ostringstream out;
+    lvd::Log log(out);
+
+    log << lvd::Log::dbg() << "my favorite phrase is:\n" << lvd::IndentGuard() << lvd::ANSIColorGuard<lvd::Log>(lvd::ANSIColor::BRIGHT_WHITE, lvd::ANSIColor::DARK_BLUE) << "HIPPO";
+    log << '\n'; // NOTE: For now, this has to be printed after the ANSIColorGuard is destroyed.
+
+    test_log << out.str();
+
+    LVD_TEST_REQ_EQ(out.str(), "\033[36mDBG:\033[0m my favorite phrase is:\n\033[36mDBG:\033[0m     \033[97;44mHIPPO\033[0m\n");
 LVD_TEST_END
