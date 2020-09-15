@@ -8,6 +8,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.5.0`|Added `FiLocAndFuncName` and `LVD_CALL_SITE` macro for better use in debug messages, fixed a bug having to do with `ANSIColorGuard` and `Log`.|
 |`v0.4.0`|Moved some functions from `lvd/util.hpp` to `lvd/literal.hpp`, fixed a bug in `lvd/ANSIColor.hpp`, added some more tests, cleaned up some macros that didn't belong.|
 |`v0.3.1`|Renamed lvd::req::Context::out and lvd::test::Context::out to lvd::req::Context::log and lvd::test::Context::log respectively.|
 |`v0.3.0`|Added `flush` method to `Log`, changed `g_log` to use `std::cerr` instead of `std::cout`, refactored `req` and `test` to use `Log`, renamed `lvd/core.hpp` to `lvd/fmt.hpp`, fixed a bug having to do with implicit conversion.|
