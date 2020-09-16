@@ -131,14 +131,20 @@ void Group::run (Context &context) const {
 
     // If this is the root Group, print a summary.
     if (!has_parent()) {
+        auto subordinate_test_success_count = subordinate_test_count - subordinate_test_failure_count;
         if (subordinate_test_failure_count > 0) {
-            context.log() << Log::err() << "\nSummary: " << subordinate_test_failure_count << " out of " << subordinate_test_count << " tests failed:\n";
-            IndentGuard ig(context.log());
+            context.log() << Log::crt() << "Summary: " << subordinate_test_count << " test were run.\n";
+
+            IndentGuard ig0(context.log());
+            context.log() << Log::crt() << subordinate_test_success_count << " tests passed.\n"
+                                        << subordinate_test_failure_count << " tests failed (listed below):\n";
+
+            IndentGuard ig1(context.log());
             for (auto const &failure_path : context.failure_paths()) {
-                context.log() << Log::err() << failure_path << '\n';
+                context.log() << Log::crt() << failure_path << '\n';
             }
         } else {
-            context.log() << Log::inf() << "\nSummary: all " << subordinate_test_count << " tests passed.\n";
+            context.log() << Log::inf() << "Summary: All " << subordinate_test_count << " tests passed.\n";
         }
     }
 }
