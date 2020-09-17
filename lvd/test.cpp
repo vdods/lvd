@@ -133,18 +133,18 @@ void Group::run (Context &context) const {
     if (!has_parent()) {
         auto subordinate_test_success_count = subordinate_test_count - subordinate_test_failure_count;
         if (subordinate_test_failure_count > 0) {
-            context.log() << Log::crt() << "Summary: " << subordinate_test_count << " test were run.\n";
+            context.log() << Log::crt() << "Summary: " << subordinate_test_count << " test(s) were run.\n";
 
             IndentGuard ig0(context.log());
-            context.log() << Log::crt() << subordinate_test_success_count << " tests passed.\n"
-                                        << subordinate_test_failure_count << " tests failed (listed below):\n";
+            context.log() << Log::crt() << subordinate_test_success_count << " test(s) passed.\n"
+                                        << subordinate_test_failure_count << " test(s) failed (listed below):\n";
 
             IndentGuard ig1(context.log());
             for (auto const &failure_path : context.failure_paths()) {
                 context.log() << Log::crt() << failure_path << '\n';
             }
         } else {
-            context.log() << Log::inf() << "Summary: All " << subordinate_test_count << " tests passed.\n";
+            context.log() << Log::inf() << "Summary: All " << subordinate_test_count << " test(s) passed.\n";
         }
     }
 }
