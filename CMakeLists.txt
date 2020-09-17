@@ -9,6 +9,7 @@ project(lvd)
 set(lvd_VERSION 0.5.1-DEV)
 
 option(LVD_BUILD_TESTS "Enable compilation of lvd test binary" ON)
+option(BUILD_SHARED_LIBS "Build shared libraries (instead of static libraries)" ON)
 
 # Set and require the C++17 standard
 set(CMAKE_CXX_STANDARD 17)
