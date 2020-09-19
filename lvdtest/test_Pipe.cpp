@@ -15,8 +15,8 @@ LVD_TEST_BEGIN(310__Pipe)
     char result_buffer[12];
     auto read_byte_count = ::read(p.descriptor(lvd::Pipe::End::READ), result_buffer, 12);
 
-    LVD_TEST_REQ_EQ(errno, 0);
-    LVD_TEST_REQ_EQ(read_byte_count, 12);
+    LVD_TEST_REQ_EQ(errno, 0, "call to ::read failed");
+    LVD_TEST_REQ_EQ(read_byte_count, 12, "expected to read 12 bytes");
     LVD_TEST_REQ_EQ(input_buffer[11], '\0');
     LVD_TEST_REQ_EQ(result_buffer[11], '\0');
     LVD_TEST_REQ_EQ(std::string(input_buffer), std::string(result_buffer));

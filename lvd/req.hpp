@@ -66,25 +66,26 @@ private:
 
 //
 // Use these macros to get nice, descriptive output.
+// NOTE: ## a g++ extension, but maybe it works for other compilers.
 //
 
-#define LVD_REQ_CONDITION_1PARAM(context, cond, param) lvd::req::verify_condition_1param(context, cond, #cond, param, #param, __FILE__, __LINE__, __func__)
-#define LVD_REQ_CONDITION_2PARAM(context, cond, param0, param1) lvd::req::verify_condition_2param(context, cond, #cond, param0, #param0, param1, #param1, __FILE__, __LINE__, __func__)
-#define LVD_REQ_CONDITION_3PARAM(context, cond, param0, param1, param2) lvd::req::verify_condition_3param(context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, __FILE__, __LINE__, __func__)
-#define LVD_REQ_CONDITION_4PARAM(context, cond, param0, param1, param2, param3) lvd::req::verify_condition_4param(context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, param3, #param3, __FILE__, __LINE__, __func__)
+#define LVD_REQ_CONDITION_1PARAM(context, cond, param, ...) lvd::req::verify_condition_1param(context, cond, #cond, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_CONDITION_2PARAM(context, cond, param0, param1, ...) lvd::req::verify_condition_2param(context, cond, #cond, param0, #param0, param1, #param1, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_CONDITION_3PARAM(context, cond, param0, param1, param2, ...) lvd::req::verify_condition_3param(context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_CONDITION_4PARAM(context, cond, param0, param1, param2, param3, ...) lvd::req::verify_condition_4param(context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, param3, #param3, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
-#define LVD_REQ_IS_TRUE(context, param) lvd::req::is_true(context, param, #param, __FILE__, __LINE__, __func__)
-#define LVD_REQ_IS_FALSE(context, param) lvd::req::is_false(context, param, #param, __FILE__, __LINE__, __func__)
+#define LVD_REQ_IS_TRUE(context, param, ...) lvd::req::is_true(context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_IS_FALSE(context, param, ...) lvd::req::is_false(context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
-#define LVD_REQ_EQ_NULLPTR(context, param) lvd::req::eq_nullptr(context, param, #param, __FILE__, __LINE__, __func__)
-#define LVD_REQ_NEQ_NULLPTR(context, param) lvd::req::neq_nullptr(context, param, #param, __FILE__, __LINE__, __func__)
+#define LVD_REQ_EQ_NULLPTR(context, param, ...) lvd::req::eq_nullptr(context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_NEQ_NULLPTR(context, param, ...) lvd::req::neq_nullptr(context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
-#define LVD_REQ_EQ(context, lhs, rhs) lvd::req::eq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_NEQ(context, lhs, rhs) lvd::req::neq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_LT(context, lhs, rhs) lvd::req::lt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_LEQ(context, lhs, rhs) lvd::req::leq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_GT(context, lhs, rhs) lvd::req::gt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
-#define LVD_REQ_GEQ(context, lhs, rhs) lvd::req::geq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__)
+#define LVD_REQ_EQ(context, lhs, rhs, ...) lvd::req::eq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_NEQ(context, lhs, rhs, ...) lvd::req::neq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_LT(context, lhs, rhs, ...) lvd::req::lt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_LEQ(context, lhs, rhs, ...) lvd::req::leq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_GT(context, lhs, rhs, ...) lvd::req::gt(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_REQ_GEQ(context, lhs, rhs, ...) lvd::req::geq(context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
 template <typename Param_>
 inline void verify_condition_1param (
@@ -95,7 +96,8 @@ inline void verify_condition_1param (
     std::string const &param_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
     if (!condition) {
         // Use a separate stream object because we're going to set the format flags on it and don't want
@@ -105,7 +107,9 @@ inline void verify_condition_1param (
         str_out << std::setprecision(17); // Enough to fully distinguish double values.
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
-            << "    expression `" << param_description << "` had value " << literal_of(param) << " (at address " << &param << ")";
+            << "    expression `" << param_description << "` had value " << literal_of(param) << " (at address " << &param << ")\n";
+        if (!explanation.empty())
+            str_out << "    explanation: " << explanation;
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -126,7 +130,8 @@ inline void verify_condition_2param (
     std::string const &param1_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
     if (!condition) {
         // Use a separate stream object because we're going to set the format flags on it and don't want
@@ -137,7 +142,9 @@ inline void verify_condition_2param (
         str_out << file << ':' << line << ": error: in function \"" << func << "\":\n"
             << "    failed condition: " << condition_description << '\n'
             << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
-            << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")";
+            << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")\n";
+        if (!explanation.empty())
+            str_out << "    explanation: " << explanation;
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -160,7 +167,8 @@ inline void verify_condition_3param (
     std::string const &param2_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
     if (!condition) {
         // Use a separate stream object because we're going to set the format flags on it and don't want
@@ -172,7 +180,9 @@ inline void verify_condition_3param (
             << "    failed condition: " << condition_description << '\n'
             << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
             << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")\n"
-            << "    expression `" << param2_description << "` had value " << literal_of(param2) << " (at address " << &param2 << ")";
+            << "    expression `" << param2_description << "` had value " << literal_of(param2) << " (at address " << &param2 << ")\n";
+        if (!explanation.empty())
+            str_out << "    explanation: " << explanation;
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -197,7 +207,8 @@ inline void verify_condition_4param (
     std::string const &param3_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
     if (!condition) {
         // Use a separate stream object because we're going to set the format flags on it and don't want
@@ -210,7 +221,9 @@ inline void verify_condition_4param (
             << "    expression `" << param0_description << "` had value " << literal_of(param0) << " (at address " << &param0 << ")\n"
             << "    expression `" << param1_description << "` had value " << literal_of(param1) << " (at address " << &param1 << ")\n"
             << "    expression `" << param2_description << "` had value " << literal_of(param2) << " (at address " << &param2 << ")\n"
-            << "    expression `" << param3_description << "` had value " << literal_of(param3) << " (at address " << &param3 << ")";
+            << "    expression `" << param3_description << "` had value " << literal_of(param3) << " (at address " << &param3 << ")\n";
+        if (!explanation.empty())
+            str_out << "    explanation: " << explanation;
         if (context.failure_behavior() == FailureBehavior::ABORT) {
             context.log() << Log::crt() << IndentGuard() << str_out.str() << '\n';
             context.log().flush();
@@ -227,9 +240,10 @@ inline void is_true (
     std::string const &param_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_1param(context, bool(param), LVD_FMT("bool(" << param_description << ") == true"), param, param_description, file, line, func);
+    verify_condition_1param(context, bool(param), LVD_FMT("bool(" << param_description << ") == true"), param, param_description, file, line, func, explanation);
 }
 
 template <typename Param_>
@@ -239,9 +253,10 @@ inline void is_false (
     std::string const &param_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_1param(context, !bool(param), LVD_FMT("bool(" << param_description << ") == false"), param, param_description, file, line, func);
+    verify_condition_1param(context, !bool(param), LVD_FMT("bool(" << param_description << ") == false"), param, param_description, file, line, func, explanation);
 }
 
 template <typename Param_>
@@ -251,9 +266,10 @@ inline void eq_nullptr (
     std::string const &param_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_1param(context, param == nullptr, LVD_FMT(param_description << " == nullptr"), param, param_description, file, line, func);
+    verify_condition_1param(context, param == nullptr, LVD_FMT(param_description << " == nullptr"), param, param_description, file, line, func, explanation);
 }
 
 template <typename Param_>
@@ -263,9 +279,10 @@ inline void neq_nullptr (
     std::string const &param_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_1param(context, param != nullptr, LVD_FMT(param_description << " != nullptr"), param, param_description, file, line, func);
+    verify_condition_1param(context, param != nullptr, LVD_FMT(param_description << " != nullptr"), param, param_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -277,9 +294,10 @@ inline void eq (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs == rhs, LVD_FMT(lhs_description << " == " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs == rhs, LVD_FMT(lhs_description << " == " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -291,9 +309,10 @@ inline void neq (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs != rhs, LVD_FMT(lhs_description << " != " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs != rhs, LVD_FMT(lhs_description << " != " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -305,9 +324,10 @@ inline void lt (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs < rhs, LVD_FMT(lhs_description << " < " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs < rhs, LVD_FMT(lhs_description << " < " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -319,9 +339,10 @@ inline void leq (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs <= rhs, LVD_FMT(lhs_description << " <= " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs <= rhs, LVD_FMT(lhs_description << " <= " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -333,9 +354,10 @@ inline void gt (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs > rhs, LVD_FMT(lhs_description << " > " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs > rhs, LVD_FMT(lhs_description << " > " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 template <typename Lhs_, typename Rhs_>
@@ -347,9 +369,10 @@ inline void geq (
     std::string const &rhs_description,
     std::string const &file,
     int line,
-    std::string const &func
+    std::string const &func,
+    std::string const &explanation = std::string()
 ) {
-    verify_condition_2param(context, lhs >= rhs, LVD_FMT(lhs_description << " >= " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func);
+    verify_condition_2param(context, lhs >= rhs, LVD_FMT(lhs_description << " >= " << rhs_description), lhs, lhs_description, rhs, rhs_description, file, line, func, explanation);
 }
 
 } // end namespace req
