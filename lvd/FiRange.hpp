@@ -69,12 +69,10 @@ struct FiRange
     }
     FiPos const &start () const
     {
-        assert(this != &INVALID && "can't use FiRange::INVALID in this manner");
         return m_start;
     }
     FiPos const &end () const
     {
-        assert(this != &INVALID && "can't use FiRange::INVALID in this manner");
         return m_end;
     }
     std::string as_string () const;
@@ -85,9 +83,12 @@ struct FiRange
 //     bool is_convertable_to_filoc () const { return m_start.line() == m_end.line() && m_start.column() == 1 && m_end.column() == 1; }
 //     FiLoc as_filoc () const { return FiLoc(m_filename, m_start.line()); }
 
+    // Returns a zero-character FiRange at the start of this FiRange if valid, otherwise FiRange::INVALID.
     // TODO: Should really use FiPos for this purpose.
-    FiRange start_as_firange () const { return FiRange(m_filename, m_start); }
-    FiRange end_as_firange () const { return FiRange(m_filename, m_end); }
+    FiRange start_as_firange () const { return is_valid() ? FiRange(m_filename, m_start) : FiRange::INVALID; }
+    // Returns a zero-character FiRange at the end of this FiRange if valid, otherwise FiRange::INVALID.
+    // TODO: Should really use FiPos for this purpose.
+    FiRange end_as_firange () const { return is_valid() ? FiRange(m_filename, m_end) : FiRange::INVALID; }
 
     /// This adds the given value to the column of the end.
     FiRange operator + (std::uint32_t increment_column_by_value) const;
