@@ -94,6 +94,29 @@ files that were listed in the log.
 
 ## To-dos
 
+-   BUG: In this one, the newline isn't printed:
+
+        test_log << Log::dbg() << "got token from Scanner: " << ANSIColorGuard<Log>(ANSIColor::BRIGHT_WHITE, ANSIColor::DARK_BLUE) << Render(token.m_data);
+        // NOTE: For some reason, printing the newline before ANSIColorGuard resets the color
+        // causes the unprinted-upon section of the next line to appear in the guarded background color.
+        test_log << '\n';
+        test_log << Log::dbg() << IndentGuard() << token << '\n';
+
+    but in this one, it is:
+
+        test_log << Log::dbg() << "got token from Scanner: " << ANSIColorGuard<Log>(ANSIColor::BRIGHT_WHITE, ANSIColor::DARK_BLUE) << Render(token.m_data);
+        // NOTE: For some reason, printing the newline before ANSIColorGuard resets the color
+        // causes the unprinted-upon section of the next line to appear in the guarded background color.
+        test_log << Log::dbg() << '\n';
+        test_log << Log::dbg() << IndentGuard() << token << '\n';
+
+    NOTE TO SELF: The reason is because the log level is not equal to DBG in the first example, and for some
+    reason, that prevents the newline from being printed.
+
+-   Probably have `req` checks pass in a `std::function` that produces the explanation instead of a direct
+    string, otherwise that string is getting made regardless of if the condition fails.  Generally, make the
+    `req` checks as fast as possible.
+-   Make a `g_req_context` which the app can control, i.e. to set the output `Log` and the `FailureBehavior`.
 -   Is there a way to print the values of all parameters of the current function?  This would be a nice
     way to make something a little more verbose than LVD_CALL_SITE() for caveman debugging purposes.
 -   Ideally, Log would implement std::ostream, and then all this business about HasCustomLogOutputOverload

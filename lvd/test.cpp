@@ -110,8 +110,8 @@ void Group::run (Context &context) const {
 
     context.log() << Log::inf() << "Running tests at " << *this;
     if (!context.filter().empty())
-        context.log() << " with filter \"" << context.filter() << '"';
-    context.log() << " ...\n";
+        context.log() << Log::inf() << " with filter \"" << context.filter() << '"';
+    context.log() << Log::inf() << " ...\n";
     for (auto const &[name, node] : m_nodes) {
         assert(!name.empty());
         if (node->passes_filter(context.filter()))
