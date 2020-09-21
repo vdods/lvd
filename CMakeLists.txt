@@ -8,7 +8,7 @@ project(lvd)
 # the deb packages produced while developing are distinguished from the actual tagged release.
 set(lvd_VERSION 0.6.1-DEV)
 
-option(LVD_BUILD_TESTS "Enable compilation of lvd test binary" ON)
+option(BUILD_lvdtest "Build lvdtest binary" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries (instead of static libraries)" ON)
 
 # Set and require the C++17 standard
@@ -98,21 +98,24 @@ target_link_libraries(lvd PUBLIC Strict)
 # lvdtest
 #
 
-set(lvdtest_SOURCES
-    lvdtest/main.cpp
-    lvdtest/test_abort.cpp
-    lvdtest/test_ANSIColor.cpp
-    lvdtest/test_Log.cpp
-    lvdtest/test_move_cast.cpp
-    lvdtest/test_not_null.cpp
-    lvdtest/test_NullOstream.cpp
-    lvdtest/test_OstreamDelegate.cpp
-    lvdtest/test_Pipe.cpp
-    lvdtest/test_util.cpp
-)
-add_executable(lvdtest ${lvdtest_SOURCES})
-target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
-target_link_libraries(lvdtest PUBLIC Strict lvd)
+if(BUILD_lvdtest)
+    set(lvdtest_SOURCES
+        lvdtest/main.cpp
+        lvdtest/test_abort.cpp
+        lvdtest/test_ANSIColor.cpp
+        lvdtest/test_Log.cpp
+        lvdtest/test_move_cast.cpp
+        lvdtest/test_not_null.cpp
+        lvdtest/test_NullOstream.cpp
+        lvdtest/test_OstreamDelegate.cpp
+        lvdtest/test_Pipe.cpp
+        lvdtest/test_Range_t.cpp
+        lvdtest/test_util.cpp
+    )
+    add_executable(lvdtest ${lvdtest_SOURCES})
+    target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
+    target_link_libraries(lvdtest PUBLIC Strict lvd)
+endif()
 
 ###############################################################################
 # Install rules
