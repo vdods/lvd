@@ -66,7 +66,7 @@ private:
 
 //
 // Use these macros to get nice, descriptive output.
-// NOTE: ## a g++ extension, but maybe it works for other compilers.
+// NOTE: `,##__VA_ARGS__` is a g++ extension, but maybe it works for other compilers.
 //
 
 #define LVD_REQ_CONDITION_1PARAM(context, cond, param, ...) lvd::req::verify_condition_1param(context, cond, #cond, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
