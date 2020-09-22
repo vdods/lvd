@@ -224,23 +224,23 @@ public:
 // NOTE: ## a g++ extension, but maybe it works for other compilers.
 //
 
-#define LVD_TEST_REQ_CONDITION_1PARAM(cond, param, ...) lvd::req::verify_condition_1param(req_context, cond, #cond, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_CONDITION_2PARAM(cond, param0, param1, ...) lvd::req::verify_condition_2param(req_context, cond, #cond, param0, #param0, param1, #param1, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_CONDITION_3PARAM(cond, param0, param1, param2, ...) lvd::req::verify_condition_3param(req_context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_CONDITION_4PARAM(cond, param0, param1, param2, param3, ...) lvd::req::verify_condition_4param(req_context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, param3, #param3, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_TEST_REQ_CONDITION_1PARAM(cond, param, ...) lvd::req::verify_condition_1param(req_context, cond, #cond, param, #param, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_CONDITION_2PARAM(cond, param0, param1, ...) lvd::req::verify_condition_2param(req_context, cond, #cond, param0, #param0, param1, #param1, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_CONDITION_3PARAM(cond, param0, param1, param2, ...) lvd::req::verify_condition_3param(req_context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_CONDITION_4PARAM(cond, param0, param1, param2, param3, ...) lvd::req::verify_condition_4param(req_context, cond, #cond, param0, #param0, param1, #param1, param2, #param2, param3, #param3, LVD_CALL_SITE(), ##__VA_ARGS__)
 
-#define LVD_TEST_REQ_IS_TRUE(param, ...) lvd::req::is_true(req_context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_IS_FALSE(param, ...) lvd::req::is_false(req_context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_TEST_REQ_IS_TRUE(param, ...) lvd::req::is_true(req_context, param, #param, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_IS_FALSE(param, ...) lvd::req::is_false(req_context, param, #param, LVD_CALL_SITE(), ##__VA_ARGS__)
 
-#define LVD_TEST_REQ_EQ_NULLPTR(param, ...) lvd::req::eq_nullptr(req_context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_NEQ_NULLPTR(param, ...) lvd::req::neq_nullptr(req_context, param, #param, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_TEST_REQ_EQ_NULLPTR(param, ...) lvd::req::eq_nullptr(req_context, param, #param, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_NEQ_NULLPTR(param, ...) lvd::req::neq_nullptr(req_context, param, #param, LVD_CALL_SITE(), ##__VA_ARGS__)
 
-#define LVD_TEST_REQ_EQ(lhs, rhs, ...) lvd::req::eq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_NEQ(lhs, rhs, ...) lvd::req::neq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_LT(lhs, rhs, ...) lvd::req::lt(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_LEQ(lhs, rhs, ...) lvd::req::leq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_GT(lhs, rhs, ...) lvd::req::gt(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define LVD_TEST_REQ_GEQ(lhs, rhs, ...) lvd::req::geq(req_context, lhs, rhs, #lhs, #rhs, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define LVD_TEST_REQ_EQ(lhs, rhs, ...) lvd::req::eq(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_NEQ(lhs, rhs, ...) lvd::req::neq(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_LT(lhs, rhs, ...) lvd::req::lt(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_LEQ(lhs, rhs, ...) lvd::req::leq(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_GT(lhs, rhs, ...) lvd::req::gt(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
+#define LVD_TEST_REQ_GEQ(lhs, rhs, ...) lvd::req::geq(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
 
 // For verifying that a piece of code throws a particular exception type.
 template <typename ExceptionType_>
