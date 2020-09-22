@@ -45,54 +45,56 @@ endif()
 # Libraries
 ###############################################################################
 
-set(lvd_HEADERS
-    lvd/abort.hpp
-    lvd/aliases.hpp
-    lvd/ANSIColor.hpp
-    lvd/FiLoc.hpp
-    lvd/FiPos.hpp
-    lvd/FiRange.hpp
-    lvd/fmt.hpp
-    lvd/g_log.hpp
-    lvd/literal.hpp
-    lvd/Log.hpp
-    lvd/move_cast.hpp
-    lvd/not_null.hpp
-    lvd/NullOstream.hpp
-    lvd/OstreamDelegate.hpp
-    lvd/Pipe.hpp
-    lvd/Range_t.hpp
-    lvd/req.hpp
-    lvd/ScopeGuard.hpp
-    lvd/static_if.hpp
-    lvd/test.hpp
-    lvd/util.hpp
+set(liblvd_HEADERS
+    lib/lvd/abort.hpp
+    lib/lvd/aliases.hpp
+    lib/lvd/ANSIColor.hpp
+    lib/lvd/FiLoc.hpp
+    lib/lvd/FiPos.hpp
+    lib/lvd/FiRange.hpp
+    lib/lvd/fmt.hpp
+    lib/lvd/g_log.hpp
+    lib/lvd/literal.hpp
+    lib/lvd/Log.hpp
+    lib/lvd/move_cast.hpp
+    lib/lvd/not_null.hpp
+    lib/lvd/NullOstream.hpp
+    lib/lvd/OstreamDelegate.hpp
+    lib/lvd/Pipe.hpp
+    lib/lvd/Range_t.hpp
+    lib/lvd/req.hpp
+    lib/lvd/ScopeGuard.hpp
+    lib/lvd/static_if.hpp
+    lib/lvd/test.hpp
+    lib/lvd/util.hpp
 )
 
-set(lvd_SOURCES
-    lvd/ANSIColor.cpp
-    lvd/FiLoc.cpp
-    lvd/FiPos.cpp
-    lvd/FiRange.cpp
-    lvd/g_log.cpp
-    lvd/literal.cpp
-    lvd/NullOstream.cpp
-    lvd/OstreamDelegate.cpp
-    lvd/test.cpp
-    lvd/util.cpp
+set(liblvd_SOURCES
+    lib/lvd/ANSIColor.cpp
+    lib/lvd/FiLoc.cpp
+    lib/lvd/FiPos.cpp
+    lib/lvd/FiRange.cpp
+    lib/lvd/g_log.cpp
+    lib/lvd/literal.cpp
+    lib/lvd/NullOstream.cpp
+    lib/lvd/OstreamDelegate.cpp
+    lib/lvd/test.cpp
+    lib/lvd/util.cpp
 )
 
-add_library(lvd ${lvd_HEADERS} ${lvd_SOURCES})
+add_library(liblvd ${liblvd_HEADERS} ${liblvd_SOURCES})
+# This is to prevent cmake from prepending `lib` to `liblvd`.
+set_target_properties(liblvd PROPERTIES PREFIX "")
 
 # Copied from https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#config-file-packages
-set_property(TARGET lvd PROPERTY VERSION ${lvd_VERSION})
-set_property(TARGET lvd PROPERTY SOVERSION 0)
-set_property(TARGET lvd PROPERTY INTERFACE_lvd_MAJOR_VERSION 0)
-set_property(TARGET lvd APPEND PROPERTY COMPATIBLE_INTERFACE_STRING lvd_MAJOR_VERSION)
+set_property(TARGET liblvd PROPERTY VERSION ${lvd_VERSION})
+set_property(TARGET liblvd PROPERTY SOVERSION 0)
+set_property(TARGET liblvd PROPERTY INTERFACE_lvd_MAJOR_VERSION 0)
+set_property(TARGET liblvd APPEND PROPERTY COMPATIBLE_INTERFACE_STRING lvd_MAJOR_VERSION)
 
-target_compile_definitions(lvd PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
-target_include_directories(lvd PUBLIC ${PROJECT_SOURCE_DIR})
-target_link_libraries(lvd PUBLIC Strict)
+target_compile_definitions(liblvd PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
+target_include_directories(liblvd PUBLIC ${PROJECT_SOURCE_DIR}/lib)
+target_link_libraries(liblvd PUBLIC Strict)
 
 ###############################################################################
 # Executables
@@ -104,21 +106,21 @@ target_link_libraries(lvd PUBLIC Strict)
 
 if(BUILD_lvdtest)
     set(lvdtest_SOURCES
-        lvdtest/main.cpp
-        lvdtest/test_abort.cpp
-        lvdtest/test_ANSIColor.cpp
-        lvdtest/test_Log.cpp
-        lvdtest/test_move_cast.cpp
-        lvdtest/test_not_null.cpp
-        lvdtest/test_NullOstream.cpp
-        lvdtest/test_OstreamDelegate.cpp
-        lvdtest/test_Pipe.cpp
-        lvdtest/test_Range_t.cpp
-        lvdtest/test_util.cpp
+        bin/lvdtest/main.cpp
+        bin/lvdtest/test_abort.cpp
+        bin/lvdtest/test_ANSIColor.cpp
+        bin/lvdtest/test_Log.cpp
+        bin/lvdtest/test_move_cast.cpp
+        bin/lvdtest/test_not_null.cpp
+        bin/lvdtest/test_NullOstream.cpp
+        bin/lvdtest/test_OstreamDelegate.cpp
+        bin/lvdtest/test_Pipe.cpp
+        bin/lvdtest/test_Range_t.cpp
+        bin/lvdtest/test_util.cpp
     )
     add_executable(lvdtest ${lvdtest_SOURCES})
     target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
-    target_link_libraries(lvdtest PUBLIC Strict lvd)
+    target_link_libraries(lvdtest PUBLIC Strict liblvd)
 endif()
 
 ###############################################################################
@@ -126,11 +128,11 @@ endif()
 ###############################################################################
 
 install(
-    TARGETS lvd                                 # Libraries produced by this package
+    TARGETS liblvd                              # Libraries produced by this package
     RUNTIME DESTINATION lib                     # This is relative to CMAKE_INSTALL_PREFIX
 )
 install(
-    FILES ${lvd_HEADERS}
+    FILES ${liblvd_HEADERS}
     DESTINATION include/lvd                     # This is relative to CMAKE_INSTALL_PREFIX
 )
 install(
