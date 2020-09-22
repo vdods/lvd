@@ -49,6 +49,7 @@ set(liblvd_HEADERS
     lib/lvd/abort.hpp
     lib/lvd/aliases.hpp
     lib/lvd/ANSIColor.hpp
+    lib/lvd/call_site.hpp
     lib/lvd/FiLoc.hpp
     lib/lvd/FiPos.hpp
     lib/lvd/FiRange.hpp
