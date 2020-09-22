@@ -45,40 +45,44 @@ endif()
 # Libraries
 ###############################################################################
 
-set(lvd_SOURCES
+set(lvd_HEADERS
+    lvd/abort.hpp
     lvd/aliases.hpp
-    lvd/ANSIColor.cpp
     lvd/ANSIColor.hpp
-    lvd/FiLoc.cpp
     lvd/FiLoc.hpp
-    lvd/FiPos.cpp
     lvd/FiPos.hpp
-    lvd/FiRange.cpp
     lvd/FiRange.hpp
     lvd/fmt.hpp
-    lvd/g_log.cpp
     lvd/g_log.hpp
-    lvd/literal.cpp
     lvd/literal.hpp
     lvd/Log.hpp
     lvd/move_cast.hpp
     lvd/not_null.hpp
-    lvd/NullOstream.cpp
     lvd/NullOstream.hpp
-    lvd/OstreamDelegate.cpp
     lvd/OstreamDelegate.hpp
     lvd/Pipe.hpp
     lvd/Range_t.hpp
     lvd/req.hpp
     lvd/ScopeGuard.hpp
     lvd/static_if.hpp
-    lvd/test.cpp
     lvd/test.hpp
-    lvd/util.cpp
     lvd/util.hpp
 )
 
-add_library(lvd ${lvd_SOURCES})
+set(lvd_SOURCES
+    lvd/ANSIColor.cpp
+    lvd/FiLoc.cpp
+    lvd/FiPos.cpp
+    lvd/FiRange.cpp
+    lvd/g_log.cpp
+    lvd/literal.cpp
+    lvd/NullOstream.cpp
+    lvd/OstreamDelegate.cpp
+    lvd/test.cpp
+    lvd/util.cpp
+)
+
+add_library(lvd ${lvd_HEADERS} ${lvd_SOURCES})
 
 # Copied from https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#config-file-packages
 set_property(TARGET lvd PROPERTY VERSION ${lvd_VERSION})
@@ -126,8 +130,8 @@ install(
     RUNTIME DESTINATION lib                     # This is relative to CMAKE_INSTALL_PREFIX
 )
 install(
-    DIRECTORY lvd                               # This holds all the reflex and trison targets (targetspec and codespec files)
-    DESTINATION include                         # This is relative to CMAKE_INSTALL_PREFIX
+    FILES ${lvd_HEADERS}
+    DESTINATION include/lvd                     # This is relative to CMAKE_INSTALL_PREFIX
 )
 install(
     FILES                                       # Important files
