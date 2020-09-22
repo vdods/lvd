@@ -55,6 +55,7 @@ set(liblvd_HEADERS
     lib/lvd/FiRange.hpp
     lib/lvd/fmt.hpp
     lib/lvd/g_log.hpp
+    lib/lvd/g_req_context.hpp
     lib/lvd/literal.hpp
     lib/lvd/Log.hpp
     lib/lvd/move_cast.hpp
@@ -76,6 +77,7 @@ set(liblvd_SOURCES
     lib/lvd/FiPos.cpp
     lib/lvd/FiRange.cpp
     lib/lvd/g_log.cpp
+    lib/lvd/g_req_context.cpp
     lib/lvd/literal.cpp
     lib/lvd/NullOstream.cpp
     lib/lvd/OstreamDelegate.cpp
@@ -117,6 +119,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_OstreamDelegate.cpp
         bin/lvdtest/test_Pipe.cpp
         bin/lvdtest/test_Range_t.cpp
+        bin/lvdtest/test_req.cpp
         bin/lvdtest/test_util.cpp
     )
     add_executable(lvdtest ${lvdtest_SOURCES})

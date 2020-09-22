@@ -243,8 +243,11 @@ public:
 #define LVD_TEST_REQ_GEQ(lhs, rhs, ...) lvd::req::geq(req_context, lhs, rhs, #lhs, #rhs, LVD_CALL_SITE(), ##__VA_ARGS__)
 
 // For verifying that a piece of code throws a particular exception type.
-template <typename ExceptionType_>
-void call_function_and_expect_exception (std::function<void()> func) {
+// The Args_&&... are for forwarding arguments to the constructor of a std::function<void()>,
+// in particular for when the function to call is a lambda.
+template <typename ExceptionType_, typename... Args_>
+void call_function_and_expect_exception (Args_&&... args) {
+    std::function<void()> func(std::forward<Args_>(args)...);
     try {
         func();
     } catch (ExceptionType_ const &) {
