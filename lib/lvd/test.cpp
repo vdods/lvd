@@ -2,10 +2,93 @@
 
 #include "lvd/test.hpp"
 
+#include "lvd/g_log.hpp"
 #include <regex>
 
 namespace lvd {
 namespace test {
+
+void print_help_message (std::string const &program_title, std::string const &argv_0) {
+    g_log << program_title << "\n\n"
+             "Usage: " << argv_0 << " [args]\n\n"
+             "    Will return 0 upon success, or nonzero if any tests fail.\n\n"
+             "Options:\n";
+    g_log << IndentGuard()
+          << "--log-level=XXX  : If present, sets the log level to X, where X must be one of:\n"
+             "                   CRT, ERR, WRN, INF, DBG, TRC, NIL.  The value is case-insensitive.\n"
+             "                   The default value is WRN.\n"
+             "--print-failed   : If present, enables printing of failed tests, one per line, to stdout.\n"
+             "                   Default behavior is to print nothing to stdout; errors are printed to stderr.\n"
+             "--help           : If present, prints this help message.\n"
+             "<test-filter>    : If present, specifies the filter with which to decide which tests to run.\n";
+}
+
+// If return code is nonzero, the help message will be printed.
+int basic_test_main (std::string const &program_title, int argc_, char **argv_)
+{
+    auto argv = std::vector<std::string>(argv_, argv_+argc_);
+
+    // Default log level, if unspecified, is WRN.
+    g_log.set_log_level_threshold(lvd::LogLevel::WRN);
+    // Default filter is empty.
+    std::string filter;
+    // Indicates if failed tests should be printed to stdout.  Default is false.
+    bool print_failed = false;
+
+    // Parse the arguments
+    size_t i = 0;
+    for (auto const &arg : argv) {
+        if (i == 0) {
+            ++i;
+            continue; // Skip the first arg, since that's the program name.
+        }
+
+        if (arg == "--help") {
+            print_help_message(program_title, argv[0]);
+            return 0;
+        } else if (arg.substr(0, 12) == "--log-level=") {
+            auto val = arg.substr(12);
+
+            // Convert to lowercase.
+            for (auto &c : val)
+                if ('A' <= c && c <= 'Z')
+                    c += 'a' - 'A';
+
+            if (val == "nil")      g_log.set_log_level_threshold(lvd::LogLevel::NIL);
+            else if (val == "trc") g_log.set_log_level_threshold(lvd::LogLevel::TRC);
+            else if (val == "dbg") g_log.set_log_level_threshold(lvd::LogLevel::DBG);
+            else if (val == "inf") g_log.set_log_level_threshold(lvd::LogLevel::INF);
+            else if (val == "wrn") g_log.set_log_level_threshold(lvd::LogLevel::WRN);
+            else if (val == "err") g_log.set_log_level_threshold(lvd::LogLevel::ERR);
+            else if (val == "crt") g_log.set_log_level_threshold(lvd::LogLevel::CRT);
+            else {
+                g_log.set_log_level_threshold(lvd::LogLevel::ERR);
+                g_log << Log::err() << "invalid --log-level value \"" << arg << "\"\n";
+                print_help_message(program_title, argv[0]);
+                return 1;
+            }
+        } else if (arg == "--print-failed") {
+            print_failed = true;
+        } else if (arg.substr(0, 1) == "/") {
+            filter = arg;
+        } else {
+            g_log.set_log_level_threshold(lvd::LogLevel::ERR);
+            g_log << Log::err() << "unrecognized commandline argument \"" << arg << "\"\n";
+            print_help_message(program_title, argv[0]);
+            return 1;
+        }
+
+        ++i;
+    }
+
+    auto test_context = lvd::test::Context(g_log).with_filter(filter);
+    lvd::test::root_test_group_singleton().run(test_context);
+    // If requested, print failure paths to stdout, so that e.g. another program could collect and run them separately.
+    if (print_failed)
+        for (auto const &failure_path : test_context.failure_paths())
+            std::cout << failure_path << '\n';
+    return test_context.failure_paths().size() > 0 ? 1 : 0;
+}
 
 //
 // Node

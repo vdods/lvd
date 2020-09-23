@@ -16,6 +16,9 @@
 namespace lvd {
 namespace test {
 
+// A nice default implementation of the main function for running tests.
+int basic_test_main (std::string const &pretty_program_name, int argc_, char **argv_);
+
 class Function;
 class Group;
 
