@@ -1,4 +1,4 @@
-// 2020.08.25 - Victor Dods
+// 2020.08.25 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/Pipe.hpp"
 #include "lvd/req.hpp"

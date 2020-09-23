@@ -1,4 +1,4 @@
-// 2019.04.26 - Victor Dods
+// 2019.04.26 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/FiRange.hpp"
 

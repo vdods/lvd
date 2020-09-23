@@ -2,6 +2,22 @@
 
 Library of Victor Dods - Miscellaneously useful C++ code.
 
+## Copyright and License
+
+Copyright Victor Dods
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this software except in compliance with the License.  You may obtain a
+copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 ## Release Notes
 
 Versioning system is [semantic versioning](https://semver.org/).
@@ -95,6 +111,9 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Use cmake export targets so dependent projects can include only the sub-portion of `lvd` they use.
+    In particular, make one of the export targets be the header-only portion of the lib, so there's
+    no need to link anything.
 -   BUG: In this one, the newline isn't printed:
 
         test_log << Log::dbg() << "got token from Scanner: " << ANSIColorGuard<Log>(ANSIColor::BRIGHT_WHITE, ANSIColor::DARK_BLUE) << Render(token.m_data);

@@ -1,4 +1,4 @@
-// 2020.09.13 - Victor Dods
+// 2020.09.13 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/ANSIColor.hpp"
 #include "lvd/req.hpp"

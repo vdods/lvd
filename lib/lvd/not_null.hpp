@@ -1,4 +1,4 @@
-// 2019.12.29 - Victor Dods
+// 2019.12.29 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #pragma once
 

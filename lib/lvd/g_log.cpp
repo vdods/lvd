@@ -1,4 +1,4 @@
-// 2020.08.22 - Victor Dods
+// 2020.08.22 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/g_log.hpp"
 

@@ -1,4 +1,4 @@
-// 2020.09.21 - Victor Dods
+// 2020.09.21 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/Range_t.hpp"
 #include "lvd/req.hpp"

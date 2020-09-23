@@ -1,4 +1,4 @@
-// 2006.02.11 - Victor Dods
+// 2006.02.11 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #pragma once
 

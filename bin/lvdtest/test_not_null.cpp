@@ -1,4 +1,4 @@
-// 2020.08.24 - Victor Dods
+// 2020.08.24 - Copyright Victor Dods - Licensed under Apache 2.0
 
 // This causes a violation of not_null to throw gsl::fail_fast.
 // NOTE: The default behavior, if no define is provided, is to terminate.
