@@ -8,6 +8,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.7.0`|Added `lvd::test::basic_test_main` as an easy way to run tests, added `lvd::req::g_req_context` as a convenient default `lvd::req::Context` object with corresponding macros, added `LVD_CALL_SITE()` macro, added ability to pass a container directly into `Range_t` and `range`, improved directory organization and install rules.|
 |`v0.6.0`|Added the ability to provide an explanation for a failed `LVD_REQ_*` or `LVD_TEST_REQ_*`, fixed a bug regarding invalid `FiRange` when calling `start_as_firange` or `end_as_firange`, added an option for building `lvd` as shared or static lib(s), improved test summary formatting.|
 |`v0.5.0`|Added `FiLocAndFuncName` and `LVD_CALL_SITE` macro for better use in debug messages, fixed a bug having to do with `ANSIColorGuard` and `Log`.|
 |`v0.4.0`|Moved some functions from `lvd/util.hpp` to `lvd/literal.hpp`, fixed a bug in `lvd/ANSIColor.hpp`, added some more tests, cleaned up some macros that didn't belong.|
