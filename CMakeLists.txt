@@ -112,6 +112,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/main.cpp
         bin/lvdtest/test_abort.cpp
         bin/lvdtest/test_ANSIColor.cpp
+        bin/lvdtest/test_FiPos.cpp
         bin/lvdtest/test_Log.cpp
         bin/lvdtest/test_move_cast.cpp
         bin/lvdtest/test_not_null.cpp
