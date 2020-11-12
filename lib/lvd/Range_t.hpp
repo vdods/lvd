@@ -16,9 +16,9 @@ public:
     Range_t (Range_t const &) = default;
     Range_t (Range_t &&) = default;
     template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
-    Range_t (Container_ const &container) : m_begin(container.begin()), m_end(container.end()) { }
+    explicit Range_t (Container_ const &container) : m_begin(container.begin()), m_end(container.end()) { }
     template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
-    Range_t (Container_ &container) : m_begin(container.begin()), m_end(container.end()) { }
+    explicit Range_t (Container_ &container) : m_begin(container.begin()), m_end(container.end()) { }
     Range_t (Iterator_ begin, Iterator_ end) : m_begin(begin), m_end(end) { }
 
     Range_t &operator = (Range_t const &) = default;
@@ -30,8 +30,55 @@ public:
     Iterator_ begin () const { return m_begin; }
     Iterator_ end () const { return m_end; }
 
+    // Returned the signed size of this Range_t.  The size will be:
+    // -    positive if begin() < end(),
+    // -    zero if begin() == end(),
+    // -    negative if begin() > end().
     auto size () const { return std::distance(m_begin, m_end); }
+    // Returns true iff size() == 0.
     bool empty () const { return m_begin == m_end; }
+
+    // Returns a 0-sized Range_t located at this->begin().
+    Range_t begin_as_range () const { return Range_t(m_begin, m_begin); }
+    // Returns a 0-sized Range_t located at this->end().
+    Range_t end_as_range () const { return Range_t(m_end, m_end); }
+
+    // Sets this to the smallest Range_t which contains both this and other.  This really
+    // only makes sense when operator< is well-defined for Iterator_.
+    Range_t &union_with (Range_t const &other) {
+        m_begin = std::min(m_begin, other.m_begin);
+        m_end = std::max(m_end, other.m_end);
+        return *this;
+    }
+    // Returns the largest Range_t which is contained by both this and other.  This really
+    // only makes sense when operator< is well-defined for Iterator_.  Note that if the
+    // intersection is empty, then the resulting begin and end values will be equal (and
+    // therefore its size will be 0), but otherwise unspecified.
+    Range_t &intersection_with (Range_t const &other) {
+        Iterator_ b = std::max(m_begin, other.m_begin);
+        Iterator_ e = std::min(m_end, other.m_end);
+        // Ensure this doesn't produce a Range_t with negative orientation (negative size)
+        m_begin = std::min(b, e);
+        m_end = e;
+        return *this;
+    }
+
+    // Returns the smallest Range_t which contains both this and other.  This really
+    // only makes sense when operator< is well-defined for Iterator_.
+    Range_t unioned_with (Range_t const &other) const {
+        Range_t retval(*this);
+        retval.union_with(other);
+        return retval;
+    }
+    // Returns the largest Range_t which is contained by both this and other.  This really
+    // only makes sense when operator< is well-defined for Iterator_.  Note that if the
+    // intersection is empty, then the resulting begin and end values will be equal (and
+    // therefore its size will be 0), but otherwise unspecified.
+    Range_t intersectioned_with (Range_t const &other) const {
+        Range_t retval(*this);
+        retval.intersection_with(other);
+        return retval;
+    }
 
 private:
 
@@ -39,7 +86,7 @@ private:
     Iterator_ m_end;
 };
 
-// Somewhat nontrivial -- lhs.end() can coincide with rhs.start() as long as at least one of them is nonempty.
+// Somewhat nontrivial -- lhs.end() can coincide with rhs.start() as long as at least one of lhs and rhs is nonempty.
 template <typename Iterator_>
 bool operator < (Range_t<Iterator_> const &lhs, Range_t<Iterator_> const &rhs) {
     if (lhs.empty() && rhs.empty())
