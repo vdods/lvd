@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.18)
 project(lvd)
 # NOTE: After cutting a release, you should increment the patch number and append `-DEV` so that
 # the deb packages produced while developing are distinguished from the actual tagged release.
-set(lvd_VERSION 0.9.0)
+set(lvd_VERSION 0.9.1-DEV)
 
 option(BUILD_lvdtest "Build lvdtest binary" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries (instead of static libraries)" ON)
