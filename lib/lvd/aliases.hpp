@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <gsl/gsl>
 #include "lvd/fmt.hpp"
+#include "lvd/not_null.hpp" // Includes <gsl/gsl>
 #include <memory>
 
 namespace lvd {
@@ -14,6 +14,9 @@ namespace lvd {
 
 template <typename T_>
 using nn = gsl::not_null<T_>;
+
+template <typename T_>
+using nnp = gsl::not_null<T_*>;
 
 template <typename T_, typename Deleter_ = std::default_delete<T_>>
 using up = std::unique_ptr<T_,Deleter_>;
