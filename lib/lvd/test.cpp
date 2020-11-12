@@ -3,24 +3,29 @@
 #include "lvd/test.hpp"
 
 #include "lvd/g_log.hpp"
+#include "lvd/g_req_context.hpp"
 #include <regex>
 
 namespace lvd {
 namespace test {
 
 void print_help_message (std::string const &program_title, std::string const &argv_0) {
+    g_log.set_log_level_threshold(LogLevel::NIL);
     g_log << program_title << "\n\n"
              "Usage: " << argv_0 << " [args]\n\n"
              "    Will return 0 upon success, or nonzero if any tests fail.\n\n"
              "Options:\n";
     g_log << IndentGuard()
-          << "--log-level=XXX  : If present, sets the log level to X, where X must be one of:\n"
-             "                   CRT, ERR, WRN, INF, DBG, TRC, NIL.  The value is case-insensitive.\n"
-             "                   The default value is WRN.\n"
-             "--print-failed   : If present, enables printing of failed tests, one per line, to stdout.\n"
-             "                   Default behavior is to print nothing to stdout; errors are printed to stderr.\n"
-             "--help           : If present, prints this help message.\n"
-             "<test-filter>    : If present, specifies the filter with which to decide which tests to run.\n";
+          << "--log-level=<X>        : If present, sets the log level to <X>, where <X> must be one of:\n"
+             "                         CRT, ERR, WRN, INF, DBG, TRC, NIL.  The value is case-insensitive.\n"
+             "                         The default value is WRN.\n"
+             "--print-failed         : If present, enables printing of failed tests, one per line, to stdout.\n"
+             "                         Default behavior is to print nothing to stdout; errors are printed to stderr.\n"
+             "--failure-behavior=<Y> : If present, sets the test failure behavior to <Y>, where <Y> must be one of:\n"
+             "                         abort (halt program at point of failure), or throw (catch test failure and\n"
+             "                         continue running rest of tests).  Default behavior is throw.\n"
+             "--help                 : If present, prints this help message.\n"
+             "<test-filter>          : If present, specifies the filter with which to decide which tests to run.\n";
 }
 
 // If return code is nonzero, the help message will be printed.
@@ -34,6 +39,8 @@ int basic_test_main (std::string const &program_title, int argc_, char **argv_)
     std::string filter;
     // Indicates if failed tests should be printed to stdout.  Default is false.
     bool print_failed = false;
+    // Determines behavior upon test failure.  Default is throw (and continue with remaining tests).
+    auto failure_behavior = req::FailureBehavior::THROW;
 
     // Parse the arguments
     size_t i = 0;
@@ -69,6 +76,22 @@ int basic_test_main (std::string const &program_title, int argc_, char **argv_)
             }
         } else if (arg == "--print-failed") {
             print_failed = true;
+        } else if (arg.substr(0, 19) == "--failure-behavior=") {
+            auto val = arg.substr(19);
+
+            // Convert to lowercase.
+            for (auto &c : val)
+                if ('A' <= c && c <= 'Z')
+                    c += 'a' - 'A';
+
+            if (val == "abort") failure_behavior = req::FailureBehavior::ABORT;
+            else if (val == "throw") failure_behavior = req::FailureBehavior::THROW;
+            else {
+                g_log.set_log_level_threshold(lvd::LogLevel::ERR);
+                g_log << Log::err() << "unrecognized value for --failure-behavior \"" << val << "\"; must be abort or throw.\n";
+                print_help_message(program_title, argv[0]);
+                return 1;
+            }
         } else if (arg.substr(0, 1) == "/") {
             filter = arg;
         } else {
@@ -81,7 +104,13 @@ int basic_test_main (std::string const &program_title, int argc_, char **argv_)
         ++i;
     }
 
-    auto test_context = lvd::test::Context(g_log).with_filter(filter);
+    // Create the test Context and set its properties.
+    auto test_context = lvd::test::Context(g_log)
+        .with_failure_behavior(failure_behavior)
+        .with_filter(filter);
+    // Also set g_req_context FailureBehavior to the specified one.
+    lvd::req::g_req_context.with_failure_behavior(failure_behavior);
+
     lvd::test::root_test_group_singleton().run(test_context);
     // If requested, print failure paths to stdout, so that e.g. another program could collect and run them separately.
     if (print_failed)
