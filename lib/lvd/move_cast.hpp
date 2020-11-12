@@ -9,6 +9,24 @@
 namespace lvd {
 
 //
+// Define a version of static_cast and dynamic_cast for gsl::not_null<T*> (i.e. nnp<T>).
+//
+
+// This doesn't actually move out of p, since p is non-owning.  I.e. it doesn't nullify p.
+template <typename Target_, typename Source_>
+gsl::not_null<Target_*> static_move_cast (gsl::not_null<Source_*> &p) {
+    return gsl::not_null<Target_*>{p};
+}
+
+// This doesn't actually move out of p, since p is non-owning.  I.e. it doesn't nullify p.
+template <typename Target_, typename Source_>
+gsl::not_null<Target_*> dynamic_move_cast (gsl::not_null<Source_*> &p) {
+    // The dynamic_cast is intentionally operating on references so that it will throw if the result is null.
+    // std::unique_ptr::release is declared noexcept.
+    return gsl::not_null<Target_*>(&dynamic_cast<Target_&>(*p));
+}
+
+//
 // Define a version of static_cast and dynamic_cast for std::unique_ptr<T> and gsl::not_null<std::unique_ptr<T>>.
 // It's not obvious how to define this for std::unique_ptr<T,Deleter> etc.
 //

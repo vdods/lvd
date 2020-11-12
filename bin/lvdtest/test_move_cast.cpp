@@ -36,7 +36,30 @@ std::ostream &operator << (std::ostream &out, A const &x) {
     return out << "A{" << x.m << '}';
 }
 
-LVD_TEST_BEGIN(210__move_cast__0__unique_ptr__0__static_move_cast)
+LVD_TEST_BEGIN(210__move_cast__00__not_null_ptr__0__static_move_cast)
+    B b(123);
+    gsl::not_null<B*> p_b = &b;
+    LVD_TEST_REQ_EQ(p_b.get(), &b);
+
+    gsl::not_null<A*> p_a = lvd::static_move_cast<A>(p_b);
+    LVD_TEST_REQ_EQ(p_a.get(), static_cast<A*>(&b));
+    LVD_TEST_REQ_EQ(static_cast<A*>(p_b.get()), p_a.get());
+LVD_TEST_END
+
+LVD_TEST_BEGIN(210__move_cast__00__not_null_ptr__1__dynamic_move_cast)
+    B b(123);
+    gsl::not_null<B*> p_b = &b;
+    LVD_TEST_REQ_EQ(p_b.get(), &b);
+
+    gsl::not_null<A*> p_a = lvd::dynamic_move_cast<A>(p_b);
+    LVD_TEST_REQ_EQ(p_a.get(), dynamic_cast<A*>(&b));
+    LVD_TEST_REQ_EQ(dynamic_cast<A*>(p_b.get()), p_a.get());
+
+    gsl::not_null<B*> p_b2 = lvd::dynamic_move_cast<B>(p_a);
+    LVD_TEST_REQ_EQ(p_b2.get(), p_b.get());
+LVD_TEST_END
+
+LVD_TEST_BEGIN(210__move_cast__10__unique_ptr__0__static_move_cast)
     std::unique_ptr<B> b = std::make_unique<B>(123);
     LVD_TEST_REQ_NEQ_NULLPTR(b);
     LVD_TEST_REQ_EQ(*b, B{123});
@@ -47,7 +70,7 @@ LVD_TEST_BEGIN(210__move_cast__0__unique_ptr__0__static_move_cast)
     LVD_TEST_REQ_EQ_NULLPTR(b);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(210__move_cast__0__unique_ptr__1__dynamic_move_cast)
+LVD_TEST_BEGIN(210__move_cast__10__unique_ptr__1__dynamic_move_cast)
     std::unique_ptr<B> b = std::make_unique<B>(123);
     LVD_TEST_REQ_NEQ_NULLPTR(b);
     LVD_TEST_REQ_EQ(*b, B{123});
@@ -63,7 +86,7 @@ LVD_TEST_BEGIN(210__move_cast__0__unique_ptr__1__dynamic_move_cast)
     LVD_TEST_REQ_EQ_NULLPTR(a);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(210__move_cast__1__not_null_unique_ptr__0__static_move_cast)
+LVD_TEST_BEGIN(210__move_cast__11__not_null_unique_ptr__0__static_move_cast)
     gsl::not_null<std::unique_ptr<B>> b = lvd::make_not_null_unique<B>(123);
     LVD_TEST_REQ_NEQ_NULLPTR(b);
     LVD_TEST_REQ_EQ(*b, B{123});
@@ -74,7 +97,7 @@ LVD_TEST_BEGIN(210__move_cast__1__not_null_unique_ptr__0__static_move_cast)
     // Don't check b, it just has to be understood to be garbage at this point.
 LVD_TEST_END
 
-LVD_TEST_BEGIN(210__move_cast__1__not_null_unique_ptr__0__dynamic_move_cast)
+LVD_TEST_BEGIN(210__move_cast__11__not_null_unique_ptr__0__dynamic_move_cast)
     gsl::not_null<std::unique_ptr<B>> b = lvd::make_not_null_unique<B>(123);
     LVD_TEST_REQ_NEQ_NULLPTR(b);
     LVD_TEST_REQ_EQ(*b, B{123});
