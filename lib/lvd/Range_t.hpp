@@ -13,26 +13,45 @@ class Range_t {
 public:
 
     Range_t () = delete;
+    Range_t (Range_t const &) = default;
+    Range_t (Range_t &&) = default;
     template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
     Range_t (Container_ const &container) : m_begin(container.begin()), m_end(container.end()) { }
     template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
     Range_t (Container_ &container) : m_begin(container.begin()), m_end(container.end()) { }
     Range_t (Iterator_ begin, Iterator_ end) : m_begin(begin), m_end(end) { }
-    Range_t (Range_t const &other) : m_begin(other.m_begin), m_end(other.m_end) { }
 
-    Range_t &operator = (Range_t const &other) {
-        m_begin = other.m_begin;
-        m_end = other.m_end;
-    }
+    Range_t &operator = (Range_t const &) = default;
+    Range_t &operator = (Range_t &&) = default;
+
+    bool operator == (Range_t const &other) const { return m_begin == other.m_begin && m_end == other.m_end; }
+    bool operator != (Range_t const &other) const { return m_begin != other.m_begin || m_end != other.m_end; }
 
     Iterator_ begin () const { return m_begin; }
     Iterator_ end () const { return m_end; }
+
+    auto size () const { return std::distance(m_begin, m_end); }
+    bool empty () const { return m_begin == m_end; }
 
 private:
 
     Iterator_ m_begin;
     Iterator_ m_end;
 };
+
+// Somewhat nontrivial -- lhs.end() can coincide with rhs.start() as long as at least one of them is nonempty.
+template <typename Iterator_>
+bool operator < (Range_t<Iterator_> const &lhs, Range_t<Iterator_> const &rhs) {
+    if (lhs.empty() && rhs.empty())
+        return lhs.end() < rhs.begin();
+    else
+        return lhs.end() <= rhs.begin();
+}
+
+template <typename Iterator_>
+bool operator <= (Range_t<Iterator_> const &lhs, Range_t<Iterator_> const &rhs) {
+    return lhs.end() <= rhs.begin();
+}
 
 // Convenience function for creating a Range_t over a container for use in range-based for
 // syntax, e.g. `for (auto x : range(v)) { ... }` where v is e.g. a std::vector.
