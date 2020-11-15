@@ -15,7 +15,7 @@ namespace lvd {
 // This doesn't actually move out of p, since p is non-owning.  I.e. it doesn't nullify p.
 template <typename Target_, typename Source_>
 gsl::not_null<Target_*> static_move_cast (gsl::not_null<Source_*> &p) {
-    return gsl::not_null<Target_*>{p};
+    return gsl::not_null<Target_*>{static_cast<Target_*>(p.get())};
 }
 
 // This doesn't actually move out of p, since p is non-owning.  I.e. it doesn't nullify p.
