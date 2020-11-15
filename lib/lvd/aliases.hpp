@@ -34,11 +34,16 @@ using nnup = gsl::not_null<std::unique_ptr<T_,Deleter_>>;
 // Analogs to std::make_* functions
 //
 
+// A convenience function for creating a gsl::not_null<T_*>.
+template <typename T_, typename... Args_>
+nnp<T_> make_nnp (Args_&&... args) {
+    return nnp<T_>(new T_(std::forward<Args_>(args)...));
+}
+
 // A convenience function for creating a gsl::not_null<std::shared_ptr<T_>>.
 // This is equivalent to lvd::make_not_null_shared_ptr.
 template <typename T_, typename... Args_>
-nnsp<T_> make_nnsp (Args_&&... args)
-{
+nnsp<T_> make_nnsp (Args_&&... args) {
     return nnsp<T_>(std::make_shared<T_>(std::forward<Args_>(args)...));
 }
 
@@ -46,8 +51,7 @@ nnsp<T_> make_nnsp (Args_&&... args)
 // Note that there's currently no way to specify a custom deleter.  This is
 // equivalent to lvd::make_not_null_unique_ptr.
 template <typename T_, typename... Args_>
-nnup<T_> make_nnup (Args_&&... args)
-{
+nnup<T_> make_nnup (Args_&&... args) {
     return nnup<T_>(std::make_unique<T_>(std::forward<Args_>(args)...));
 }
 
