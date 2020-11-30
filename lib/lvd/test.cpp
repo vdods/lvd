@@ -198,17 +198,29 @@ std::ostream &operator << (std::ostream &out, Node const &node) {
 //
 
 void Function::run (Context &context) const {
-    try {
-        context.log() << Log::inf() << "Running testfunc " << *this << " ...\n";
-        context.increment_test_count();
-        m_evaluator(context.log(), context.req_context());
-        context.log() << Log::inf() << "Passed: testfunc " << *this << "\n";
-    } catch (std::exception const &e) {
-        context.record_failure_path(LVD_FMT(*this));
-        context.log() << Log::err() << "Failed: testfunc " << *this << " -- exception was:\n" << IndentGuard() << e.what() << '\n';
-    } catch (...) {
-        context.record_failure_path(LVD_FMT(*this));
-        context.log() << Log::err() << "Failed: testfunc " << *this << " -- non-exception was thrown\n";
+    switch (context.failure_behavior()) {
+        default: assert(false && "invalid FailureBehavior"); // But fall through.
+        case req::FailureBehavior::ABORT:
+            context.log() << Log::inf() << "Running testfunc " << *this << " ...\n";
+            context.increment_test_count();
+            m_evaluator(context.log(), context.req_context());
+            context.log() << Log::inf() << "Passed: testfunc " << *this << "\n";
+            break;
+
+        case req::FailureBehavior::THROW:
+            try {
+                context.log() << Log::inf() << "Running testfunc " << *this << " ...\n";
+                context.increment_test_count();
+                m_evaluator(context.log(), context.req_context());
+                context.log() << Log::inf() << "Passed: testfunc " << *this << "\n";
+            } catch (std::exception const &e) {
+                context.record_failure_path(LVD_FMT(*this));
+                context.log() << Log::err() << "\nFailed: testfunc " << *this << " -- exception was:\n" << IndentGuard() << e.what() << '\n';
+            } catch (...) {
+                context.record_failure_path(LVD_FMT(*this));
+                context.log() << Log::err() << "\nFailed: testfunc " << *this << " -- non-exception was thrown\n";
+            }
+            break;
     }
 }
 
