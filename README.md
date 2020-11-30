@@ -24,6 +24,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.10.2`|Fixed a bug in which test-running code didn't honor the failure behavior setting.|
 |`v0.10.1`|Fixed a bug in the implementation of static_move_cast for `nnp<T>`.|
 |`v0.10.0`|Added `sp` and `nnsp` pointer aliases (and related), and added more methods to `Range_t`.|
 |`v0.9.0`|Improved `basic_test_main` function, improved `Range_t`, and added `nnp<T> = nn<T*>` alias.|
