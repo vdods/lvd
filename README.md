@@ -115,6 +115,22 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Logging should accept a lambda via `std::function` parameter which actually does the computation to do the
+    printing, so that if the logging level causes a particular logging command to be suppressed, that computation
+    isn't invoked.  Could potentially also return a no-op `std::ostream` which ignores all input, and ideally
+    the optimizer will figure this out and not bother calling the stuff.
+-   All the `req` functions should accept lambdas via `std::function` for their parameter description and message
+    so that that code isn't run unless the requirement condition fails.
+-   Probably should take out the `const` from `P_ const &` in `not_null.hpp`:
+
+        // Conversion operator to the underlying pointed-at value.  Note that this is only a reasonable
+        // thing to do because the type contract of not_null is the same of that of a reference.
+        // NOTE: This may or may not be a thing you want to happen automatically, but for now it'll go in
+        // as an experiment.
+        constexpr operator P_ const & () const { return *get(); }
+
+-   Probably provide a specialization for `gsl::not_null<T*>` in order to handle pointer-to-const semantics,
+    as well as cast-to-baseclass semantics for the constructor.  Also construction from references.
 -   Use cmake export targets so dependent projects can include only the sub-portion of `lvd` they use.
     In particular, make one of the export targets be the header-only portion of the lib, so there's
     no need to link anything.
