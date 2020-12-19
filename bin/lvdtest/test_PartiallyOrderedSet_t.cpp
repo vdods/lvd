@@ -141,7 +141,8 @@ void verify_poset (PartiallyOrderedSet_t<T_> const &poset) {
 
 LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__00)
     std::default_random_engine engine(42000042);
-    std::uniform_int_distribution<uint32_t> uniform_dist(0, 0xFF);
+    // This will be used to randomly plot 0.1% of the samples.
+    std::uniform_int_distribution<uint32_t> uniform_dist(0, 999);
 
     uint32_t const COLLECTION_SIZE = 16;
     // Test all subsets of the first COLLECTION_SIZE uint32_t values.
@@ -160,7 +161,7 @@ LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__00)
         if (uniform_dist(engine) == 0) {
             std::ofstream fout(LVD_FMT("uint32-div-poset." << std::setw(4) << std::setfill('0') << std::hex << mask << ".dot"));
             auto title = LVD_FMT(added_nodes);
-            poset.print_dot_graph(fout, title);
+            poset.print_dot_graph(fout, title, std::function([](std::ostream &out, uint32_t const &node){ out << node; }));
             // This block ensures that fout is flushed and closed before the rest.
         }
 
@@ -174,16 +175,33 @@ LVD_TEST_END
 
 LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__01)
     std::default_random_engine engine(42000042);
-    std::uniform_int_distribution<uint32_t> uniform_dist(0, 0xFF);
+    // This will be used to randomly plot 0.1% of the samples.
+    std::uniform_int_distribution<uint32_t> uniform_dist(0, 999);
 
-    uint32_t const COLLECTION_SIZE = 16;
-    // Test all subsets of the first COLLECTION_SIZE uint32_t values.
-    for (uint32_t mask = 0; mask < (uint32_t(1) << COLLECTION_SIZE); ++mask) {
-//         std::cout << "checking " << std::hex << mask << '\n';
+    auto print_uint32_as_subset = std::function([](std::ostream &out, uint32_t const &node){
+        out << "\"{";
+        bool has_printed_element = false;
+        for (uint32_t index = 0, bit = 1; index < 32; ++index, bit <<= 1) {
+            if ((bit & node) != 0) {
+                if (has_printed_element)
+                    out << ' ';
+                out << index;
+                has_printed_element = true;
+            }
+        }
+        out << "}\"";
+    });
+
+    uint64_t const SET_SIZE = 4;
+    uint64_t const ELEMENT_COUNT = uint64_t(1) << SET_SIZE;
+    // Test all subsets of the first ELEMENT_COUNT uint32_t values.
+    for (uint64_t mask = 0; mask < (uint64_t(1) << ELEMENT_COUNT); ++mask) {
+        auto const title = LVD_FMT("collection of subsets for mask " << std::setw(4) << std::setfill('0') << std::hex << mask << "\narrow indicates set inclusion");
+//         test_log << Log::trc() << "generating " << std::setw(4) << std::setfill('0') << std::hex << mask << '\n';
         PartiallyOrderedSet_t<uint32_t> poset(uint32_as_subset);
         // Add the nodes whose corresponding bits are set in mask.
         std::vector<uint32_t> added_nodes;
-        for (uint32_t node = 0; node < COLLECTION_SIZE; ++node) {
+        for (uint32_t node = 0; node < ELEMENT_COUNT; ++node) {
             if (((uint32_t(1) << node) & mask) != 0) {
                 poset.insert(node);
                 added_nodes.push_back(node);
@@ -192,14 +210,13 @@ LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__01)
 
         if (uniform_dist(engine) == 0) {
             std::ofstream fout(LVD_FMT("uint32-subset-poset." << std::setw(4) << std::setfill('0') << std::hex << mask << ".dot"));
-            auto title = LVD_FMT(added_nodes);
-            poset.print_dot_graph(fout, title);
+            poset.print_dot_graph(fout, title, print_uint32_as_subset);
             // This block ensures that fout is flushed and closed before the rest.
         }
 
         // Verify
         verify_poset(poset);
-        for (uint32_t node = 0; node <= 2*COLLECTION_SIZE; ++node)
+        for (uint32_t node = 0; node <= 2*ELEMENT_COUNT; ++node)
             if (!poset.contains(node))
                 check_node_against_poset(node, poset);
     }

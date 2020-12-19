@@ -163,14 +163,21 @@ private:
                 collect_ancestors_of(parent, ancestors, true);
         }
 
-        void print_dot_graph (std::ostream &out, std::string const &title) const {
+        void print_dot_graph (std::ostream &out, std::string const &title, std::function<void(std::ostream &,T_ const &)> const &print_node) const {
             // Reference: https://en.wikipedia.org/wiki/DOT_(graph_description_language)#Directed_graphs
             out << "digraph {\n    // title\n    labelloc=\"t\";\n    label=\"" << title << "\";\n";
             for (auto const &it : child_map()) {
                 auto const &node = it.first;
-                out << "    " << node << ";\n";
-                for (auto const &child : it.second)
-                    out << "    " << node << " -> " << child << ";\n";
+                out << "    ";
+                print_node(out, node);
+                out << ";\n";
+                for (auto const &child : it.second) {
+                    out << "    ";
+                    print_node(out, node);
+                    out << " -> ";
+                    print_node(out, child);
+                    out << ";\n";
+                }
             }
             out << "}\n";
         }
@@ -224,7 +231,7 @@ public:
     // This is sort of a dumb function, but whateva.  TODO: Probably move to test code
     NodeSet nonancestors_of (T_ const &node, bool include_node = false) const { return m_dag.nonancestors_of(node, include_node); }
 
-    void print_dot_graph (std::ostream &out, std::string const &title) const { m_dag.print_dot_graph(out, title); }
+    void print_dot_graph (std::ostream &out, std::string const &title, std::function<void(std::ostream &, T_ const &)> const &print_node) const { m_dag.print_dot_graph(out, title, print_node); }
 
     // NOTE: This is an elegant solution, but is probably not super efficient.
     // Could potentially compute lub from glb in order to improve efficiency.
