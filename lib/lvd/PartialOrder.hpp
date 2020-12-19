@@ -46,6 +46,48 @@ inline bool is_greater_than_or_equal (PartialOrder r) {
     return r == PartialOrder::GREATER_THAN || r == PartialOrder::EQUAL;
 }
 
+template <typename T_>
+PartialOrder direct_product_partial_order (std::vector<T_> const &lhs, std::vector<T_> const &rhs, std::function<PartialOrder(T_ const &,T_ const &)> const &partial_order) {
+    if (lhs.size() != rhs.size())
+        return PartialOrder::INCOMPARABLE;
+
+    // Empty vectors are equal.  Nonempty vectors may have elements which change that.
+    auto retval = PartialOrder::EQUAL;
+
+    for (auto lhs_it = lhs.begin(), rhs_it = rhs.begin(); lhs_it != lhs.end(); ++lhs_it, ++rhs_it) {
+        assert(retval != PartialOrder::INCOMPARABLE);
+        switch (partial_order(*lhs_it, *rhs_it)) {
+            case PartialOrder::LESS_THAN:
+                if (retval == PartialOrder::GREATER_THAN)
+                    // LESS_THAN and GREATER_THAN are present, which means INCOMPARABLE
+                    return PartialOrder::INCOMPARABLE;
+                else {
+                    retval = PartialOrder::LESS_THAN;
+                    break;
+                }
+
+            case PartialOrder::GREATER_THAN:
+                if (retval == PartialOrder::LESS_THAN)
+                    // LESS_THAN and GREATER_THAN are present, which means INCOMPARABLE
+                    return PartialOrder::INCOMPARABLE;
+                else {
+                    retval = PartialOrder::GREATER_THAN;
+                    break;
+                }
+
+            case PartialOrder::EQUAL:
+                // Still good, no need to change.
+                break;
+
+            case PartialOrder::INCOMPARABLE:
+                // Can early-out here.
+                return PartialOrder::INCOMPARABLE;
+        }
+    }
+
+    return retval;
+}
+
 // Empty tuple; always equal because it's a singleton.
 inline PartialOrder direct_product_partial_order_from () {
     return PartialOrder::EQUAL;
