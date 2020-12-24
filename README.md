@@ -24,6 +24,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.11.0`|Added `PartialOrder` and `PartiallyOrderedSet_t` which provide rudimentary poset container creation and search.|
 |`v0.10.2`|Fixed a bug in which test-running code didn't honor the failure behavior setting.|
 |`v0.10.1`|Fixed a bug in the implementation of static_move_cast for `nnp<T>`.|
 |`v0.10.0`|Added `sp` and `nnsp` pointer aliases (and related), and added more methods to `Range_t`.|
@@ -116,6 +117,7 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Make the `make package` include the source files as well; everything needed to compile from source.
 -   Logging should accept a lambda via `std::function` parameter which actually does the computation to do the
     printing, so that if the logging level causes a particular logging command to be suppressed, that computation
     isn't invoked.  Could potentially also return a no-op `std::ostream` which ignores all input, and ideally
