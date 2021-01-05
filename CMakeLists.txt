@@ -65,6 +65,7 @@ set(liblvd_HEADERS
     lib/lvd/PartiallyOrderedSet_t.hpp
     lib/lvd/PartialOrder.hpp
     lib/lvd/Pipe.hpp
+    lib/lvd/random.hpp
     lib/lvd/Range_t.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
@@ -124,6 +125,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_PartiallyOrderedSet_t.cpp
         bin/lvdtest/test_PartialOrder.cpp
         bin/lvdtest/test_Pipe.cpp
+        bin/lvdtest/test_random.cpp
         bin/lvdtest/test_Range_t.cpp
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test_TotalOrder.cpp
