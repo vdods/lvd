@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.18)
 project(lvd)
 # NOTE: After cutting a release, you should increment the patch number and append `-DEV` so that
 # the deb packages produced while developing are distinguished from the actual tagged release.
-set(lvd_VERSION 0.11.0)
+set(lvd_VERSION 0.11.1-DEV)
 
 option(BUILD_lvdtest "Build lvdtest binary" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries (instead of static libraries)" ON)
@@ -70,6 +70,7 @@ set(liblvd_HEADERS
     lib/lvd/ScopeGuard.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
+    lib/lvd/TotalOrder.hpp
     lib/lvd/util.hpp
 )
 
@@ -121,9 +122,11 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_NullOstream.cpp
         bin/lvdtest/test_OstreamDelegate.cpp
         bin/lvdtest/test_PartiallyOrderedSet_t.cpp
+        bin/lvdtest/test_PartialOrder.cpp
         bin/lvdtest/test_Pipe.cpp
         bin/lvdtest/test_Range_t.cpp
         bin/lvdtest/test_req.cpp
+        bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_util.cpp
     )
     add_executable(lvdtest ${lvdtest_SOURCES})
