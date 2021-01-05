@@ -20,10 +20,10 @@ void serialization_test_case (req::Context &req_context, std::vector<std::byte> 
         buffer.clear();
         auto expected = make_random<T_>(rng);
 
-        serialize(expected, std::back_inserter(buffer));
+        serialize_from(expected, std::back_inserter(buffer));
 
         T_ actual;
-        deserialize(actual, lvd::range(buffer));
+        deserialize_to(actual, lvd::range(buffer));
 
         LVD_TEST_REQ_EQ(actual, expected);
     }

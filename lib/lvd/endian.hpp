@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cstddef>
+#include "lvd/Range_t.hpp"
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -43,7 +44,11 @@ inline Endianness constexpr machine_endianness () {
         return Endianness::LITTLE;
 }
 
-template <typename T_, typename = std::enable_if_t<std::is_trivially_copyable_v<T_>>>
+// Is true iff a type has endianness (arithmetic types) or is invariant under byte-order-swap (e.g. 1-byte types).
+template <typename T_>
+inline bool constexpr is_endiannated_type_v = std::is_arithmetic_v<T_> || std::is_same_v<T_,std::byte>;
+
+template <typename T_, typename = std::enable_if_t<is_endiannated_type_v<T_>>>
 void swap_byte_order_of (T_ &value) {
     static_assert(sizeof(T_) == 1 || sizeof(T_) == 2 || sizeof(T_) == 4 || sizeof(T_) == 8, "can only swap_byte_order_of a type of size 1, 2, 4, or 8.");
 
@@ -63,19 +68,27 @@ void swap_byte_order_of (T_ &value) {
     }
 }
 
-template <typename T_, typename = std::enable_if_t<std::is_trivially_copyable_v<T_>>>
+template <typename T_, typename = std::enable_if_t<is_endiannated_type_v<T_>>>
 T_ swapped_byte_order_of (T_ value) {
     swap_byte_order_of(value);
     return value;
 }
 
-template <typename T_, typename = std::enable_if_t<std::is_trivially_copyable_v<T_>>>
+template <typename T_, typename = std::enable_if_t<is_endiannated_type_v<T_>>>
 void endian_change (Endianness from, Endianness to, T_ &value) {
     if (from != to)
         swap_byte_order_of(value);
 }
 
-template <typename T_, typename = std::enable_if_t<std::is_trivially_copyable_v<T_>>>
+// Call endian_change on each element in a range (operates in-place).
+template <typename T_>
+void endian_change (Endianness from, Endianness to, lvd::Range_t<T_> &value_range) {
+    if (from != to)
+        for (auto &value : value_range)
+            swap_byte_order_of(value);
+}
+
+template <typename T_, typename = std::enable_if_t<is_endiannated_type_v<T_>>>
 T_ endian_changed (Endianness from, Endianness to, T_ value) {
     endian_change(from, to, value);
     return value;
