@@ -4,6 +4,7 @@
 
 #include "lvd/fmt.hpp"
 #include <type_traits>
+#include <utility>
 
 namespace lvd {
 
@@ -17,8 +18,9 @@ public:
     Range_t (Range_t &&) = default;
     template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
     explicit Range_t (Container_ const &container) : m_begin(container.begin()), m_end(container.end()) { }
-    template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t>>>
+    template <typename Container_, typename = std::enable_if_t<!std::is_same_v<Container_,Range_t> && !std::is_same_v<Container_,std::pair<Iterator_,Iterator_>>>>
     explicit Range_t (Container_ &container) : m_begin(container.begin()), m_end(container.end()) { }
+    explicit Range_t (std::pair<Iterator_,Iterator_> const &range) : m_begin(range.first), m_end(range.second) { }
     Range_t (Iterator_ begin, Iterator_ end) : m_begin(begin), m_end(end) { }
 
     Range_t &operator = (Range_t const &) = default;
@@ -26,6 +28,9 @@ public:
 
     bool operator == (Range_t const &other) const { return m_begin == other.m_begin && m_end == other.m_end; }
     bool operator != (Range_t const &other) const { return m_begin != other.m_begin || m_end != other.m_end; }
+
+    Iterator_ &begin () { return m_begin; }
+    Iterator_ &end () { return m_end; }
 
     Iterator_ begin () const { return m_begin; }
     Iterator_ end () const { return m_end; }
@@ -112,6 +117,14 @@ Range_t<typename Container_::const_iterator> range (Container_ const &container)
 template <typename Container_>
 Range_t<typename Container_::iterator> range (Container_ &container) {
     return Range_t<typename Container_::iterator>(container);
+}
+
+// Convenience function for creating a Range_t from a std::pair of iterators for use in
+// range-based for syntax, e.g. `for (auto x : range(m.equal_range(...))) { ... }`
+// where m is e.g. a std::map.
+template <typename Iterator_>
+Range_t<Iterator_> range (std::pair<Iterator_,Iterator_> const &pair) {
+    return Range_t<Iterator_>(pair);
 }
 
 // Convenience function for creating a Range_t for use in range-based for syntax, e.g.

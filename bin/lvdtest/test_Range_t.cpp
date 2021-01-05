@@ -5,8 +5,9 @@
 #include "lvd/req.hpp"
 #include "lvd/test.hpp"
 #include <sstream>
+#include <string>
 
-LVD_TEST_BEGIN(320__Range_t__00)
+LVD_TEST_BEGIN(320__Range_t__000)
     std::ostringstream out;
     std::string s("HIPPO");
     for (auto c : lvd::Range_t<std::string::iterator>(s))
@@ -14,7 +15,7 @@ LVD_TEST_BEGIN(320__Range_t__00)
     LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
 LVD_TEST_END
 
-LVD_TEST_BEGIN(320__Range_t__01)
+LVD_TEST_BEGIN(320__Range_t__001)
     std::ostringstream out;
     std::string s("HIPPO");
     for (auto c : lvd::Range_t<std::string::iterator>(s.begin(), s.end()))
@@ -22,7 +23,7 @@ LVD_TEST_BEGIN(320__Range_t__01)
     LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
 LVD_TEST_END
 
-LVD_TEST_BEGIN(320__Range_t__010)
+LVD_TEST_BEGIN(320__Range_t__002)
     std::ostringstream out;
     std::string s("HIPPO");
     for (auto c : lvd::Range_t<std::string::iterator>(s.begin()+1, s.end()-1))
@@ -30,7 +31,16 @@ LVD_TEST_BEGIN(320__Range_t__010)
     LVD_TEST_REQ_EQ(out.str(), "I,P,P,");
 LVD_TEST_END
 
-LVD_TEST_BEGIN(320__Range_t__02)
+LVD_TEST_BEGIN(320__Range_t__003)
+    std::ostringstream out;
+    std::string s("HIPPO");
+    auto p = std::pair(s.begin()+1, s.end()-1);
+    for (auto c : lvd::Range_t<std::string::iterator>(p))
+        out << c << ',';
+    LVD_TEST_REQ_EQ(out.str(), "I,P,P,");
+LVD_TEST_END
+
+LVD_TEST_BEGIN(320__Range_t__010)
     std::ostringstream out;
     std::string s("HIPPO");
     for (auto c : lvd::range(s))
@@ -38,10 +48,18 @@ LVD_TEST_BEGIN(320__Range_t__02)
     LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
 LVD_TEST_END
 
-LVD_TEST_BEGIN(320__Range_t__03)
+LVD_TEST_BEGIN(320__Range_t__011)
     std::ostringstream out;
     std::string s("HIPPO");
     for (auto c : lvd::range(s.begin(), s.end()))
+        out << c << ',';
+    LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
+LVD_TEST_END
+
+LVD_TEST_BEGIN(320__Range_t__012)
+    std::ostringstream out;
+    std::string s("HIPPO");
+    for (auto c : lvd::range(std::pair(s.begin(), s.end())))
         out << c << ',';
     LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
 LVD_TEST_END
@@ -60,7 +78,7 @@ std::ostream &operator << (std::ostream &out, Range_t<Iterator_> const &r) {
 
 } // end namespace lvd
 
-LVD_TEST_BEGIN(320__Range_t__04)
+LVD_TEST_BEGIN(320__Range_t__020)
     std::string s("HIPPO");
     auto range_on_s = [&](size_t begin_index, size_t end_index){
         LVD_TEST_REQ_LEQ(begin_index, s.size());
@@ -86,7 +104,7 @@ LVD_TEST_BEGIN(320__Range_t__04)
     LVD_TEST_REQ_NEQ(range_on_s(0,2), range_on_s(1,3));
 LVD_TEST_END
 
-LVD_TEST_BEGIN(320__Range_t__05)
+LVD_TEST_BEGIN(320__Range_t__021)
     std::string s("HIPPOS AND HIPPAS");
     auto range_on_s = [&](size_t begin_index, size_t end_index){
         LVD_TEST_REQ_LEQ(begin_index, s.size());
