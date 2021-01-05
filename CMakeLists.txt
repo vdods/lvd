@@ -70,6 +70,7 @@ set(liblvd_HEADERS
     lib/lvd/Range_t.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
+    lib/lvd/serialization.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp
@@ -130,6 +131,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_random.cpp
         bin/lvdtest/test_Range_t.cpp
         bin/lvdtest/test_req.cpp
+        bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_util.cpp
     )
