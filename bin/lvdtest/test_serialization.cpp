@@ -90,4 +90,21 @@ LVD_TEST_BEGIN(323__serialization__00)
     serialization_test_case<std::vector<std::map<std::string,std::unordered_map<int,std::set<uint16_t>>>>>(req_context, buffer);
 LVD_TEST_END
 
+class DerivedString : public std::string {
+public:
+
+    using std::string::string;
+};
+
+// Template specialization is necessary here because templates don't account for class polymorphism.
+// Ideally, this would be able to call some compile time function to determine the baseclass and use that.
+template <> struct Serialization_t<DerivedString> : public Serialization_t<std::string> { };
+template <> struct Random_t<DerivedString> : public Random_t<std::string> { };
+
+LVD_TEST_BEGIN(323__serialization__01)
+    // Testing serialization of derived classes.
+    std::vector<std::byte> buffer;
+    serialization_test_case<DerivedString>(req_context, buffer);
+LVD_TEST_END
+
 } // end namespace lvd
