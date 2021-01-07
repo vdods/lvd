@@ -16,6 +16,8 @@ namespace lvd {
 template <typename T_>
 void serialization_test_case (req::Context &req_context, std::vector<std::byte> &buffer) {
     auto rng = std::mt19937{42};
+
+    // In-place serialize/deserialize.
     for (auto i = 0; i < 0x100; ++i) {
         buffer.clear();
         auto expected = make_random<T_>(rng);
@@ -25,6 +27,14 @@ void serialization_test_case (req::Context &req_context, std::vector<std::byte> 
         T_ actual;
         deserialize_to(actual, lvd::range(buffer));
 
+        LVD_TEST_REQ_EQ(actual, expected);
+    }
+
+    // Returned-value serialize/deserialize.  This is probably slower because it doesn't re-use
+    // a std::vector<std::byte> instance with its allocated memory.
+    for (auto i = 0; i < 0x100; ++i) {
+        auto expected = make_random<T_>(rng);
+        auto actual = deserialized_to<T_>(lvd::range(serialized_from(expected)));
         LVD_TEST_REQ_EQ(actual, expected);
     }
 }

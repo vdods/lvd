@@ -23,14 +23,6 @@ namespace lvd {
 // Implementations should provide serialize and deserialize methods.
 template <typename T_> struct Serialization_t;
 
-// Convenience function to get a deserialized value.
-template <typename T_, typename... Args_>
-T_ deserialized_to (Args_&&... args) {
-    T_ dest;
-    deserialize_to(dest, std::forward<Args_>(args)...);
-    return dest;
-}
-
 // Serialize a value into dest iterator, using the appropriate specialization of Serialization_t<T_>.
 template <typename T_, typename DestIterator_>
 void serialize_from (T_ const &source, DestIterator_ dest) {
@@ -41,6 +33,23 @@ void serialize_from (T_ const &source, DestIterator_ dest) {
 template <typename T_>
 void deserialize_to (T_ &dest, auto &&source_range) {
     Serialization_t<T_>().deserialize(dest, std::forward<decltype(source_range)>(source_range));
+}
+
+// Convenience function to get the serialized value as a std::vector<std::byte>.
+template <typename T_>
+std::vector<std::byte> serialized_from (T_ const &source) {
+    std::vector<std::byte> retval;
+    serialize_from(source, std::back_inserter(retval));
+    return retval;
+}
+
+// Convenience function to get a deserialized value.
+// TODO: Make it so that this doesn't depend on T_ being default-constructible.
+template <typename T_, typename... Args_>
+T_ deserialized_to (Args_&&... args) {
+    T_ retval;
+    deserialize_to(retval, std::forward<Args_>(args)...);
+    return retval;
 }
 
 //
