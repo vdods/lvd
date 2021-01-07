@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include "lvd/endian.hpp"
 #include "lvd/g_req_context.hpp"
@@ -138,6 +139,18 @@ struct Serialization_t<std::vector<T_,Allocator_>> {
     }
     void deserialize (std::vector<T_,Allocator_> &dest, auto &&source_range) {
         dest.resize(deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range)));
+        auto r = lvd::range(dest.begin(), dest.end());
+        deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+    }
+};
+
+template <typename T_, size_t N_>
+struct Serialization_t<std::array<T_,N_>> {
+    template <typename DestIterator_>
+    void serialize (std::array<T_,N_> const &source, DestIterator_ dest) {
+        serialize_from(lvd::range(source.begin(), source.end()), dest);
+    }
+    void deserialize (std::array<T_,N_> &dest, auto &&source_range) {
         auto r = lvd::range(dest.begin(), dest.end());
         deserialize_to(r, std::forward<decltype(source_range)>(source_range));
     }

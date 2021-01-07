@@ -75,6 +75,12 @@ LVD_TEST_BEGIN(323__serialization__00)
     serialization_test_case<std::string>(req_context, buffer);
     serialization_test_case<std::pair<int,std::string>>(req_context, buffer);
     serialization_test_case<std::vector<uint32_t>>(req_context, buffer);
+    serialization_test_case<std::array<uint32_t,1>>(req_context, buffer);
+    serialization_test_case<std::array<uint32_t,2>>(req_context, buffer);
+    serialization_test_case<std::array<uint32_t,3>>(req_context, buffer);
+    serialization_test_case<std::array<uint32_t,10>>(req_context, buffer);
+    serialization_test_case<std::array<std::string,10>>(req_context, buffer);
+    serialization_test_case<std::array<std::map<uint16_t,std::string>,10>>(req_context, buffer);
     serialization_test_case<std::map<int,std::string>>(req_context, buffer);
     serialization_test_case<std::unordered_map<int,std::string>>(req_context, buffer);
     serialization_test_case<std::set<std::string>>(req_context, buffer);

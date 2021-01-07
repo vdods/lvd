@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <map>
 #include <ostream>
@@ -28,6 +29,20 @@ inline ostream &operator << (ostream &out, vector<T_,Allocator_> const &v) {
         out << x;
     }
     return out << ']';
+}
+
+template <typename T_, size_t N_>
+ostream &operator << (ostream &out, array<T_,N_> const &a) {
+    out << '[';
+    bool has_printed_element = false;
+    for (auto x : a) {
+        if (has_printed_element)
+            out << ", ";
+        else
+            has_printed_element = true;
+        out << x;
+    }
+    return out << " ]";
 }
 
 template <typename F_, typename S_>

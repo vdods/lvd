@@ -78,6 +78,15 @@ struct Random_t<std::vector<T_,Allocator_>> {
     }
 };
 
+// Generates a random std::array.
+template <typename T_, size_t N_>
+struct Random_t<std::array<T_,N_>> {
+    void populate (std::array<T_,N_> &dest, auto &rng) const {
+        for (auto &c : dest)
+            populate_random(c, rng);
+    }
+};
+
 // Generates a random std::pair.
 template <typename F_, typename S_>
 struct Random_t<std::pair<F_,S_>> {
