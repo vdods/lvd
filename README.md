@@ -117,6 +117,8 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Need to ensure that the serialization of `std::unordered_map` and `std::unordered_set` produce
+    a deterministic output, probably by outputting the key/value pairs in key-sorted order.
 -   Maybe use http://aantron.github.io/better-enums/tutorial/Maps.html for enums.
 -   Change `PartialOrder` to actually be a bitmask of `LEQ` and `GEQ`, so that:
     -   `PartialOrder::LESS_THAN` is `LEQ` and `!GEQ`,
