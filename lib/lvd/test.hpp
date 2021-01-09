@@ -263,5 +263,24 @@ void call_function_and_expect_exception (std::function<void()> const &function_t
     throw std::runtime_error("error: no exception occured, but one was expected");
 }
 
+// For verifying that a piece of code throws a particular exception type.
+// The Args_&&... are for forwarding arguments to the constructor of a std::function<void()>,
+// in particular for when the function to call is a lambda.
+template <typename ExceptionType_>
+void call_function_and_expect_and_process_exception (std::function<void()> const &function_to_call, std::function<void(ExceptionType_ const &)> const &process_exception) {
+    try {
+        function_to_call();
+    } catch (ExceptionType_ const &e) {
+        // Caught expected exception type.  Now process it using the supplied function.
+        process_exception(e);
+        return;
+    } catch (std::exception const &e) {
+        throw std::runtime_error(LVD_FMT("error: did not catch the expected exception type, but instead caught: " << e.what() ));
+    } catch (...) {
+        throw std::runtime_error(LVD_FMT("error: did not catch the expected exception type, but caught a non-exception type instead"));
+    }
+    throw std::runtime_error("error: no exception occured, but one was expected");
+}
+
 } // end namespace test
 } // end namespace lvd
