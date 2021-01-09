@@ -248,11 +248,10 @@ public:
 // For verifying that a piece of code throws a particular exception type.
 // The Args_&&... are for forwarding arguments to the constructor of a std::function<void()>,
 // in particular for when the function to call is a lambda.
-template <typename ExceptionType_, typename... Args_>
-void call_function_and_expect_exception (Args_&&... args) {
-    std::function<void()> func(std::forward<Args_>(args)...);
+template <typename ExceptionType_>
+void call_function_and_expect_exception (std::function<void()> const &function_to_call) {
     try {
-        func();
+        function_to_call();
     } catch (ExceptionType_ const &) {
         // Caught expected exception type.
         return;
