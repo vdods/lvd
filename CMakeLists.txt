@@ -75,6 +75,7 @@ set(liblvd_HEADERS
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp
     lib/lvd/util.hpp
+    lib/lvd/variant.hpp
 )
 
 set(liblvd_SOURCES
@@ -89,6 +90,7 @@ set(liblvd_SOURCES
     lib/lvd/OstreamDelegate.cpp
     lib/lvd/test.cpp
     lib/lvd/util.cpp
+    lib/lvd/variant.hpp
 )
 
 add_library(liblvd ${liblvd_HEADERS} ${liblvd_SOURCES})
@@ -134,6 +136,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_util.cpp
+        bin/lvdtest/test_variant.cpp
     )
     add_executable(lvdtest ${lvdtest_SOURCES})
     target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
