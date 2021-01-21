@@ -1,6 +1,7 @@
 // 2021.01.04 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include <cstdint>
+#include "DerivedString_random.hpp"
 #include "lvd/random.hpp"
 #include "lvd/req.hpp"
 #include "lvd/test.hpp"
@@ -48,60 +49,71 @@ LVD_TEST_BEGIN(321__random__01__is_valid)
     LVD_TEST_REQ_IS_TRUE(missed.empty());
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__02)
+template <typename T_>
+void test_random_generation_for_type (req::Context &req_context) {
     auto rng = std::mt19937{42};
     for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::string>(rng) << '\n';
+        req_context.log() << Log::trc() << make_random<T_>(rng) << '\n';
     }
+    if constexpr (std::is_default_constructible_v<T_>) {
+        for (auto i = 0; i < 0x100; ++i) {
+            T_ dest;
+            populate_random(dest, rng);
+            req_context.log() << Log::trc() << dest << '\n';
+        }
+    }
+}
+
+LVD_TEST_BEGIN(321__random__02)
+    test_random_generation_for_type<std::string>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__03)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::vector<std::string>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::vector<std::string>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__04)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::pair<uint32_t,std::string>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::pair<uint32_t,std::string>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__05)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::map<uint32_t,std::string>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::map<uint32_t,std::string>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__06)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::unordered_map<uint32_t,std::string>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::unordered_map<uint32_t,std::string>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__07)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::set<uint32_t>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::set<uint32_t>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__08)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::unordered_set<uint32_t>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::unordered_set<uint32_t>>(req_context);
 LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__09)
-    auto rng = std::mt19937{42};
-    for (auto i = 0; i < 0x100; ++i) {
-        test_log << Log::trc() << make_random<std::vector<std::map<uint32_t,std::string>>>(rng) << '\n';
-    }
+    test_random_generation_for_type<std::vector<std::map<uint32_t,std::string>>>(req_context);
+LVD_TEST_END
+
+//
+// Testing generation of random values for types that don't have default constructors
+//
+
+LVD_TEST_BEGIN(321__random__10)
+    test_random_generation_for_type<DerivedString_DC_IP>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__11)
+    test_random_generation_for_type<DerivedString_DC_EP>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__12)
+    test_random_generation_for_type<DerivedString_NDC_IP>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__13)
+    test_random_generation_for_type<DerivedString_NDC_EP>(req_context);
 LVD_TEST_END
 
 } // end namespace lvd

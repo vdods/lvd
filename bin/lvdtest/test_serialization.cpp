@@ -1,5 +1,6 @@
 // 2021.01.04 - Copyright Victor Dods - Licensed under Apache 2.0
 
+#include "DerivedString_serialization.hpp"
 #include <iomanip>
 #include "lvd/abort.hpp"
 #include "lvd/random.hpp"
@@ -17,18 +18,22 @@ template <typename T_>
 void serialization_test_case (req::Context &req_context, std::vector<std::byte> &buffer) {
     auto rng = std::mt19937{42};
 
-    // In-place serialize/deserialize.
-    for (auto i = 0; i < 0x100; ++i) {
-        buffer.clear();
-        auto expected = make_random<T_>(rng);
+    // In-place serialize/deserialize.  Requires a default constructor.
+    if constexpr (std::is_default_constructible_v<T_>) {
+        for (auto i = 0; i < 0x100; ++i) {
+            buffer.clear();
+            auto expected = make_random<T_>(rng);
 
-        serialize_from(expected, std::back_inserter(buffer));
+            serialize_from(expected, std::back_inserter(buffer));
 
-        T_ actual;
-        deserialize_to(actual, lvd::range(buffer));
+            T_ actual;
+            deserialize_to(actual, lvd::range(buffer));
 
-        LVD_TEST_REQ_EQ(actual, expected);
+            LVD_TEST_REQ_EQ(actual, expected);
+        }
     }
+
+    static_assert(std::is_default_constructible_v<char>);
 
     // Returned-value serialize/deserialize.  This is probably slower because it doesn't re-use
     // a std::vector<std::byte> instance with its allocated memory.
@@ -90,21 +95,28 @@ LVD_TEST_BEGIN(323__serialization__00)
     serialization_test_case<std::vector<std::map<std::string,std::unordered_map<int,std::set<uint16_t>>>>>(req_context, buffer);
 LVD_TEST_END
 
-class DerivedString : public std::string {
-public:
+//
+// Test a bunch of different ways to inherit a serializable class, where the Serialization_t
+// implementation can be inherited also.
+//
 
-    using std::string::string;
-};
+// Test case for different derived string types
+template <typename DerivedString_>
+void serialization_test_case_derived_string (req::Context &req_context) {
+    // Make sure DerivedString_ works as expected
+    auto ds = DerivedString_(std::string("blah"));
+    LVD_TEST_REQ_EQ(ds, std::string("blah"));
 
-// Template specialization is necessary here because templates don't account for class polymorphism.
-// Ideally, this would be able to call some compile time function to determine the baseclass and use that.
-template <> struct Serialization_t<DerivedString> : public Serialization_t<std::string> { };
-template <> struct Random_t<DerivedString> : public Random_t<std::string> { };
-
-LVD_TEST_BEGIN(323__serialization__01)
     // Testing serialization of derived classes.
     std::vector<std::byte> buffer;
-    serialization_test_case<DerivedString>(req_context, buffer);
+    serialization_test_case<DerivedString_>(req_context, buffer);
+}
+
+LVD_TEST_BEGIN(323__serialization__01)
+    serialization_test_case_derived_string<DerivedString_DC_IP>(req_context);
+    serialization_test_case_derived_string<DerivedString_DC_EP>(req_context);
+    serialization_test_case_derived_string<DerivedString_NDC_IP>(req_context);
+    serialization_test_case_derived_string<DerivedString_NDC_EP>(req_context);
 LVD_TEST_END
 
 } // end namespace lvd

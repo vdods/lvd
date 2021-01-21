@@ -33,6 +33,7 @@ void serialize_from (T_ const &source, DestIterator_ dest) {
 // Deserialize a value from source_range, using the appropriate specialization of Serialization_t<T_>.
 template <typename T_>
 void deserialize_to (T_ &dest, auto &&source_range) {
+    static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
     Serialization_t<T_>().deserialize(dest, std::forward<decltype(source_range)>(source_range));
 }
 
@@ -45,12 +46,16 @@ std::vector<std::byte> serialized_from (T_ const &source) {
 }
 
 // Convenience function to get a deserialized value.
-// TODO: Make it so that this doesn't depend on T_ being default-constructible.
 template <typename T_, typename... Args_>
 T_ deserialized_to (Args_&&... args) {
-    T_ retval;
-    deserialize_to(retval, std::forward<Args_>(args)...);
-    return retval;
+    if constexpr (std::is_default_constructible_v<T_>) {
+        T_ retval;
+        deserialize_to(retval, std::forward<Args_>(args)...);
+        return retval;
+    } else {
+        // We call the constructor explicitly here so that if T_ has an explicit constructor, it still works.
+        return T_(Serialization_t<T_>().deserialized(std::forward<Args_>(args)...));
+    }
 }
 
 //
@@ -73,6 +78,7 @@ struct Serialization_t {
     }
     template <typename = std::enable_if_t<is_basic_serializable_v<T_>>>
     void deserialize (T_ &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         // It's probably rude to abort upon an input error.  But for now, whateva.
         LVD_G_REQ_GEQ(size_t(source_range.size()), sizeof(T_), "source_range.size() is not large enough to read a value of the dest type");
 
@@ -82,6 +88,12 @@ struct Serialization_t {
         endian_change(Endianness::LITTLE, machine_endianness(), dest);
         // Advance source_range.begin() so it's ready to continue reading from the next spot.
         source_range.begin() += sizeof(T_);
+    }
+    template <typename = std::enable_if_t<is_basic_serializable_v<T_>>>
+    T_ deserialized (auto &&source_range) {
+        T_ retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -100,6 +112,7 @@ struct Serialization_t<lvd::Range_t<Iterator_>> {
         }
     }
     void deserialize (lvd::Range_t<Iterator_> &dest_range, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         // TODO: Could add another case where the range represents a contiguous sequence of values
         // that could be byte-copied and then endian-corrected.
         if constexpr (std::is_same_v<Iterator_,std::byte const *>) {
@@ -112,6 +125,7 @@ struct Serialization_t<lvd::Range_t<Iterator_>> {
                 deserialize_to(dest, std::forward<decltype(source_range)>(source_range));
         }
     }
+    // TODO: any need for deserialized?
 };
 
 template <typename Char_, typename Traits_, typename Allocator_>
@@ -123,9 +137,15 @@ struct Serialization_t<std::basic_string<Char_,Traits_,Allocator_>> {
         serialize_from(lvd::range(source.begin(), source.end()), dest);
     }
     void deserialize (std::basic_string<Char_,Traits_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         dest.resize(deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range)));
         auto r = lvd::range(dest.begin(), dest.end());
         deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+    }
+    std::basic_string<Char_,Traits_,Allocator_> deserialized (auto &&source_range) {
+        std::basic_string<Char_,Traits_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -138,9 +158,15 @@ struct Serialization_t<std::vector<T_,Allocator_>> {
         serialize_from(lvd::range(source.begin(), source.end()), dest);
     }
     void deserialize (std::vector<T_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         dest.resize(deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range)));
         auto r = lvd::range(dest.begin(), dest.end());
         deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+    }
+    std::vector<T_,Allocator_> deserialized (auto &&source_range) {
+        std::vector<T_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -151,8 +177,14 @@ struct Serialization_t<std::array<T_,N_>> {
         serialize_from(lvd::range(source.begin(), source.end()), dest);
     }
     void deserialize (std::array<T_,N_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         auto r = lvd::range(dest.begin(), dest.end());
         deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+    }
+    std::array<T_,N_> deserialized (auto &&source_range) {
+        std::array<T_,N_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -163,9 +195,15 @@ struct Serialization_t<std::pair<F_,S_>> {
         serialize_from(source.first, dest);
         serialize_from(source.second, dest);
     }
-    void deserialize (std::pair<F_, S_> &dest, auto &&source_range) {
+    void deserialize (std::pair<F_,S_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         deserialize_to(dest.first, std::forward<decltype(source_range)>(source_range));
         deserialize_to(dest.second, std::forward<decltype(source_range)>(source_range));
+    }
+    std::pair<F_,S_> deserialized (auto &&source_range) {
+        std::pair<F_,S_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -179,10 +217,16 @@ struct Serialization_t<std::map<Key_,Value_,Compare_,Allocator_>> {
             serialize_from(it, dest);
     }
     void deserialize (std::map<Key_,Value_,Compare_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)
             dest.emplace(deserialized_to<std::pair<Key_,Value_>>(std::forward<decltype(source_range)>(source_range)));
+    }
+    std::map<Key_,Value_,Compare_,Allocator_> deserialized (auto &&source_range) {
+        std::map<Key_,Value_,Compare_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -196,10 +240,16 @@ struct Serialization_t<std::set<Key_,Compare_,Allocator_>> {
             serialize_from(x, dest);
     }
     void deserialize (std::set<Key_,Compare_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)
             dest.emplace(deserialized_to<Key_>(std::forward<decltype(source_range)>(source_range)));
+    }
+    std::set<Key_,Compare_,Allocator_> deserialized (auto &&source_range) {
+        std::set<Key_,Compare_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -213,10 +263,16 @@ struct Serialization_t<std::unordered_map<Key_,Value_,Hash_,KeyEqual_,Allocator_
             serialize_from(it, dest);
     }
     void deserialize (std::unordered_map<Key_,Value_,Hash_,KeyEqual_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)
             dest.emplace(deserialized_to<std::pair<Key_,Value_>>(std::forward<decltype(source_range)>(source_range)));
+    }
+    std::unordered_map<Key_,Value_,Hash_,KeyEqual_,Allocator_> deserialized (auto &&source_range) {
+        std::unordered_map<Key_,Value_,Hash_,KeyEqual_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 
@@ -230,10 +286,16 @@ struct Serialization_t<std::unordered_set<Key_,Hash_,KeyEqual_,Allocator_>> {
             serialize_from(x, dest);
     }
     void deserialize (std::unordered_set<Key_,Hash_,KeyEqual_,Allocator_> &dest, auto &&source_range) {
+        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
         size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)
             dest.emplace(deserialized_to<Key_>(std::forward<decltype(source_range)>(source_range)));
+    }
+    std::unordered_set<Key_,Hash_,KeyEqual_,Allocator_> deserialized (auto &&source_range) {
+        std::unordered_set<Key_,Hash_,KeyEqual_,Allocator_> retval;
+        deserialize(retval, std::forward<decltype(source_range)>(source_range));
+        return retval;
     }
 };
 

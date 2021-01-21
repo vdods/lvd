@@ -117,6 +117,9 @@ target_link_libraries(liblvd PUBLIC Strict)
 
 if(BUILD_lvdtest)
     set(lvdtest_SOURCES
+        bin/lvdtest/DerivedString.hpp
+        bin/lvdtest/DerivedString_random.hpp
+        bin/lvdtest/DerivedString_serialization.hpp
         bin/lvdtest/main.cpp
         bin/lvdtest/test_abort.cpp
         bin/lvdtest/test_ANSIColor.cpp
