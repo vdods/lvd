@@ -134,4 +134,11 @@ Range_t<Iterator_> range (Iterator_ begin, Iterator_ end) {
     return Range_t<Iterator_>(begin, end);
 }
 
+template <typename T_> struct is_Range_t_ : public std::false_type { };
+template <typename Iterator_> struct is_Range_t_<Range_t<Iterator_>> : public std::true_type { };
+
+// Determines if a given type T_ is a Range_t<Iterator_> for some type Iterator_.
+template <typename T_>
+inline bool constexpr is_Range_t = is_Range_t_<T_>::value;
+
 } // end namespace lvd

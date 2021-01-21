@@ -154,3 +154,14 @@ LVD_TEST_BEGIN(320__Range_t__021)
     LVD_TEST_REQ_EQ(range_on_s(2,4).intersectioned_with(range_on_s(4,6)), range_on_s(4,4));
     LVD_TEST_REQ_EQ(range_on_s(2,4).intersectioned_with(range_on_s(5,7)), range_on_s(4,4));
 LVD_TEST_END
+
+inline void fancy_function (auto &&r) {
+    static_assert(lvd::is_Range_t<std::decay_t<decltype(r)>>);
+}
+
+LVD_TEST_BEGIN(320__Range_t__03)
+    LVD_TEST_REQ_IS_TRUE(lvd::is_Range_t<lvd::Range_t<char*>>);
+    LVD_TEST_REQ_IS_TRUE(lvd::is_Range_t<lvd::Range_t<int>>);
+    LVD_TEST_REQ_IS_TRUE(!lvd::is_Range_t<int>);
+    fancy_function(lvd::range(1,10));
+LVD_TEST_END
