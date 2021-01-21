@@ -50,7 +50,9 @@ void populate_random (T_ &dest, auto &rng, auto is_valid) {
 // Convenience function which calls the appropriate template specialization of MakeRandom_t.
 template <typename T_>
 T_ make_random (auto &rng) {
-    return MakeRandom_t<T_>()(rng);
+    // We call the constructor explicitly here so that if T_ has an explicit constructor but the
+    // implementation of MakeRandom_t is of a different type, it still works.
+    return T_(MakeRandom_t<T_>()(rng));
 }
 
 // This is a form takes an `is_valid` function which is used to filter out values in

@@ -53,7 +53,8 @@ T_ deserialized_to (Args_&&... args) {
         deserialize_to(retval, std::forward<Args_>(args)...);
         return retval;
     } else {
-        // We call the constructor explicitly here so that if T_ has an explicit constructor, it still works.
+        // We call the constructor explicitly here so that if T_ has an explicit constructor but the
+        // implementation of Serialization_t is of a different type, it still works.
         return T_(Serialization_t<T_>().deserialized(std::forward<Args_>(args)...));
     }
 }

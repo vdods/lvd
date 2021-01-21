@@ -15,17 +15,11 @@ template <> struct PopulateRandom_t<DerivedString_DC_IP> : public PopulateRandom
 template <> struct PopulateRandom_t<DerivedString_DC_EP> : public PopulateRandom_t<std::string> { };
 
 template <> struct PopulateRandom_t<DerivedString_NDC_IP> : public PopulateRandom_t<std::string> { };
-template <> struct MakeRandom_t<DerivedString_NDC_IP> : public MakeRandom_t<std::string> {
-    DerivedString_NDC_IP operator() (auto &rng) const {
-        return DerivedString_NDC_IP(make_random<std::string>(rng));
-    }
-};
+// Needed because DerivedString_NDC_IP is not default constructible.
+template <> struct MakeRandom_t<DerivedString_NDC_IP> : public MakeRandom_t<std::string> { };
 
 template <> struct PopulateRandom_t<DerivedString_NDC_EP> : public PopulateRandom_t<std::string> { };
-template <> struct MakeRandom_t<DerivedString_NDC_EP> : public MakeRandom_t<std::string> {
-    DerivedString_NDC_EP operator() (auto &rng) const {
-        return DerivedString_NDC_EP(make_random<std::string>(rng));
-    }
-};
+// Needed because DerivedString_NDC_EP is not default constructible.
+template <> struct MakeRandom_t<DerivedString_NDC_EP> : public MakeRandom_t<std::string> { };
 
 } // end namespace lvd
