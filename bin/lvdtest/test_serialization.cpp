@@ -48,6 +48,8 @@ void serialization_test_case (req::Context &req_context, std::vector<std::byte> 
 LVD_TEST_BEGIN(323__serialization__00)
     std::vector<std::byte> buffer;
 
+    serialization_test_case<bool>(req_context, buffer);
+
     serialization_test_case<char>(req_context, buffer);
     serialization_test_case<unsigned char>(req_context, buffer);
 
