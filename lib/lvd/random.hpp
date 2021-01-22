@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/abort.hpp"
+#include "lvd/remove_cv_recursive.hpp"
 #include <map>
 #include <random>
 #include <set>
@@ -147,83 +148,43 @@ struct PopulateRandom_t<std::pair<F_,S_>> {
     }
 };
 
-// Generates a random std::map of size within [0,10].
-template <typename... Types_>
-struct PopulateRandom_t<std::map<Types_...>> {
-    using Map = std::map<Types_...>;
-    void operator() (Map &dest, auto &rng) const {
-        using Key = typename Map::key_type;
-        using Value = typename Map::mapped_type;
-        using Pair = std::pair<Key,Value>;
-
-        auto size = std::uniform_int_distribution<size_t>(0, 10)(rng);
+// Helper implementation for associative containers.  Generates a container having size between 0 and 10, inclusive.
+template <typename Container_>
+struct PopulateRandom_AssociativeContainer_t {
+    void operator() (Container_ &dest, auto &rng) const {
+        using ValueType = remove_cv_recursive_t<typename Container_::value_type>;
+        auto desired_size = std::uniform_int_distribution<size_t>(0, 10)(rng);
         dest.clear();
         size_t i = 0;
-        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide.
+        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide,
+        // and it's further possible that desired_size is not achievable (e.g. std::set<bool>
+        // can't be any bigger than size 2).
         size_t constexpr WATCHDOG_LIMIT = 100;
-        while (dest.size() < size && i < WATCHDOG_LIMIT) {
-            dest.emplace(make_random<Pair>(rng));
+        while (dest.size() < desired_size && i < WATCHDOG_LIMIT) {
+            dest.emplace(make_random<ValueType>(rng));
             ++i;
         }
     }
 };
 
-// Generates a random std::unordered_map of size within [0,10].
+//
+// Definitions for specific associative containers.
+// -    std::map
+// -    std::set
+// -    std::unordered_map
+// -    std::unordered_set
+// -    NOTE: Would add std::multimap, std::multiset, std::unordered_multimap, std::unordered_multiset here.
+//
+
 template <typename... Types_>
-struct PopulateRandom_t<std::unordered_map<Types_...>> {
-    using UnorderedMap = std::unordered_map<Types_...>;
-    void operator() (UnorderedMap &dest, auto &rng) const {
-        using Key = typename UnorderedMap::key_type;
-        using Value = typename UnorderedMap::mapped_type;
-        using Pair = std::pair<Key,Value>;
-
-        auto size = std::uniform_int_distribution<size_t>(0, 10)(rng);
-        dest.clear();
-        size_t i = 0;
-        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide.
-        size_t constexpr WATCHDOG_LIMIT = 100;
-        while (dest.size() < size && i < WATCHDOG_LIMIT) {
-            dest.emplace(make_random<Pair>(rng));
-            ++i;
-        }
-    }
-};
-
-// Generates a random std::set of size within [0,10].
+struct PopulateRandom_t<std::map<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::map<Types_...>> { };
 template <typename... Types_>
-struct PopulateRandom_t<std::set<Types_...>> {
-    using Set = std::set<Types_...>;
-    void operator() (Set &dest, auto &rng) const {
-        using Key = typename Set::key_type;
-
-        auto size = std::uniform_int_distribution<size_t>(0, 10)(rng);
-        dest.clear();
-        size_t i = 0;
-        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide.
-        size_t constexpr WATCHDOG_LIMIT = 100;
-        while (dest.size() < size && i < WATCHDOG_LIMIT) {
-            dest.emplace(make_random<Key>(rng));
-            ++i;
-        }
-    }
-};
-
-// Generates a random std::unordered_set of size within [0,10].
+struct PopulateRandom_t<std::set<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::set<Types_...>> { };
 template <typename... Types_>
-struct PopulateRandom_t<std::unordered_set<Types_...>> {
-    using UnorderedSet = std::unordered_set<Types_...>;
-    void operator() (UnorderedSet &dest, auto &rng) const {
-        using Key = typename UnorderedSet::key_type;
+struct PopulateRandom_t<std::unordered_map<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::unordered_map<Types_...>> { };
+template <typename... Types_>
+struct PopulateRandom_t<std::unordered_set<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::unordered_set<Types_...>> { };
 
-        auto size = std::uniform_int_distribution<size_t>(0, 10)(rng);
-        dest.clear();
-        size_t i = 0;
-        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide.
-        size_t constexpr WATCHDOG_LIMIT = 100;
-        while (dest.size() < size && i < WATCHDOG_LIMIT) {
-            dest.emplace(make_random<Key>(rng));
-            ++i;
-        }
     }
 };
 
