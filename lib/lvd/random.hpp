@@ -185,6 +185,15 @@ struct PopulateRandom_t<std::unordered_map<Types_...>> : public PopulateRandom_A
 template <typename... Types_>
 struct PopulateRandom_t<std::unordered_set<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::unordered_set<Types_...>> { };
 
+// Generates a random std::optional with 75% likelihood of holding a value.
+template <typename T_>
+struct PopulateRandom_t<std::optional<T_>> {
+    void operator() (std::optional<T_> &dest, auto &rng) const {
+        bool has_value = std::uniform_int_distribution<size_t>(0, 3)(rng) != 0;
+        if (has_value)
+            dest = make_random<T_>(rng);
+        else
+            dest = std::nullopt;
     }
 };
 

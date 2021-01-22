@@ -120,7 +120,7 @@ LVD_TEST_BEGIN(321__random__02)
     test_random_generation_for_type<std::string>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__03)
+LVD_TEST_BEGIN(321__random__032)
     test_random_generation_for_type<std::vector<std::string>>(req_context);
 LVD_TEST_END
 
@@ -144,8 +144,24 @@ LVD_TEST_BEGIN(321__random__08)
     test_random_generation_for_type<std::unordered_set<uint32_t>>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__09)
+LVD_TEST_BEGIN(321__random__035)
     test_random_generation_for_type<std::vector<std::map<uint32_t,std::string>>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__090)
+    test_random_generation_for_type<std::optional<bool>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__091)
+    test_random_generation_for_type<std::optional<uint8_t>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__092)
+    test_random_generation_for_type<std::optional<std::string>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__093)
+    test_random_generation_for_type<std::optional<std::optional<uint16_t>>>(req_context);
 LVD_TEST_END
 
 //

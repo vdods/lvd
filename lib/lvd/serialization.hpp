@@ -9,6 +9,7 @@
 #include "lvd/Range_t.hpp"
 #include "lvd/remove_cv_recursive.hpp"
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -348,5 +349,31 @@ template <typename... Types_>
 struct SerializeFrom_t<std::unordered_set<Types_...>> : public SerializeFrom_AssociativeContainer_t<std::unordered_set<Types_...>> { };
 template <typename... Types_>
 struct DeserializeTo_t<std::unordered_set<Types_...>> : public DeserializeTo_AssociativeContainer_t<std::unordered_set<Types_...>> { };
+
+//
+// std::optional<T_>
+//
+
+template <typename T_>
+struct SerializeFrom_t<std::optional<T_>> {
+    template <typename DestIterator_>
+    void operator() (std::optional<T_> const &source, DestIterator_ dest) const {
+        serialize_from(source.has_value(), dest);
+        if (source.has_value())
+            serialize_from(source.value(), dest);
+    }
+};
+
+template <typename T_>
+struct DeserializeTo_t<std::optional<T_>> {
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (std::optional<T_> &dest, Range_ &&source_range) const {
+        auto has_value = deserialized_to<bool>(std::forward<Range_>(source_range));
+        if (has_value)
+            dest = std::make_optional<T_>(deserialized_to<T_>(std::forward<Range_>(source_range)));
+        else
+            dest = std::nullopt;
+    }
+};
 
 } // end namespace lvd

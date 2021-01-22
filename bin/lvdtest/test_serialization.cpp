@@ -93,8 +93,13 @@ LVD_TEST_BEGIN(323__serialization__00)
     serialization_test_case<std::set<std::string>>(req_context, buffer);
     serialization_test_case<std::unordered_set<std::string>>(req_context, buffer);
 
-    // Do an absurd one for fun.
-    serialization_test_case<std::vector<std::map<std::string,std::unordered_map<int,std::set<uint16_t>>>>>(req_context, buffer);
+    serialization_test_case<std::optional<bool>>(req_context, buffer);
+    serialization_test_case<std::optional<uint16_t>>(req_context, buffer);
+    serialization_test_case<std::optional<std::string>>(req_context, buffer);
+    serialization_test_case<std::optional<std::optional<double>>>(req_context, buffer);
+
+//     // Do an absurd one for fun.
+//     serialization_test_case<std::vector<std::map<std::string,std::unordered_map<int,std::set<uint16_t>>>>>(req_context, buffer);
 LVD_TEST_END
 
 //

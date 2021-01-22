@@ -106,4 +106,14 @@ inline ostream &operator << (ostream &out, unordered_set<K_,Hash_,KeyEqual_,Allo
     return out << '}';
 }
 
+template <typename T_>
+inline ostream &operator << (ostream &out, optional<T_> const &x) {
+    out << "Optional(";
+    if (x.has_value())
+        out << x.value();
+    else
+        out << "<no-value>";
+    return out << ')';
+}
+
 } // end namespace std
