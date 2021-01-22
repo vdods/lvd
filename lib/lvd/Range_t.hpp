@@ -153,4 +153,8 @@ template <typename Iterator_> struct is_Range_t_<Range_t<Iterator_>> : public st
 template <typename T_>
 inline bool constexpr is_Range_t = is_Range_t_<T_>::value;
 
+template <typename T_> struct Range_t_iterator;
+template <typename T_> using Range_t_iterator_t = typename Range_t_iterator<T_>::type;
+template <typename Iterator_> struct Range_t_iterator<Range_t<Iterator_>> { using type = Iterator_; };
+
 } // end namespace lvd

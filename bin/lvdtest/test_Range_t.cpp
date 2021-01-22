@@ -183,3 +183,19 @@ LVD_TEST_BEGIN(320__Range_t__03)
     LVD_TEST_REQ_IS_TRUE(!lvd::is_Range_t<int>);
     fancy_function(lvd::range(1,10));
 LVD_TEST_END
+
+template <typename Iterator_>
+void increment_range_begin (lvd::Range_t<Iterator_> r) {
+    ++r.begin();
+}
+
+LVD_TEST_BEGIN(320__Range_t__04)
+    auto s = std::string("hippos and hippas");
+    auto r = lvd::range(s);
+    using R = decltype(r);
+    LVD_TEST_REQ_IS_TRUE((std::is_same_v<std::string::iterator,lvd::Range_t_iterator_t<R>>));
+
+    // Shouldn't affect r.
+    increment_range_begin(r);
+    LVD_TEST_REQ_IS_TRUE(r.begin() == s.begin());
+LVD_TEST_END
