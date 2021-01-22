@@ -30,27 +30,30 @@ namespace lvd {
 // `template <typename DestIterator_> void operator() (T_ const &source, DestIterator_ dest) const`
 template <typename T_> struct SerializeFrom_t;
 // Defines how to deserialize T_ in-place.  Requires T_ to be default-constructible.
-// Template-specialization should provide method `void operator() (lvd::Range_t<Iterator_> &dest_range, auto &&source_range) const`
+// Template-specialization should provide method
+//     template <typename Range_, typename = std::enable_if_t<lvd::is_Range_t<Range_>>>
+//     void operator() (lvd::Range_t<Iterator_> &dest_range, Range_ &&source_range) const
 template <typename T_> struct DeserializeTo_t;
 // Defines how to deserialize T_, returning by value.  Only needed if T_ is not default-constructible.
-// Template-specialization should provide method `T_ operator() (auto &&source_range) const`.
+// Template-specialization should provide method
+//     template <typename Range_, typename = std::enable_if_t<lvd::is_Range_t<Range_>>>
+//     T_ operator() (Range_ &&source_range) const
 template <typename T_> struct DeserializedTo_t;
 
 //
 // These are convenience functions that do type deduction and generally reduce boilerplate.
 //
 
-// Serialize a value into dest iterator, using the appropriate specialization of Serialization_t<T_>.
+// Serialize a value into dest iterator.  Convenience function for using SerializeFrom_t with type deduction.
 template <typename T_, typename DestIterator_>
 void serialize_from (T_ const &source, DestIterator_ dest) {
     SerializeFrom_t<T_>()(source, dest);
 }
 
-// Deserialize a value from source_range, using the appropriate specialization of Serialization_t<T_>.
-template <typename T_>
-void deserialize_to (T_ &dest, auto &&source_range) {
-    static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
-    DeserializeTo_t<T_>()(dest, std::forward<decltype(source_range)>(source_range));
+// Deserialize a value from source_range.  Convenience function for using DeserializeTo_t with type deduction.
+template <typename T_, typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+void deserialize_to (T_ &dest, Range_ &&source_range) {
+    DeserializeTo_t<T_>()(dest, std::forward<Range_>(source_range));
 }
 
 // Convenience function to get the serialized value as a std::vector<std::byte>.
@@ -92,9 +95,8 @@ struct SerializeFrom_t {
 // This default implementation works only for integral or floating point types.
 template <typename T_>
 struct DeserializeTo_t {
-    template <typename = std::enable_if_t<is_basic_serializable_v<T_>>>
-    void operator() (T_ &dest, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>, typename = std::enable_if_t<is_basic_serializable_v<T_>>>
+    void operator() (T_ &dest, Range_ &&source_range) const {
         // It's probably rude to abort upon an input error.  But for now, whateva.
         LVD_G_REQ_GEQ(size_t(source_range.size()), sizeof(T_), "source_range.size() is not large enough to read a value of the dest type");
 
@@ -110,10 +112,10 @@ struct DeserializeTo_t {
 // This default implementation works only for default-constructible types.
 template <typename T_>
 struct DeserializedTo_t {
-    template <typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
-    T_ operator() (auto &&source_range) const {
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>, typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
+    T_ operator() (Range_ &&source_range) const {
         T_ retval;
-        DeserializeTo_t<T_>()(retval, std::forward<decltype(source_range)>(source_range));
+        DeserializeTo_t<T_>()(retval, std::forward<Range_>(source_range));
         return retval;
     }
 };
@@ -125,7 +127,7 @@ struct DeserializedTo_t {
 //
 
 template <typename Iterator_>
-struct SerializeFrom_t<lvd::Range_t<Iterator_>> {
+struct SerializeFrom_Range_t {
     template <typename DestIterator_>
     void operator() (lvd::Range_t<Iterator_> const &source_range, DestIterator_ dest) const {
         // TODO: Could add another case where the range represents a contiguous sequence of values
@@ -141,9 +143,9 @@ struct SerializeFrom_t<lvd::Range_t<Iterator_>> {
 };
 
 template <typename Iterator_>
-struct DeserializeTo_t<lvd::Range_t<Iterator_>> {
-    void operator() (lvd::Range_t<Iterator_> &dest_range, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
+struct DeserializeTo_Range_t {
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (lvd::Range_t<Iterator_> &dest_range, Range_ &&source_range) const {
         // TODO: Could add another case where the range represents a contiguous sequence of values
         // that could be byte-copied and then endian-corrected.
         if constexpr (std::is_same_v<Iterator_,std::byte const *>) {
@@ -153,7 +155,7 @@ struct DeserializeTo_t<lvd::Range_t<Iterator_>> {
             source_range.begin() += size;
         } else {
             for (auto &dest : dest_range)
-                deserialize_to(dest, std::forward<decltype(source_range)>(source_range));
+                deserialize_to(dest, std::forward<Range_>(source_range));
         }
     }
 };
@@ -162,6 +164,18 @@ template <typename Iterator_I_AM_A_COMPILE_ERROR_>
 struct DeserializedTo_t<lvd::Range_t<Iterator_I_AM_A_COMPILE_ERROR_>> {
     // operator() is intentionally unimplemented here in order to produce a compile error.
 };
+
+// Convenience function for using SerializeFrom_Range_t.
+template <typename Iterator_, typename DestIterator_>
+void serialize_from_range (lvd::Range_t<Iterator_> const &source, DestIterator_ dest) {
+    SerializeFrom_Range_t<Iterator_>()(source, dest);
+}
+
+// Convenience function for using DeserializeTo_Range_t.
+template <typename Iterator_, typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+void deserialize_to_range (lvd::Range_t<Iterator_> dest, Range_ &&source_range) {
+    DeserializeTo_Range_t<Iterator_>()(dest, std::forward<Range_>(source_range));
+}
 
 //
 // Implementation helper for any seqentual container type that has begin(), end(), and a dynamic size.
@@ -173,26 +187,25 @@ struct SerializeFrom_SequenceContainer_DynamicSize_t {
     void operator() (Container_ const &source, DestIterator_ dest) const {
         LVD_G_REQ_LT(source.size(), 0x100000000ull, "source container is too big; this serialize function uses uint32_t for container size");
         serialize_from<uint32_t>(source.size(), dest);
-        serialize_from(lvd::range(source), dest);
+//         serialize_from(lvd::range(source), dest);
+        serialize_from_range(lvd::range(source), dest);
     }
 };
 
 template <typename Container_>
 struct DeserializeTo_SequenceContainer_DynamicSize_t {
-    void operator() (Container_ &dest, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
-
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (Container_ &dest, Range_ &&source_range) const {
         using ValueType = typename Container_::value_type;
         if constexpr (is_basic_serializable_v<ValueType>) {
-            dest.resize(deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range)));
-            auto r = lvd::range(dest);
-            deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+            dest.resize(deserialized_to<uint32_t>(std::forward<Range_>(source_range)));
+            deserialize_to_range(lvd::range(dest), std::forward<Range_>(source_range));
         } else {
             dest.clear();
-            size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
+            size_t size = deserialized_to<uint32_t>(std::forward<Range_>(source_range));
             dest.reserve(size);
             for (size_t i = 0; i < size; ++i)
-                dest.push_back(deserialized_to<ValueType>(std::forward<decltype(source_range)>(source_range)));
+                dest.push_back(deserialized_to<ValueType>(std::forward<Range_>(source_range)));
             assert(dest.size() == size);
         }
     }
@@ -224,16 +237,15 @@ template <typename T_, size_t N_>
 struct SerializeFrom_t<std::array<T_,N_>> {
     template <typename DestIterator_>
     void operator() (std::array<T_,N_> const &source, DestIterator_ dest) const {
-        serialize_from(lvd::range(source), dest);
+        serialize_from_range(lvd::range(source), dest);
     }
 };
 
 template <typename T_, size_t N_>
 struct DeserializeTo_t<std::array<T_,N_>> {
-    void operator() (std::array<T_,N_> &dest, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
-        auto r = lvd::range(dest);
-        deserialize_to(r, std::forward<decltype(source_range)>(source_range));
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (std::array<T_,N_> &dest, Range_ &&source_range) const {
+        deserialize_to_range(lvd::range(dest), std::forward<Range_>(source_range));
     }
 };
 
@@ -254,25 +266,26 @@ struct SerializeFrom_t<std::pair<F_,S_>> {
 
 template <typename F_, typename S_>
 struct DeserializeTo_t<std::pair<F_,S_>> {
-    void operator() (std::pair<F_,S_> &dest, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
-        deserialize_to(dest.first, std::forward<decltype(source_range)>(source_range));
-        deserialize_to(dest.second, std::forward<decltype(source_range)>(source_range));
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (std::pair<F_,S_> &dest, Range_ &&source_range) const {
+        deserialize_to(dest.first, std::forward<Range_>(source_range));
+        deserialize_to(dest.second, std::forward<Range_>(source_range));
     }
 };
 
 template <typename F_, typename S_>
 struct DeserializedTo_t<std::pair<F_,S_>> {
-    std::pair<F_,S_> operator() (auto &&source_range) const {
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    std::pair<F_,S_> operator() (Range_ &&source_range) const {
         if constexpr (std::is_default_constructible_v<F_> && std::is_default_constructible_v<S_>) {
             // This assumes that Container_ is default constructible.
             std::pair<F_,S_> retval;
-            deserialize_to(retval, std::forward<decltype(source_range)>(source_range));
+            deserialize_to(retval, std::forward<Range_>(source_range));
             return retval;
         } else {
             return std::pair<F_,S_>(
-                deserialize_to<F_>(std::forward<decltype(source_range)>(source_range)),
-                deserialize_to<S_>(std::forward<decltype(source_range)>(source_range))
+                deserialize_to<F_>(std::forward<Range_>(source_range)),
+                deserialize_to<S_>(std::forward<Range_>(source_range))
             );
         }
     }
@@ -308,15 +321,14 @@ struct _remove_cv_recursive<std::pair<F_,S_>> {
 
 template <typename Container_>
 struct DeserializeTo_AssociativeContainer_t {
-    void operator() (Container_ &dest, auto &&source_range) const {
-        static_assert(is_Range_t<std::decay_t<decltype(source_range)>>, "source_range must be lvd::Range_t<Iterator_> for some type Iterator_");
-
+    template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
+    void operator() (Container_ &dest, Range_ &&source_range) const {
         // _remove_cv_recursive is needed because for std::map and std::unordered_map, value_type is std::pair<Key_ const, T_>.
         using ValueType = _remove_cv_recursive_t<typename Container_::value_type>;
-        size_t size = deserialized_to<uint32_t>(std::forward<decltype(source_range)>(source_range));
+        size_t size = deserialized_to<uint32_t>(std::forward<Range_>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)
-            dest.emplace(deserialized_to<ValueType>(std::forward<decltype(source_range)>(source_range)));
+            dest.emplace(deserialized_to<ValueType>(std::forward<Range_>(source_range)));
     }
 };
 
