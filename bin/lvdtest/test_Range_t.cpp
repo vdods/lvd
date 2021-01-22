@@ -64,6 +64,24 @@ LVD_TEST_BEGIN(320__Range_t__012)
     LVD_TEST_REQ_EQ(out.str(), "H,I,P,P,O,");
 LVD_TEST_END
 
+LVD_TEST_BEGIN(320__Range_t__013)
+    std::string s("HIPPO");
+    auto r1 = lvd::range(s);
+    auto r2 = lvd::range(r1); // This should use copy semantics.
+    // I'd use LVD_TEST_REQ_EQ but then I'd have to implement operator<< for std::string iterator which is silly.
+    LVD_TEST_REQ_IS_TRUE(r1.begin() == r2.begin());
+    LVD_TEST_REQ_IS_TRUE(r1.end() == r2.end());
+LVD_TEST_END
+
+LVD_TEST_BEGIN(320__Range_t__014)
+    std::string s("HIPPO");
+    auto r1 = lvd::range(s);
+    auto r2 = lvd::range(lvd::range(s)); // This should use move semantics.
+    // I'd use LVD_TEST_REQ_EQ but then I'd have to implement operator<< for std::string iterator which is silly.
+    LVD_TEST_REQ_IS_TRUE(r1.begin() == r2.begin());
+    LVD_TEST_REQ_IS_TRUE(r1.end() == r2.end());
+LVD_TEST_END
+
 namespace lvd {
 
 // This is needed only so that LVD_TEST_REQ_* can generate failure messages.  It could just as easily

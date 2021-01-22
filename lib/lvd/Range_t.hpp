@@ -134,6 +134,18 @@ Range_t<Iterator_> range (Iterator_ begin, Iterator_ end) {
     return Range_t<Iterator_>(begin, end);
 }
 
+// Convenience function which provides the expected idempotent behavior.  I.e. lvd::range(lvd::range(x)) == lvd::range(x).
+template <typename Iterator_>
+Range_t<Iterator_> range (Range_t<Iterator_> const &r) {
+    return r;
+}
+
+// Convenience function which provides the expected idempotent behavior.  I.e. lvd::range(lvd::range(x)) == lvd::range(x).
+template <typename Iterator_>
+Range_t<Iterator_> range (Range_t<Iterator_> &&r) {
+    return std::move(r);
+}
+
 template <typename T_> struct is_Range_t_ : public std::false_type { };
 template <typename Iterator_> struct is_Range_t_<Range_t<Iterator_>> : public std::true_type { };
 
