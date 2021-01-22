@@ -51,7 +51,7 @@ void populate_random (T_ &dest, auto &rng, auto is_valid) {
 template <typename T_>
 T_ make_random (auto &rng) {
     // We call the constructor explicitly here so that if T_ has an explicit constructor but the
-    // implementation of MakeRandom_t is of a different type, it still works.
+    // implementation of MakeRandom_t produces a different type, it still works.
     return T_(MakeRandom_t<T_>()(rng));
 }
 
