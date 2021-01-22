@@ -64,6 +64,58 @@ void test_random_generation_for_type (req::Context &req_context) {
     }
 }
 
+LVD_TEST_BEGIN(321__random__010)
+    test_random_generation_for_type<bool>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__011)
+    test_random_generation_for_type<std::byte>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0120)
+    test_random_generation_for_type<uint8_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0121)
+    test_random_generation_for_type<int8_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0130)
+    test_random_generation_for_type<uint16_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0131)
+    test_random_generation_for_type<int16_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0140)
+    test_random_generation_for_type<uint32_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0141)
+    test_random_generation_for_type<int32_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0150)
+    test_random_generation_for_type<uint64_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0151)
+    test_random_generation_for_type<int64_t>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0160)
+    test_random_generation_for_type<float>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0161)
+    test_random_generation_for_type<double>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__0162)
+    test_random_generation_for_type<long double>(req_context);
+LVD_TEST_END
+
 LVD_TEST_BEGIN(321__random__02)
     test_random_generation_for_type<std::string>(req_context);
 LVD_TEST_END
