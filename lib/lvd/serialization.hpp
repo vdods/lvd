@@ -7,6 +7,7 @@
 #include "lvd/endian.hpp"
 #include "lvd/g_req_context.hpp"
 #include "lvd/Range_t.hpp"
+#include "lvd/remove_cv_recursive.hpp"
 #include <map>
 #include <set>
 #include <string>
@@ -306,25 +307,12 @@ struct SerializeFrom_AssociativeContainer_t {
     }
 };
 
-template <typename T_>
-struct _remove_cv_recursive {
-    using type = std::remove_cv_t<T_>;
-};
-
-template <typename T_>
-using _remove_cv_recursive_t = typename _remove_cv_recursive<T_>::type;
-
-template <typename F_, typename S_>
-struct _remove_cv_recursive<std::pair<F_,S_>> {
-    using type = std::pair<_remove_cv_recursive_t<F_>,_remove_cv_recursive_t<S_>>;
-};
-
 template <typename Container_>
 struct DeserializeTo_AssociativeContainer_t {
     template <typename Range_, typename = std::enable_if_t<is_Range_t<Range_>>>
     void operator() (Container_ &dest, Range_ &&source_range) const {
-        // _remove_cv_recursive is needed because for std::map and std::unordered_map, value_type is std::pair<Key_ const, T_>.
-        using ValueType = _remove_cv_recursive_t<typename Container_::value_type>;
+        // remove_cv_recursive is needed because for std::map and std::unordered_map, value_type is std::pair<Key_ const, T_>.
+        using ValueType = remove_cv_recursive_t<typename Container_::value_type>;
         size_t size = deserialized_to<uint32_t>(std::forward<Range_>(source_range));
         dest.clear();
         for (size_t i = 0; i < size; ++i)

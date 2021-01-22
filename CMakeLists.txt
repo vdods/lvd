@@ -68,6 +68,7 @@ set(liblvd_HEADERS
     lib/lvd/Pipe.hpp
     lib/lvd/random.hpp
     lib/lvd/Range_t.hpp
+    lib/lvd/remove_cv_recursive.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
     lib/lvd/serialization.hpp
