@@ -42,7 +42,7 @@ ostream &operator << (ostream &out, array<T_,N_> const &a) {
             has_printed_element = true;
         out << x;
     }
-    return out << " ]";
+    return out << ']';
 }
 
 template <typename F_, typename S_>
