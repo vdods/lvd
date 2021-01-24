@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include "lvd/abort.hpp"
 #include "lvd/remove_cv_recursive.hpp"
 #include <map>
@@ -16,7 +17,9 @@ namespace lvd {
 
 // TODO: Create some sort of RandomContext class which allows setting of various parameters,
 // such as length and content of random strings, distributions to use on arithmetic types,
-// iteration limits on is_valid-generation of various types, etc.
+// iteration limits on is_valid-generation of various types, etc.  This would be a template
+// parameter after T_ in the various functions, and if there were any state to that struct,
+// such as specific params for distributions, then that would be passed in after rng.
 
 // Implementations should provide `void operator() (T_ &dest, auto &rng) const`, which
 // populates dest in-place with a random value, and where ... is an optional is_valid function
@@ -74,20 +77,83 @@ T_ make_random (auto &rng, auto is_valid) {
 // Default implementations of PopulateRandom_t and MakeRandom_t.
 //
 
-// Default implementation exists if T_ is trivially copyable.  If T_ is not trivially
-// copyable, then you must provide your own template specialization of PopulateRandom_t.
-template <typename T_>
-struct PopulateRandom_t {
-    template <typename = std::enable_if_t<std::is_trivially_copyable_v<T_>>>
-    void operator() (T_ &dest, auto &rng) const {
-        // I'm sure this could be make faster without much work.
-        static std::uniform_int_distribution<uint8_t> d(0x00, 0xFF);
-        auto begin = reinterpret_cast<uint8_t *>(&dest);
-        auto end = begin + sizeof(T_);
-        for (auto it = begin; it < end; ++it)
-            *it = d(rng);
+// Need to specify implementation for bool specifically, since bool apparently can store values
+// outside of just 0 and 1.
+template <>
+struct PopulateRandom_t<bool> {
+    void operator() (bool &dest, auto &rng) const {
+        // There's probably a faster way to generate a single random bit.
+        static std::uniform_int_distribution<uint8_t> d(0, 1);
+        dest = d(rng) != 0;
     }
 };
+
+// Need to specify implementation for std::byte, since it's not considered an arithmetic type.
+template <>
+struct PopulateRandom_t<std::byte> {
+    void operator() (std::byte &dest, auto &rng) const {
+        static std::uniform_int_distribution<uint8_t> d;
+        dest = std::byte(d(rng));
+    }
+};
+
+//
+// Implementation for integral types.
+//
+
+// Helper template
+template <typename Int_>
+struct PopulateRandom_Int_t {
+    void operator() (Int_ &dest, auto &rng) const {
+        static_assert(std::is_integral_v<Int_>);
+        static std::uniform_int_distribution<Int_> d;
+        dest = d(rng);
+    }
+};
+
+template <>
+struct PopulateRandom_t<char> : public PopulateRandom_Int_t<char> { };
+template <>
+struct PopulateRandom_t<long long int> : public PopulateRandom_Int_t<long long int> { };
+template <>
+struct PopulateRandom_t<unsigned long long int> : public PopulateRandom_Int_t<unsigned long long int> { };
+template <>
+struct PopulateRandom_t<int8_t> : public PopulateRandom_Int_t<int8_t> { };
+template <>
+struct PopulateRandom_t<uint8_t> : public PopulateRandom_Int_t<uint8_t> { };
+template <>
+struct PopulateRandom_t<int16_t> : public PopulateRandom_Int_t<int16_t> { };
+template <>
+struct PopulateRandom_t<uint16_t> : public PopulateRandom_Int_t<uint16_t> { };
+template <>
+struct PopulateRandom_t<int32_t> : public PopulateRandom_Int_t<int32_t> { };
+template <>
+struct PopulateRandom_t<uint32_t> : public PopulateRandom_Int_t<uint32_t> { };
+template <>
+struct PopulateRandom_t<int64_t> : public PopulateRandom_Int_t<int64_t> { };
+template <>
+struct PopulateRandom_t<uint64_t> : public PopulateRandom_Int_t<uint64_t> { };
+
+//
+// Need to specify implementation for floating point types specifically, to avoid generating a NaN or infinity.
+//
+
+// Helper template
+template <typename Float_>
+struct PopulateRandom_Float_t {
+    void operator() (Float_ &dest, auto &rng) const {
+        static_assert(std::is_floating_point_v<Float_>);
+        static std::normal_distribution<float> d(Float_(0));
+        dest = d(rng);
+    }
+};
+
+template <>
+struct PopulateRandom_t<float> : public PopulateRandom_Float_t<float> { };
+template <>
+struct PopulateRandom_t<double> : public PopulateRandom_Float_t<double> { };
+template <>
+struct PopulateRandom_t<long double> : public PopulateRandom_Float_t<long double> { };
 
 // Default implementation using PopulateRandom_t<T_> exists if T_ is default constructible (which
 // obviously depends on PopulateRandom_t<T_> having an implementation.  If T_ is not default
