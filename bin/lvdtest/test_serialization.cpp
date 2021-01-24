@@ -65,6 +65,9 @@ LVD_TEST_BEGIN(323__serialization__00)
     serialization_test_case<long long int>(req_context, buffer);
     serialization_test_case<long long unsigned int>(req_context, buffer);
 
+    serialization_test_case<ptrdiff_t>(req_context, buffer);
+    serialization_test_case<size_t>(req_context, buffer);
+
     serialization_test_case<std::byte>(req_context, buffer);
 
     serialization_test_case<uint8_t>(req_context, buffer);
