@@ -75,6 +75,8 @@ set(liblvd_HEADERS
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp
+    lib/lvd/Type_t.hpp
+    lib/lvd/TypeString_t.hpp
     lib/lvd/util.hpp
     lib/lvd/variant.hpp
 )
@@ -139,6 +141,8 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
+        bin/lvdtest/test_Type_t.cpp
+        bin/lvdtest/test_TypeString_t.cpp
         bin/lvdtest/test_util.cpp
         bin/lvdtest/test_variant.cpp
     )
