@@ -115,6 +115,68 @@ files that were listed in the log.
 
     Similar with color guards.
 
+-   Idea: Use a thread-local variable to store a thread's current `Log` object, or maybe `Log` stack.  This would be
+    used for better logging call-stack and other hierarchical stuff in a way that's thread safe.  Should still have
+    the `g_log` object though.
+
+-   Idea: Define a total order on `Type_t<T>`, in one of the following ways:
+    -   `Type_t<T>` < `Type_t<U>` iff their `typeid`s compare less-than (this is not portable, but is fast).
+    -   `Type_t<T>` < `Type_t<U>` iff their type strings compare less-than (portable, but not fast).
+    -   There's probably a portable, fast way that can be figured out.
+-   Idea: Cause `Type_t<T>` to inherit `Type_t<P>` for each parent class `P` of `T`.  Then it would be possible to
+    define the natural partial order on types based on inheritance subtyping, as well as define a kind of type-based
+    polymorphism on global functions.
+-   Idea: Try to make a `Template_t<template X<typename...>>` analog of `Type_t<T>` which allows use of templates
+    (not instances of templates) as first-class values.  Or could this work by specializing `Type_t<template X<typename...>>`?
+
+-   Idea: Instead of overloading `std::ostream &operator<< (std::ostream &out, T const &t)` for a zillion types `T`,
+    making the overload resolution failure error messages endless streams of misery, use a wrapper type which simply
+    contains a single `T const &` member variable, which also carries semantic meaning regarding how the value is to
+    be rendered into the stream.  In particular:
+    -   `Print<T>` means "print in a minimal, human-readable form", with options:
+        -   Print with only their content, but not necessarily their type info.
+        -   Print as a literal, like in a programming language, where type content is conveyed.
+    -   `Binary<T>` means "serialize as binary into the stream", with options:
+        -   Assume the type is known, so only render value into the stream.
+        -   Include full type info in the stream, so that deserialization doesn't have to have any context.
+    A challenge in implementing this is to be able to still use function overloading, instead of the `std::hash<T>`
+    pattern where the type has to be specified exactly.  There should be a type `HuStream` which holds a
+    `std::ostream &` and any other stream-configuration options, and for each type `T` that should have a
+    human-readable print method, there should be an overload like:
+    -   `HuStream &operator<< (HuStream &out, T const &value)`
+    Similar for `SzStream`
+
+    Syntax ideas:
+    -   Jamming
+
+            std::cout << "normal" << lvd::hu << v0 << v1;               // v0, v1 are human-printed
+            std::cout << "normal" << lvd::hu(v0) << lvd::hu(v1) << v2;  // v0, v1 are human-printed, but not v2
+            std::cout << "normal" << lvd::hu(v0, v1) << v2;             // v0, v1 are human-printed, but not v2
+            std::cout << (lvd::hu << v0 << v1) << v2;                   // v0, v1 are human-printed, but not v2
+            std::cout << lvd::hu << v0 << v1 << lvd::hu_end << v2;      // v0, v1 are human-printed, but not v2
+            binary_stream << lvd::sz << v0 << v1 << v2;                 // v0, v1, v2 are serialized
+            binary_stream << (lvd::sz << v0 << v1) << v2;               // v0, v1 are serialized, but not v2
+            binary_stream << lvd::sz << v0 << v1 << lvd::sz_end << v2;  // v0, v1 are serialized, but not v2
+            binary_stream << lvd::sz << v0 << v1 << lvd::sz_end << v2;  // v0, v1 are serialized, but not v2
+
+        A few different syntaxes:
+        -   `out << v0 << hu(v1) << hu(v2) << v3;` : Each value uses its own call to `lvd::hu`.
+        -   `out << v0 << hu(v1, v2) << v3;` : Can supply an arbitrary number of values to `lvd::hu`.
+        -   `out << v0 << hu << v1 << v2 << hu_end << v3;` : Explicit begin and end to the `lvd::hu`-printed values.
+        -   `out << v0 << (hu << v1 << v2) << v3;` : Paren-specified scope for `lvd::hu`-printed values.
+
+    Potentially there could be other helper types and functions that parameterize the particular rendering into the
+    stream, such as:
+    -   For human-readable printing:
+        -   Number base
+        -   Boolean format
+        -   Localization conventions, e.g. date, time, decimal formats
+    -   For binary serialization:
+        -   Endianness
+        -   Compression/decompression of stream
+
+
+
 ## To-dos
 
 -   Need to ensure that the serialization of `std::unordered_map` and `std::unordered_set` produce
