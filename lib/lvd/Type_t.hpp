@@ -5,27 +5,22 @@
 namespace lvd {
 
 // Can be used as a value to represent the type T_ itself, making it possible to
-// have types as first class values.  This class has no members, so it's necessarily
-// a singleton, and in fact there is an inline static singleton declared, so its
+// have types as first class values.  This class has no members, so it's abstractly
+// a singleton.  There is an inline static singleton instance declared, so its
 // address should uniquely identify the type (probably, maybe there are situations
 // in which the linker wouldn't collapse them together).
 //
 // The global function type_v<T_>() can be used to conveniently retrieve the Type_t<T_> singleton.
+//
+// TODO: Create a baseclass Type with CRTP, so that Type* can be used as the key in containers.
 template <typename T_>
 class Type_t {
 public:
 
     // Use of singletons allows type_v<T_> (defined below) to be uniquely identified by address,
-    // and therefore can be used in
-    inline static Type_t const SINGLETON = Type_t();
-
-    // Prevent copy and move construction.  This is part of the uniqueness described by SINGLETON.;
-    Type_t (Type_t const &) = delete;
-    Type_t (Type_t &&) = delete;
-
-    // Prevent copy and move assignment.  This is part of the uniqueness described by SINGLETON.;
-    Type_t &operator = (Type_t const &) = delete;
-    Type_t &operator = (Type_t &&) = delete;
+    // and therefore can be used as a runtime value for distinction or mapping.  This singleton
+    // doesn't need to be const, because there's no state that can be changed anyway..
+    inline static Type_t SINGLETON = Type_t();
 
     // This will call the constructor of T_ with the given args, so that an instance of Type_t<T_>
     // can behave like `T_` itself.
@@ -59,15 +54,27 @@ public:
     constexpr bool is_unrelated_to (Type_t<Other_> const &other) const { return !this->is_subtype_of(other) && !this->is_supertype_of(other); }
 
     // TODO: Implement functions to produce types like pair, tuple, etc.
-
-private:
-
-    // Only SINGLETON should be able to construct one of these.
-    Type_t () { }
 };
 
 // This allows very terse use of Type_t<T_>.
 template <typename T_>
-inline static Type_t<T_> const &type_v = Type_t<T_>::SINGLETON;
+inline static Type_t<T_> &type_v = Type_t<T_>::SINGLETON;
+
+// Convenience functions that does type deduction.
+template <typename T_>
+Type_t<T_> &type_of (T_ const &) {
+    return type_v<T_>;
+}
+// // This one returns a non-singleton instance.
+// template <typename T_>
+// Type_t<T_> make_type_of (T_ const &) {
+//     return Type_t<T_>();
+// }
+
+// Template metafunction for determining if a given type is Type_t<T_> for some T_
+template <typename T_> struct is_Type_t : public std::false_type { };
+template <typename T_> inline bool constexpr is_Type_t_v = is_Type_t<T_>::value;
+
+template <typename T_> struct is_Type_t<Type_t<T_>> : public std::true_type { };
 
 } // end namespace lvd

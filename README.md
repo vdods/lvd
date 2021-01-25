@@ -175,7 +175,7 @@ files that were listed in the log.
         -   Endianness
         -   Compression/decompression of stream
 
-
+-   Idea: For semantic subtypes, use a template metafunction to return the concrete type for a semantic subtype.
 
 ## To-dos
 

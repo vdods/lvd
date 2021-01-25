@@ -50,6 +50,7 @@ inline bool constexpr is_endiannated_type_v = std::is_arithmetic_v<T_> || std::i
 
 template <typename T_, typename = std::enable_if_t<is_endiannated_type_v<T_>>>
 void swap_byte_order_of (T_ &value) {
+    // TODO: Allow for sizeof(long double)
     static_assert(sizeof(T_) == 1 || sizeof(T_) == 2 || sizeof(T_) == 4 || sizeof(T_) == 8, "can only swap_byte_order_of a type of size 1, 2, 4, or 8.");
 
     // TODO: Implement faster version, verify it produces minimal asm.

@@ -4,11 +4,13 @@
 
 #include <cstddef>
 #include "lvd/abort.hpp"
+#include "lvd/IndexedTuple_t.hpp"
 #include "lvd/remove_cv_recursive.hpp"
 #include <map>
 #include <random>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -211,6 +213,25 @@ struct PopulateRandom_t<std::pair<F_,S_>> {
     void operator() (std::pair<F_,S_> &dest, auto &rng) const {
         populate_random(dest.first, rng);
         populate_random(dest.second, rng);
+    }
+};
+
+// Generates a random std::tuple.
+template <size_t INDEX_, typename... Types_>
+struct PopulateRandom_t<IndexedTuple_t<INDEX_,Types_...>> {
+    void operator() (IndexedTuple_t<INDEX_,Types_...> &dest, auto &rng) const {
+        if constexpr (!dest.has_ended()) {
+            populate_random(dest.current(), rng);
+            populate_random(dest.incremented(), rng);
+        }
+    }
+};
+
+// Generates a random std::tuple.
+template <typename... Types_>
+struct PopulateRandom_t<std::tuple<Types_...>> {
+    void operator() (std::tuple<Types_...> &dest, auto &rng) const {
+        populate_random(begin_indexed_tuple(dest), rng);
     }
 };
 

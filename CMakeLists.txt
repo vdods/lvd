@@ -50,13 +50,16 @@ set(liblvd_HEADERS
     lib/lvd/aliases.hpp
     lib/lvd/ANSIColor.hpp
     lib/lvd/call_site.hpp
+    lib/lvd/comma.hpp
     lib/lvd/FiLoc.hpp
     lib/lvd/FiPos.hpp
     lib/lvd/FiRange.hpp
+    lib/lvd/encoding.hpp
     lib/lvd/endian.hpp
     lib/lvd/fmt.hpp
     lib/lvd/g_log.hpp
     lib/lvd/g_req_context.hpp
+    lib/lvd/IndexedTuple_t.hpp
     lib/lvd/literal.hpp
     lib/lvd/Log.hpp
     lib/lvd/move_cast.hpp
@@ -68,8 +71,9 @@ set(liblvd_HEADERS
     lib/lvd/Pipe.hpp
     lib/lvd/random.hpp
     lib/lvd/Range_t.hpp
+    lib/lvd/read.hpp
+    lib/lvd/read_bin.hpp
     lib/lvd/remove_cv_recursive.hpp
-    lib/lvd/repr.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
     lib/lvd/serialization.hpp
@@ -80,6 +84,9 @@ set(liblvd_HEADERS
     lib/lvd/TypeString_t.hpp
     lib/lvd/util.hpp
     lib/lvd/variant.hpp
+    lib/lvd/write.hpp
+    lib/lvd/write_bin.hpp
+    lib/lvd/write_text.hpp
 )
 
 set(liblvd_SOURCES
@@ -139,7 +146,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_Pipe.cpp
         bin/lvdtest/test_random.cpp
         bin/lvdtest/test_Range_t.cpp
-        bin/lvdtest/test_repr.cpp
+        bin/lvdtest/test_read_write_bin.cpp
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
@@ -147,6 +154,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_TypeString_t.cpp
         bin/lvdtest/test_util.cpp
         bin/lvdtest/test_variant.cpp
+        bin/lvdtest/test_write_text.cpp
     )
     add_executable(lvdtest ${lvdtest_SOURCES})
     target_compile_definitions(lvdtest PUBLIC PACKAGE_VERSION="${lvd_VERSION}")
