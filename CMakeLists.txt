@@ -69,6 +69,7 @@ set(liblvd_HEADERS
     lib/lvd/random.hpp
     lib/lvd/Range_t.hpp
     lib/lvd/remove_cv_recursive.hpp
+    lib/lvd/repr.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
     lib/lvd/serialization.hpp
@@ -138,6 +139,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_Pipe.cpp
         bin/lvdtest/test_random.cpp
         bin/lvdtest/test_Range_t.cpp
+        bin/lvdtest/test_repr.cpp
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
