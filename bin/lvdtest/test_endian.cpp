@@ -26,7 +26,7 @@ bool is_endian_symmetric (T_ const &x) {
 // 322 must be >= 321 (which is random), since endian.hpp depends on that.
 LVD_TEST_BEGIN(322__endian)
     test_log << Log::trc() << LVD_REFLECT(machine_is_big_endian()) << '\n';
-    test_log << Log::trc() << LVD_REFLECT(machine_is_little_endian()) << '\n';
+    test_log << Log::trc() << LVD_REFLECT(machine_is_lil_endian()) << '\n';
     test_log << Log::trc() << LVD_REFLECT(machine_endianness()) << '\n';
 
     auto rng = std::mt19937{42};

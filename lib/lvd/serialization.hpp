@@ -87,7 +87,7 @@ struct SerializeFrom_t {
     template <typename DestIterator_, typename = std::enable_if_t<is_basic_serializable_v<T_>>>
     void operator() (T_ source, DestIterator_ dest) const {
         // Swap byte order in-place, if called for.
-        endian_change(machine_endianness(), Endianness::LITTLE, source);
+        endian_change(machine_endianness(), Endianness::LIL, source);
         std::byte const *source_begin = reinterpret_cast<std::byte const *>(&source);
         std::byte const *source_end = source_begin + sizeof(T_);
         std::copy(source_begin, source_end, dest);
@@ -105,7 +105,7 @@ struct DeserializeTo_t {
         std::byte *dest_begin = reinterpret_cast<std::byte *>(&dest);
         std::copy(source_range.begin(), source_range.begin()+sizeof(T_), dest_begin);
         // Swap byte order in-place, if called for.
-        endian_change(Endianness::LITTLE, machine_endianness(), dest);
+        endian_change(Endianness::LIL, machine_endianness(), dest);
         // Advance source_range.begin() so it's ready to continue reading from the next spot.
         source_range.begin() += sizeof(T_);
     }
