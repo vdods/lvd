@@ -97,7 +97,18 @@ set(liblvd_HEADERS
     lib/lvd/write_bin_unordered_map.hpp
     lib/lvd/write_bin_unordered_set.hpp
     lib/lvd/write_bin_vector.hpp
-    lib/lvd/write_text.hpp
+    lib/lvd/write_text_array.hpp
+    lib/lvd/write_text_container.hpp
+    lib/lvd/write_text_IndexedTuple_t.hpp
+    lib/lvd/write_text_map.hpp
+    lib/lvd/write_text_pair.hpp
+    lib/lvd/write_text_set.hpp
+    lib/lvd/write_text_string.hpp
+    lib/lvd/write_text_tuple.hpp
+    lib/lvd/write_text_type.hpp
+    lib/lvd/write_text_unordered_map.hpp
+    lib/lvd/write_text_unordered_set.hpp
+    lib/lvd/write_text_vector.hpp
 )
 
 set(liblvd_SOURCES
