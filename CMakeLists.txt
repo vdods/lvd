@@ -136,6 +136,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_ANSIColor.cpp
         bin/lvdtest/test_endian.cpp
         bin/lvdtest/test_FiPos.cpp
+        bin/lvdtest/test_literal.cpp
         bin/lvdtest/test_Log.cpp
         bin/lvdtest/test_move_cast.cpp
         bin/lvdtest/test_not_null.cpp

@@ -3,6 +3,7 @@
 #include "lvd/literal.hpp"
 
 #include <cassert>
+#include "lvd/abort.hpp"
 
 namespace lvd {
 
@@ -142,6 +143,8 @@ uint8_t escaped_char (uint8_t c)
 // this function relies on the fact that an escaped string (i.e. a string with
 // escape codes such as \n or \xA7 converted into single chars) is not longer
 // than the original string.
+// TODO: This has to be fixed to reflect the fixes to string_literal_of.
+// See https://stackoverflow.com/questions/10220401/rules-for-c-string-literals-escape-character
 EscapeStringStatus escape_string (std::string &text)
 {
     auto return_code = EscapeStringReturnCode::SUCCESS;
@@ -234,32 +237,103 @@ EscapeStringStatus escape_string (std::string &text)
     return EscapeStringStatus(return_code, line_number_offset);
 }
 
-std::string string_literal_of (std::string const &text, bool with_quotes)
-{
-    std::string retval;
-    if (with_quotes)
-        retval += '"';
+// Semantic subtype of char which prints as \XYZ for octal digits X, Y, Z.  Always 3 digits,
+// so as to give unambiguous and context-free string literal behavior.
+// See https://stackoverflow.com/questions/10220401/rules-for-c-string-literals-escape-character
+class BackslashOctalChar {
+public:
 
-    for (std::string::const_iterator it = text.begin(),
-                                     it_end = text.end();
-         it != it_end;
-         ++it)
-    {
-        uint8_t c = *it;
-        if (StringLiteralCharNeedsNormalEscaping(c))
-        {
-            retval += '\\';
-            retval += escape_code(c);
-        }
-        else if (char_needs_hex_escaping(c))
-            retval += hex_char_literal(c, false);
-        else
-            retval += char(c);
+    BackslashOctalChar () = delete;
+    BackslashOctalChar (char value) : m_value(value) { }
+
+    char value () const { return m_value; }
+    char &value () { return m_value; }
+
+    template <uint32_t DIGIT_>
+    uint32_t digit () const {
+        static_assert(DIGIT_ <= 2, "DIGIT_ must be 0, 1, or 2");
+        return (uint32_t(m_value) >> (3*DIGIT_)) & 7;
     }
 
+private:
+
+    char m_value;
+};
+
+inline std::ostream &operator<< (std::ostream &out, BackslashOctalChar const &oc) {
+    return out << '\\' << oc.digit<2>() << oc.digit<1>() << oc.digit<0>();
+}
+
+// Semantic subtype of char.  Anything that isn't a normal printable char or have a single-char escape code,
+// e.g. \n or \a, should be printed as a full, 3-digit octal code, because that's the only way to get
+// unambiguous and context-free behavior out of string literals.
+// See https://stackoverflow.com/questions/10220401/rules-for-c-string-literals-escape-character
+class StringLiteralChar {
+public:
+
+    StringLiteralChar () = delete;
+    StringLiteralChar (char value) : m_value(value) { }
+
+    char value () const { return m_value; }
+    char &value () { return m_value; }
+
+    std::ostream &print (std::ostream &out) const {
+        switch (type_of(m_value)) {
+            case Type::DIRECTLY_PRINTABLE: return out << m_value;
+            case Type::BACKSLASH_CHAR: return out << '\\' << backslash_char_of(m_value);
+            case Type::BACKSLASH_OCTAL: return out << BackslashOctalChar(m_value);
+            default: LVD_ABORT("invalid StringLiteralChar::Type");
+        }
+    }
+
+private:
+
+    enum class Type {
+        DIRECTLY_PRINTABLE = 0,
+        BACKSLASH_CHAR,
+        BACKSLASH_OCTAL
+    };
+
+    static Type type_of (char c) {
+        if (('\a' <= c && c <= '\r') || c == '"' || c == '\\')
+            return Type::BACKSLASH_CHAR;
+        else if (' ' <= c && c <= '~') // Note that this range depends on '"' and '\\' having already been handled.
+            return Type::DIRECTLY_PRINTABLE;
+        else
+            return Type::BACKSLASH_OCTAL;
+    }
+    static char backslash_char_of (char c) {
+        assert(type_of(c) == Type::BACKSLASH_CHAR);
+        switch (c) {
+            case '\a': return 'a';
+            case '\b': return 'b';
+            case '\t': return 't';
+            case '\n': return 'n';
+            case '\v': return 'v';
+            case '\f': return 'f';
+            case '\r': return 'r';
+            case '\"': return '\"';
+            case '\\': return '\\';
+            default: LVD_ABORT("expected type_of(c) == Type::BACKSLASH_CHAR");
+        }
+    }
+
+    char m_value;
+};
+
+inline std::ostream &operator<< (std::ostream &out, StringLiteralChar const &c) {
+    return c.print(out);
+}
+
+std::string string_literal_of (std::string const &text, bool with_quotes) {
+    std::ostringstream out;
     if (with_quotes)
-        retval += '"';
-    return retval;
+        out << '"';
+    for (auto c : text)
+        out << StringLiteralChar(c);
+    if (with_quotes)
+        out << '"';
+    return out.str(); // Hopefully this uses RVO to not deep-copy the string.
 }
 
 } // end namespace lvd
