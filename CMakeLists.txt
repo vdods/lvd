@@ -51,11 +51,11 @@ set(liblvd_HEADERS
     lib/lvd/ANSIColor.hpp
     lib/lvd/call_site.hpp
     lib/lvd/comma.hpp
+    lib/lvd/encoding.hpp
+    lib/lvd/endian.hpp
     lib/lvd/FiLoc.hpp
     lib/lvd/FiPos.hpp
     lib/lvd/FiRange.hpp
-    lib/lvd/encoding.hpp
-    lib/lvd/endian.hpp
     lib/lvd/fmt.hpp
     lib/lvd/g_log.hpp
     lib/lvd/g_req_context.hpp
