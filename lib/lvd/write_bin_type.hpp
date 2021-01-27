@@ -4,6 +4,7 @@
 
 #include "lvd/TypeString_t.hpp"
 #include "lvd/write.hpp"
+#include "lvd/write_bin_string.hpp"
 
 namespace lvd {
 
