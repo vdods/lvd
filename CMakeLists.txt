@@ -85,7 +85,18 @@ set(liblvd_HEADERS
     lib/lvd/util.hpp
     lib/lvd/variant.hpp
     lib/lvd/write.hpp
-    lib/lvd/write_bin.hpp
+    lib/lvd/write_bin_array.hpp
+    lib/lvd/write_bin_container.hpp
+    lib/lvd/write_bin_IndexedTuple_t.hpp
+    lib/lvd/write_bin_map.hpp
+    lib/lvd/write_bin_pair.hpp
+    lib/lvd/write_bin_set.hpp
+    lib/lvd/write_bin_string.hpp
+    lib/lvd/write_bin_tuple.hpp
+    lib/lvd/write_bin_type.hpp
+    lib/lvd/write_bin_unordered_map.hpp
+    lib/lvd/write_bin_unordered_set.hpp
+    lib/lvd/write_bin_vector.hpp
     lib/lvd/write_text.hpp
 )
 

@@ -132,7 +132,7 @@ public:
     In_t<T_,BinEncoding_t> in (T_ &dest_val) const {
         return In_t<T_,BinEncoding_t>(dest_val, *this);
     }
-    // For use in << output syntax.  Must include lvd/write_bin.hpp for this to link.
+    // For use in << output syntax.  Must include lvd/write.hpp for this to link.
     template <typename T_>
     Out_t<T_,BinEncoding_t> out (T_ const &src_val) const {
         return Out_t<T_,BinEncoding_t>(src_val, *this);
@@ -181,7 +181,7 @@ public:
     In_t<T_,TextEncoding_t> in (T_ &dest_val) const {
         return In_t<T_,TextEncoding_t>(dest_val, *this);
     }
-    // For use in << output syntax.  Must include lvd/write_bin.hpp for this to link.
+    // For use in << output syntax.  Must include lvd/write.hpp for this to link.
     template <typename T_>
     Out_t<T_,TextEncoding_t> out (T_ const &src_val) const {
         return Out_t<T_,TextEncoding_t>(src_val, *this);

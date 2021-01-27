@@ -6,7 +6,16 @@
 #include "lvd/read_bin.hpp"
 #include "lvd/req.hpp"
 #include "lvd/test.hpp"
-#include "lvd/write_bin.hpp"
+#include "lvd/write_bin_array.hpp"
+#include "lvd/write_bin_map.hpp"
+#include "lvd/write_bin_pair.hpp"
+#include "lvd/write_bin_set.hpp"
+#include "lvd/write_bin_string.hpp"
+#include "lvd/write_bin_tuple.hpp"
+#include "lvd/write_bin_type.hpp"
+#include "lvd/write_bin_unordered_map.hpp"
+#include "lvd/write_bin_unordered_set.hpp"
+#include "lvd/write_bin_vector.hpp"
 #include "print.hpp"
 #include <sstream>
 #include <string>
