@@ -91,8 +91,16 @@ set(liblvd_HEADERS
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp
-    lib/lvd/Type_t.hpp
-    lib/lvd/TypeString_t.hpp
+    lib/lvd/type.hpp
+    lib/lvd/type_string_of.hpp
+    lib/lvd/type_string_of_array.hpp
+    lib/lvd/type_string_of_map.hpp
+    lib/lvd/type_string_of_pair.hpp
+    lib/lvd/type_string_of_set.hpp
+    lib/lvd/type_string_of_tuple.hpp
+    lib/lvd/type_string_of_unordered_map.hpp
+    lib/lvd/type_string_of_unordered_set.hpp
+    lib/lvd/type_string_of_vector.hpp
     lib/lvd/util.hpp
     lib/lvd/variant.hpp
     lib/lvd/write.hpp
@@ -184,8 +192,8 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
-        bin/lvdtest/test_Type_t.cpp
-        bin/lvdtest/test_TypeString_t.cpp
+        bin/lvdtest/test_type.cpp
+        bin/lvdtest/test_type_string_of.cpp
         bin/lvdtest/test_util.cpp
         bin/lvdtest/test_variant.cpp
         bin/lvdtest/test_write_text.cpp

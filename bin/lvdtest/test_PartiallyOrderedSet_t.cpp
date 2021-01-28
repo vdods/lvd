@@ -158,12 +158,14 @@ LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__00)
             }
         }
 
+#if 0
         if (uniform_dist(engine) == 0) {
             std::ofstream fout(LVD_FMT("uint32-div-poset." << std::setw(4) << std::setfill('0') << std::hex << mask << ".dot"));
             auto title = LVD_FMT(added_nodes);
             poset.print_dot_graph(fout, title, std::function([](std::ostream &out, uint32_t const &node){ out << node; }));
             // This block ensures that fout is flushed and closed before the rest.
         }
+#endif
 
         // Verify
         verify_poset(poset);
@@ -208,11 +210,13 @@ LVD_TEST_BEGIN(330__PartiallyOrderedSet_t__01)
             }
         }
 
+#if 0
         if (uniform_dist(engine) == 0) {
             std::ofstream fout(LVD_FMT("uint32-subset-poset." << std::setw(4) << std::setfill('0') << std::hex << mask << ".dot"));
             poset.print_dot_graph(fout, title, print_uint32_as_subset);
             // This block ensures that fout is flushed and closed before the rest.
         }
+#endif
 
         // Verify
         verify_poset(poset);

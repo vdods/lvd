@@ -4,20 +4,22 @@
 
 namespace lvd {
 
+// This allows an associative container whose key type is Type* to index types,
+// using the singleton object for Type_t<T> for each T.
+class Type { };
+
 // Can be used as a value to represent the type T_ itself, making it possible to
 // have types as first class values.  This class has no members, so it's abstractly
 // a singleton.  There is an inline static singleton instance declared, so its
 // address should uniquely identify the type (probably, maybe there are situations
 // in which the linker wouldn't collapse them together).
 //
-// The global function type_v<T_>() can be used to conveniently retrieve the Type_t<T_> singleton.
-//
-// TODO: Create a baseclass Type with CRTP, so that Type* can be used as the key in containers.
+// The global function ty<T_>() can be used to conveniently retrieve the Type_t<T_> singleton.
 template <typename T_>
-class Type_t {
+class Type_t : public Type {
 public:
 
-    // Use of singletons allows type_v<T_> (defined below) to be uniquely identified by address,
+    // Use of singletons allows ty<T_> (defined below) to be uniquely identified by address,
     // and therefore can be used as a runtime value for distinction or mapping.  This singleton
     // doesn't need to be const, because there's no state that can be changed anyway..
     inline static Type_t SINGLETON = Type_t();
@@ -58,12 +60,12 @@ public:
 
 // This allows very terse use of Type_t<T_>.
 template <typename T_>
-inline static Type_t<T_> &type_v = Type_t<T_>::SINGLETON;
+inline static Type_t<T_> &ty = Type_t<T_>::SINGLETON;
 
 // Convenience functions that does type deduction.
 template <typename T_>
 Type_t<T_> &type_of (T_ const &) {
-    return type_v<T_>;
+    return ty<T_>;
 }
 // // This one returns a non-singleton instance.
 // template <typename T_>

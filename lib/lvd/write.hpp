@@ -6,7 +6,7 @@
 #include <iomanip>
 #include "lvd/encoding.hpp"
 #include "lvd/literal.hpp"
-#include "lvd/TypeString_t.hpp" // TODO: Fix this, this is overkill for the time being
+#include "lvd/type_string_of.hpp"
 #include <ostream>
 
 namespace lvd {
@@ -20,6 +20,8 @@ struct WriteValue_t;
 // Convenience function for type deduction.
 //
 
+// NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
+// need to include <lvd/write_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
 template <typename T_, typename Encoding_>
 std::ostream &write_value (std::ostream &out, Encoding_ const &enc, T_ const &src_val) {
     return WriteValue_t<T_,Encoding_>()(out, enc, src_val);
@@ -29,6 +31,8 @@ std::ostream &write_value (std::ostream &out, Encoding_ const &enc, T_ const &sr
 // Method definitions from lvd/encoding.hpp
 //
 
+// NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
+// need to include <lvd/write_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
 template <typename T_, typename Encoding_>
 std::ostream &operator<< (std::ostream &out, Out_t<T_,Encoding_> const &o) {
     return write_value(out, o.encoding(), o.src_val());
@@ -65,7 +69,7 @@ template <typename T_, auto... Params_>
 struct WriteValue_Builtin_t<T_,TextEncoding_t<Params_...>> {
     std::ostream &operator() (std::ostream &out, TextEncoding_t<Params_...> const &enc, T_ src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
-            out << type_v<T_> << '(';
+            out << ty<T_> << '(';
 
         if constexpr (std::is_same_v<T_,bool>) {
             out << (src_val ? "true" : "false");

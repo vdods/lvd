@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lvd/type_string_of_map.hpp"
 #include "lvd/write_bin_container.hpp"
 #include <map>
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lvd/type_string_of_pair.hpp"
 #include "lvd/write.hpp"
 #include <utility>
 

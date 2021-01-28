@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lvd/type_string_of_tuple.hpp"
 #include "lvd/write_bin_IndexedTuple_t.hpp"
 #include <tuple>
 

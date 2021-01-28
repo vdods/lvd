@@ -3,7 +3,8 @@
 #pragma once
 
 #include "lvd/read.hpp"
-#include "lvd/Type_t.hpp"
+#include "lvd/type.hpp"
+#include "lvd/type_string_of.hpp"
 
 namespace lvd {
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lvd/type_string_of_unordered_set.hpp"
 #include "lvd/write_text_container.hpp"
 #include <unordered_set>
 

@@ -4,6 +4,7 @@
 
 #include "lvd/read_bin_IndexedTuple_t.hpp"
 #include "lvd/read_bin_type.hpp"
+#include "lvd/type_string_of_tuple.hpp"
 #include <tuple>
 
 namespace lvd {

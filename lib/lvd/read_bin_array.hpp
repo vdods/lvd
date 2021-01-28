@@ -5,6 +5,7 @@
 #include <array>
 #include "lvd/read.hpp"
 #include "lvd/read_bin_type.hpp"
+#include "lvd/type_string_of_array.hpp"
 
 namespace lvd {
 

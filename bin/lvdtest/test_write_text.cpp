@@ -14,7 +14,7 @@
 #include "lvd/write_text_unordered_map.hpp"
 #include "lvd/write_text_unordered_set.hpp"
 #include "lvd/write_text_vector.hpp"
-#include "lvd/Type_t.hpp"
+#include "lvd/type.hpp"
 #include "print.hpp"
 #include <sstream>
 #include <string>
@@ -39,9 +39,9 @@ LVD_TEST_BEGIN(232__write_text__00__txt)
     txt_test_case(req_context, float(1.25), "1.250000000e+00");
     txt_test_case(req_context, std::string(""), "\"\"");
     txt_test_case(req_context, std::string("blahhhh"), "\"blahhhh\"");
-    txt_test_case(req_context, type_v<int32_t>, "int32_t");
-    txt_test_case(req_context, type_v<std::string>, "string");
-    txt_test_case(req_context, type_v<std::vector<std::map<std::byte,bool>>>, "vector<map<byte,bool>>");
+    txt_test_case(req_context, ty<int32_t>, "int32_t");
+    txt_test_case(req_context, ty<std::string>, "string");
+    txt_test_case(req_context, ty<std::vector<std::map<std::byte,bool>>>, "vector<map<byte,bool>>");
     txt_test_case(req_context, std::pair('x',true), "('x', true)");
     txt_test_case(req_context, std::tuple<>(), "()");
     txt_test_case(req_context, std::tuple(int8_t(123)), "(123,)");
@@ -71,9 +71,9 @@ LVD_TEST_BEGIN(232__write_text__01__lit)
     lit_test_case(req_context, float(1.25), "float(1.250000000e+00)");
     lit_test_case(req_context, std::string(""), "string(\"\")");
     lit_test_case(req_context, std::string("blahhhh"), "string(\"blahhhh\")");
-    lit_test_case(req_context, type_v<int32_t>, "type(int32_t)");
-    lit_test_case(req_context, type_v<std::string>, "type(string)");
-    lit_test_case(req_context, type_v<std::vector<std::map<std::byte,bool>>>, "type(vector<map<byte,bool>>)");
+    lit_test_case(req_context, ty<int32_t>, "type(int32_t)");
+    lit_test_case(req_context, ty<std::string>, "type(string)");
+    lit_test_case(req_context, ty<std::vector<std::map<std::byte,bool>>>, "type(vector<map<byte,bool>>)");
     lit_test_case(req_context, std::pair('x',true), "pair<char,bool>('x', true)");
     lit_test_case(req_context, std::tuple<>(), "tuple<>()");
     lit_test_case(req_context, std::tuple(int8_t(123)), "tuple<int8_t>(123,)");

@@ -14,7 +14,7 @@ template <typename Container_, auto... Params_>
 struct WriteValue_Container_t<Container_,TextEncoding_t<Params_...>> {
     std::ostream &operator() (std::ostream &out, TextEncoding_t<Params_...> const &enc, Container_ const &src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
-            out << type_v<Container_>;
+            out << ty<Container_>;
 
         auto d = make_comma_space_delimiter();
         // This will suppress unnecessary inner element type info, since it's already present in the given type.

@@ -4,8 +4,8 @@
 
 #include <cstddef>
 #include "lvd/encoding.hpp"
-#include "lvd/Type_t.hpp"
-#include "lvd/TypeString_t.hpp"
+#include "lvd/type.hpp"
+#include "lvd/type_string_of.hpp"
 #include <istream>
 
 namespace lvd {
@@ -27,11 +27,15 @@ struct ReadValue_t;
 // Convenience functions for type deduction.
 //
 
+// NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
+// need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
 template <typename T_, typename Encoding_>
 inline std::istream &read_in_place (std::istream &in, Encoding_ const &enc, T_ &dest_val) {
     return ReadInPlace_t<T_,Encoding_>()(in, enc, dest_val);
 }
 
+// NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
+// need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
 template <typename T_, typename Encoding_>
 inline T_ read_value (std::istream &in, Encoding_ const &enc) {
     return ReadValue_t<T_,Encoding_>()(in, enc);
@@ -41,6 +45,8 @@ inline T_ read_value (std::istream &in, Encoding_ const &enc) {
 // Implementation of methods declared in encoding.hpp
 //
 
+// NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
+// need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
 template <typename T_, typename Encoding_>
 std::istream &operator>> (std::istream &in, In_t<T_,Encoding_> const &i) {
     return read_in_place(in, i.encoding(), i.dest_val());

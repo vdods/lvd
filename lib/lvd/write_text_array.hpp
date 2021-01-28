@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include "lvd/type_string_of_array.hpp"
 #include "lvd/write_text_container.hpp"
 
 namespace lvd {

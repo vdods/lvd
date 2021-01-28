@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "lvd/TypeString_t.hpp"
+#include "lvd/type_string_of.hpp"
 #include "lvd/write.hpp"
 
 namespace lvd {

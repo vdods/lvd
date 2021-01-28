@@ -2,19 +2,11 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include "lvd/fmt.hpp"
-#include "lvd/Type_t.hpp"
-#include <map>
+#include "lvd/type.hpp"
 #include <ostream>
-#include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <tuple>
-#include <utility>
-#include <vector>
 
 namespace lvd {
 
@@ -22,14 +14,17 @@ namespace lvd {
 // -    TerseType causes the generally useful type to be printed, e.g. std::vector<T_> (this is default)
 // -    VerboseType causes the whole type to be printed, e.g. std::vector<T_,Allocator_> (not typically desired)
 
-// Default implementation -- unknown type -- produce an intentionally ugly name that's still a valid C identifier.
 template <typename T_>
-struct TypeString_t {
-    static std::string const &get () {
-        static std::string const STR{"__UNKNOWN_TYPE__"};
-        return STR;
-    }
-};
+struct TypeString_t;
+
+// Default implementation -- unknown type -- produce an intentionally ugly name that's still a valid C identifier.
+// template <typename T_>
+// struct TypeString_t {
+//     static std::string const &get () {
+//         static std::string const STR{"__UNKNOWN_TYPE__"};
+//         return STR;
+//     }
+// };
 
 // Helper for printing variadic sequences of types
 template <typename... Types_>
@@ -58,11 +53,17 @@ struct TypeString_t<VariadicSequence_t<First_,Rest_...>> {
 // Helper functions that do type deduction.
 //
 
+// If you get a compile error to the effect of "incomplete type..." or if you get a type string
+// of "__UNKNOWN_TYPE__" somewhere, then you need to include one of type_string_of_XXX.hpp where
+// XXX is the desired type, or define TypeString_t<T> for your type T.
 template <typename T_>
 decltype(auto) type_string_of () {
     return TypeString_t<T_>::get();
 }
 
+// If you get a compile error to the effect of "incomplete type..." or if you get a type string
+// of "__UNKNOWN_TYPE__" somewhere, then you need to include one of type_string_of_XXX.hpp where
+// XXX is the desired type, or define TypeString_t<T> for your type T.
 template <typename T_>
 decltype(auto) type_string_of (T_ const &) {
     return TypeString_t<T_>::get();
@@ -126,67 +127,3 @@ LVD_DEFINE_TYPE_STRING(uint64_t)
 LVD_DEFINE_TYPE_STRING(float)
 LVD_DEFINE_TYPE_STRING(double)
 LVD_DEFINE_TYPE_STRING_EXPLICIT(std::string, "string")
-
-template <typename... Types_>
-struct lvd::TypeString_t<std::pair<Types_...>> {
-    static std::string const &get () {
-        static std::string const STR{"pair<" + type_string_of<VariadicSequence_t<Types_...>>() + '>'};
-        return STR;
-    }
-};
-
-template <typename... Types_>
-struct lvd::TypeString_t<std::tuple<Types_...>> {
-    static std::string const &get () {
-        static std::string const STR{"tuple<" + type_string_of<VariadicSequence_t<Types_...>>() + '>'};
-        return STR;
-    }
-};
-
-template <typename T_, typename... Rest_>
-struct lvd::TypeString_t<std::vector<T_,Rest_...>> {
-    static std::string const &get () {
-        static std::string const STR{"vector<" + type_string_of<T_>() + '>'};
-        return STR;
-    }
-};
-
-template <typename T_, size_t N_>
-struct lvd::TypeString_t<std::array<T_,N_>> {
-    static std::string const &get () {
-        static std::string const STR{"array<" + type_string_of<T_>() + ',' + LVD_FMT(N_) + '>'};
-        return STR;
-    }
-};
-
-template <typename Key_, typename Value_, typename... Rest_>
-struct lvd::TypeString_t<std::map<Key_,Value_,Rest_...>> {
-    static std::string const &get () {
-        static std::string const STR{"map<" + type_string_of<Key_>() + ',' + type_string_of<Value_>() + '>'};
-        return STR;
-    }
-};
-
-template <typename Key_, typename... Rest_>
-struct lvd::TypeString_t<std::set<Key_,Rest_...>> {
-    static std::string const &get () {
-        static std::string const STR{"set<" + type_string_of<Key_>() + '>'};
-        return STR;
-    }
-};
-
-template <typename Key_, typename Value_, typename... Rest_>
-struct lvd::TypeString_t<std::unordered_map<Key_,Value_,Rest_...>> {
-    static std::string const &get () {
-        static std::string const STR{"unordered_map<" + type_string_of<Key_>() + ',' + type_string_of<Value_>() + '>'};
-        return STR;
-    }
-};
-
-template <typename Key_, typename... Rest_>
-struct lvd::TypeString_t<std::unordered_set<Key_,Rest_...>> {
-    static std::string const &get () {
-        static std::string const STR{"unordered_set<" + type_string_of<Key_>() + '>'};
-        return STR;
-    }
-};

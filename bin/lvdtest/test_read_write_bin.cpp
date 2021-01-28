@@ -74,10 +74,10 @@ void bin_roundtrip_encoding (req::Context &req_context, T_ const &expected_value
 }
 
 LVD_TEST_BEGIN(231__read_write_bin__00__singletons)
-//     bin_roundtrip_test_case(req_context, type_v<void>);
-    bin_roundtrip_encoding(req_context, type_v<int32_t>);
-    bin_roundtrip_encoding(req_context, type_v<std::string>);
-    bin_roundtrip_encoding(req_context, type_v<std::vector<std::map<std::byte,bool>>>);
+//     bin_roundtrip_test_case(req_context, ty<void>);
+    bin_roundtrip_encoding(req_context, ty<int32_t>);
+    bin_roundtrip_encoding(req_context, ty<std::string>);
+    bin_roundtrip_encoding(req_context, ty<std::vector<std::map<std::byte,bool>>>);
     bin_roundtrip_encoding(req_context, std::tuple<>());
 LVD_TEST_END
 

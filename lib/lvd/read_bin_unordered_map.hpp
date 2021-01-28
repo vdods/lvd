@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/read_bin_container.hpp"
+#include "lvd/type_string_of_unordered_map.hpp"
 #include <unordered_map>
 
 namespace lvd {

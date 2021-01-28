@@ -4,6 +4,7 @@
 
 #include "lvd/read.hpp"
 #include "lvd/read_bin_type.hpp"
+#include "lvd/type_string_of.hpp"
 #include <string>
 
 namespace lvd {

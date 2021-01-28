@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/read_bin_container.hpp"
+#include "lvd/type_string_of_set.hpp"
 #include <set>
 
 namespace lvd {
