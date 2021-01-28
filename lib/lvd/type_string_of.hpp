@@ -53,7 +53,7 @@ struct TypeString_t<VariadicSequence_t<First_,Rest_...>> {
 // Helper functions that do type deduction.
 //
 
-// If you get a compile error to the effect of "incomplete type..." or if you get a type string
+// NOTE: If you get a compile error to the effect of "incomplete type..." or if you get a type string
 // of "__UNKNOWN_TYPE__" somewhere, then you need to include one of type_string_of_XXX.hpp where
 // XXX is the desired type, or define TypeString_t<T> for your type T.
 template <typename T_>
@@ -61,7 +61,7 @@ decltype(auto) type_string_of () {
     return TypeString_t<T_>::get();
 }
 
-// If you get a compile error to the effect of "incomplete type..." or if you get a type string
+// NOTE: If you get a compile error to the effect of "incomplete type..." or if you get a type string
 // of "__UNKNOWN_TYPE__" somewhere, then you need to include one of type_string_of_XXX.hpp where
 // XXX is the desired type, or define TypeString_t<T> for your type T.
 template <typename T_>

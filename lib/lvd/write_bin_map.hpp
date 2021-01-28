@@ -4,6 +4,7 @@
 
 #include "lvd/type_string_of_map.hpp"
 #include "lvd/write_bin_container.hpp"
+#include "lvd/write_bin_pair.hpp"
 #include <map>
 
 namespace lvd {

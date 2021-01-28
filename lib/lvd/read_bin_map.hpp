@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/read_bin_container.hpp"
+#include "lvd/read_bin_pair.hpp"
 #include "lvd/type_string_of_map.hpp"
 #include <map>
 
