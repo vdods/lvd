@@ -72,7 +72,18 @@ set(liblvd_HEADERS
     lib/lvd/random.hpp
     lib/lvd/Range_t.hpp
     lib/lvd/read.hpp
-    lib/lvd/read_bin.hpp
+    lib/lvd/read_bin_array.hpp
+    lib/lvd/read_bin_container.hpp
+    lib/lvd/read_bin_IndexedTuple_t.hpp
+    lib/lvd/read_bin_map.hpp
+    lib/lvd/read_bin_pair.hpp
+    lib/lvd/read_bin_set.hpp
+    lib/lvd/read_bin_string.hpp
+    lib/lvd/read_bin_tuple.hpp
+    lib/lvd/read_bin_type.hpp
+    lib/lvd/read_bin_unordered_map.hpp
+    lib/lvd/read_bin_unordered_set.hpp
+    lib/lvd/read_bin_vector.hpp
     lib/lvd/remove_cv_recursive.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
