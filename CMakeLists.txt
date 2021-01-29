@@ -14,6 +14,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries (instead of static libraries)" 
 # Set and require the C++17 standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # # Options to correctly link the standard C++ lib on Mac.
 # if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # This is the correct way to detect Mac OS X operating system -- see http://www.openguru.com/2009/04/cmake-detecting-platformoperating.html
@@ -87,6 +88,7 @@ set(liblvd_HEADERS
     lib/lvd/remove_cv_recursive.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
+    lib/lvd/semantic_subtype.hpp
     lib/lvd/serialization.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
@@ -190,6 +192,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_Range_t.cpp
         bin/lvdtest/test_read_write_bin.cpp
         bin/lvdtest/test_req.cpp
+        bin/lvdtest/test_semantic_subtype.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_type.cpp
