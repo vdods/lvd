@@ -65,18 +65,18 @@ Implementation notes
     constructors, assignments, etc) to guarantee that `SV_t<S,C>` never holds a value incompatible with `S`.
 -   By construction, any semantic type behavior defined in the semantic class, e.g. the `is_valid`
     method, is effectively duck-typed, since its argument is given as a template-typed parameter.
--   Also at minimum, a semantic class should inherit `SemanticClassDefaultsBase` which defines a
+-   Also at minimum, a semantic class should inherit `Base_s` which defines a
     reasonable default behavior for the various capabilities of a C++ class (constructors, assignment
     operators, operator overloads, etc), such that a broadly useful semantic subtype can be defined
     with only few lines of code.
--   The various attributes defined in `SemanticClassDefaultsBase` can be overridden in a semantic class,
+-   The various attributes defined in `Base_s` can be overridden in a semantic class,
     thereby customizing the particular C++ behavior of the semantic value type `SV_t<S,C>`.
 -   Subclassing semantic classes has the naturally expected behavior, though (for now), if `A` and `B`
     are semantic classes with `B` a subclass of `A`, it doesn't follow that `SV_t<B,C>` is a subclass
     of `SV_t<A,C>`.  This might change later.
 
 TODO
--   Allow custom behavior for assert and throw, defined by `S`, with defaults in `SemanticClassDefaultsBase`.
+-   Allow custom behavior for assert and throw, defined by `S`, with defaults in `Base_s`.
 -   Develop some theory and code regarding an actionable subtype hierarchy of semantic types and
     the corresponding semantic subtypes.  For example, let `NonEmpty_s`, `EmailAddr_s`, and `NormedEmailAddr_s`
     denote semantic [C++] classes with the expected definitions, and assume that the class hierarchy is
@@ -157,7 +157,7 @@ struct NoCheck { };
 // Convenient value of type NoCheck which can be used in constructors to avoid validity check.
 inline static NoCheck const no_check = NoCheck{};
 
-class SemanticClassDefaultsBase {
+class Base_s {
 public:
 
     // Default implementation of type_string, giving only a unique string (type_info::hash_code is ostensibly unique).
@@ -176,11 +176,13 @@ public:
 
     // The incoming SV is already valid, ostensibly.
     inline static CheckPolicy constexpr __ctor_copy_SV__ = ALLOW__NO_CHECK;
+    inline static CheckPolicy constexpr __ctor_copy_SubSV__ = ALLOW__ASSERT;
     inline static CheckPolicy constexpr __ctor_copy_C__ = ALLOW__VERIFY_OR_THROW;
     template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __ctor_copy_T__ () { return ALLOW__VERIFY_OR_THROW; }
 
     // The incoming SV is already valid, ostensibly.
     inline static CheckPolicy constexpr __ctor_move_SV__ = ALLOW__NO_CHECK;
+    inline static CheckPolicy constexpr __ctor_move_SubSV__ = ALLOW__ASSERT;
     inline static CheckPolicy constexpr __ctor_move_C__ = ALLOW__VERIFY_OR_THROW;
     template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __ctor_move_T__ () { return ALLOW__VERIFY_OR_THROW; }
 
@@ -188,10 +190,12 @@ public:
 
     // The incoming SV is already valid, ostensibly.
     inline static CheckPolicy constexpr __assign_copy_SV__ = ALLOW__NO_CHECK;
+    inline static CheckPolicy constexpr __assign_copy_SubSV__ = ALLOW__ASSERT;
     template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __assign_copy_T__ () { return ALLOW__VERIFY_OR_THROW; }
 
     // The incoming SV is already valid, ostensibly.
     inline static CheckPolicy constexpr __assign_move_SV__ = ALLOW__NO_CHECK;
+    inline static CheckPolicy constexpr __assign_move_SubSV__ = ALLOW__ASSERT;
     template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __assign_move_T__ () { return ALLOW__VERIFY_OR_THROW; }
 
     #define LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(opname) \
@@ -297,6 +301,10 @@ public:
         // NoCheck
     }
 
+    //
+    // Constructing from concrete type
+    //
+
     explicit SV_t (C const &other)
         :   m_cv{other}
     {
@@ -331,6 +339,55 @@ public:
     {
         // NoCheck
     }
+
+    //
+    // Constructing from a sub-semantic-type.
+    //
+
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (SV_t<SubS_,C> const &other)
+        :   m_cv{other.cv()}
+    {
+        check<S::__ctor_copy_SubSV__>();
+    }
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (NoCheck, SV_t<SubS_,C> const &other)
+        :   m_cv{other.cv()}
+    {
+        // NoCheck
+    }
+
+    // This is necessary to have this constructor be called instead of the templatized one below
+    // when passing a non-const reference (e.g. a local var) to the constructor.
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (SV_t<SubS_,C> &other)
+        :   m_cv{other.cv()}
+    {
+        check<S::__ctor_copy_SubSV__>();
+    }
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (NoCheck, SV_t<SubS_,C> &other)
+        :   m_cv{other.cv()}
+    {
+        // NoCheck
+    }
+
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (SV_t<SubS_,C> &&other)
+        :   m_cv{other.cv()}
+    {
+        check<S::__ctor_move_SubSV__>();
+    }
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t (NoCheck, SV_t<SubS_,C> &&other)
+        :   m_cv{other.cv()}
+    {
+        // NoCheck
+    }
+
+    //
+    // Perfect variadic forwarding constructor, intended to allow use of C's constructors.
+    //
 
     template <
         typename First_,
@@ -369,6 +426,18 @@ public:
     SV_t &operator= (SV_t &&other) {
         m_cv = other.move_cv();
         check<S::__assign_move_SV__>();
+        return *this;
+    }
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t &operator= (SV_t<SubS_,C> const &other) {
+        m_cv = other.cv();
+        check<S::__assign_copy_SubSV__>();
+        return *this;
+    }
+    template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
+    SV_t &operator= (SV_t<SubS_,C> &&other) {
+        m_cv = other.move_cv();
+        check<S::__assign_move_SubSV__>();
         return *this;
     }
     template <typename T_>
@@ -442,6 +511,13 @@ public:
     decltype(auto) operator-> () const { return cv().operator->(); }
 
     explicit operator bool () const { return cv().operator bool(); }
+
+    // Casting to semantic supertype.
+    template <typename SuperS_, typename = std::enable_if_t<std::is_base_of_v<SuperS_,S>>>
+    operator SV_t<SuperS_,C> const & () const {
+        // This works because both only contain a single member var of type C.
+        return *reinterpret_cast<SV_t<SuperS_,C> const *>(this);
+    }
 
     // TODO: Figure out how to allow non-const version of this -- it would be some delegate
     // that calls check<...>() after the value of this is changed.
