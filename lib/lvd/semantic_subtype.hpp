@@ -2,7 +2,6 @@
 
 #pragma once
 
-// #include <array>
 #include <cstdlib>
 #include "lvd/fmt.hpp" // A bit overkill
 #include <ostream>
@@ -44,6 +43,21 @@ Notes on semantic subtypes.
     represent a URL. but `std::string` or `std::array<char,2048>` could).
 -   A value of semantic subtype (S,C) is a value of type C which carries the meaning (and potentially
     value constraints) of S.
+-   There is a commutative diagram that should be satisfied by operations on semantic types.
+    Using the (S,C) notation for a semantic value, it should hold that for any relevant `op`:
+
+        (LhsS, LhsC) op (RhsS, RhsC) == (LhsS op RhsS, LhsC op RhsC)
+
+    whenever `LhsS op RhsS` and `LhsC op RhsC` are well-defined.  In fact, this should be how operators
+    should be defined on semantic values.  This should hold for functions in general:
+
+        fancy_func((S1,C1), ..., (Sn,Cn)) := (fancy_func(S1, ..., Sn), fancy_func(C1, ..., Cn))
+
+    if fancy_func has an overload which takes semantic class instances, defining the semantic
+    class for the result.  To summarize, given a concrete function fancy_func, if an overload (or
+    overloads) of fancy_func is made that takes appropriate semantic class instances and returns
+    a semantic class instance, then that defines an overload of fancy_func on the corresponding
+    semantic types.
 
 Implementation notes
 -   The template class `SV_t<S,C>` is the C++ implementation of a value of semantic subtype (S,C).
@@ -89,6 +103,12 @@ TODO
 
     Obviously the semantic class' definitions of `is_valid` would have to be compatible for them to
     actually form a legitimate semantic type hierarchy.
+
+    For a semantic type S3 which is a subtype of S1 and S2 (i.e. intersection of those types), it should
+    follow that
+
+        S3::is_valid(cv) == S1::is_valid(cv) && S2::is_valid(cv)
+
 -   Idea for more-complex, ad-hoc in-place modification that still respects the validity:
     -   Create a guard object that "allows modification" of the SV_t object arbitrarily.
     -   There should be an "obtain modification guard" method which produces the guard.
@@ -98,8 +118,35 @@ TODO
         causing the guard object to move the concrete value out of the SV_t, and moving it
         back in once the guard goes out of scope.
 -   Idea for a different way to define semantic-subtype-specific behavior -- could define
-    operator overloads on Type_t<T_> to define what type results from each operation.
-    Not sure if this would be more of a pain in the ass.
+    operator overloads on instances of the semantic classes themselves to define what type
+    results from each operation.
+-   Idea for unions and intersections of semantic subtypes:
+    -   Define the is_valid method for union(S1,...,Sn) as S1::is_valid(cv) || ... || Sn::is_valid(cv)
+        and for intersection(S1,...,Sn) as S1::is_valid(cv) && ... && Sn::is_valid(cv).
+    -   Then if an operator X is defined on all combos of instances of Si,Sj, then define operator X
+
+            inline decltype(auto) operator X (union(LhsS1,...,LhsSm), union(RhsS1,...,RhsSn)) {
+                return union((LhsSi X RhsSj) for i in [1,...,m] and j in [1,...,n])
+            }
+
+        on instances of union(S1,...,Sn)
+
+        Similarly for intersection.
+
+        This could be done in real C++ using variadic arguments and an inductive definition, e.g.
+
+            inline decltype(auto) operator X (union(LhsS1,...,LhsSm), RhsS) {
+                return union((LhsSi X RhsS) for i in [1,...,m])
+            }
+            inline decltype(auto) operator X (LhsS, union(RhsS1,...,RhsSn)) {
+                return union((LhsS X RhsSj) for j in [1,...,n])
+            }
+
+        and a way to eliminate redundancies in union.
+
+        Should have one corresponding to xor as well as the `and` and `or` of intersection and union.
+-   IDEA: Could add "clamp" to extend checkpolicy, e.g. when float underflow happens, but it's desired
+    to have a strictly positive value, clamp the value to the smallest [subnormal] positive value.
 */
 
 namespace lvd {
@@ -573,13 +620,44 @@ private:
 // Binary operator overloads
 //
 
+inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator- (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator* (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator/ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator% (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator^ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator& (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator| (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator<< (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator>> (Base_s, Base_s) { return Base_s{}; }
+
+template <typename T_, T_ VALUE_>
+struct Value_t {
+    using T = T_;
+    inline static constexpr T VALUE = VALUE_;
+};
+
+inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__div (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__mod (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__xor (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__and (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__or  (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__shl (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__shr (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
 #define LVD_DEFINE_GLOBAL_OPERATORS_FOR(op, opname) \
-template <typename S_, typename C_> \
-decltype(auto) operator op (SV_t<S_,C_> const &lhs, SV_t<S_,C_> const &rhs) { \
+template <typename LhsS_, typename RhsS_, typename C_> \
+decltype(auto) operator op (SV_t<LhsS_,C_> const &lhs, SV_t<RhsS_,C_> const &rhs) { \
     auto retval = lhs.cv() op rhs.cv(); \
-    if constexpr (S_::__##opname##_SV_SV__ != DONT_CAST) { \
-        auto SV_retval = SV_t<S_,C_>{no_check, retval}; \
-        SV_retval.template check<as_check_policy(S_::__##opname##_SV_SV__)>(); \
+    using RetvalSemanticType = decltype(LhsS_{} op RhsS_{}); \
+    using CheckPolicyValueType = decltype(check_policy_for__##opname(LhsS_{}, RhsS_{})); \
+    auto constexpr check_policy = CheckPolicyValueType::VALUE; \
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
+        SV_retval.template check<check_policy>(); \
         return SV_retval; \
     } else { \
         return retval; \
