@@ -30,6 +30,12 @@ using namespace std::string_literals;
     inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
     inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
 
+#define LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
 namespace lvd {
 
 struct NonEmpty_s : public Base_s {
@@ -114,6 +120,8 @@ struct NaNExtReal_s : virtual Base_s {
     LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NaNExtReal")
     LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return true;)
 };
+
+// TODO: Create NaNOrZero_s, which would be the result of Zero_s * ExtXYZ_s
 
 struct NaN_s : virtual NaNExtReal_s {
     LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NaN")
@@ -213,83 +221,263 @@ struct NegOne_s : virtual Neg_s {
     LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == C(-1);)
 };
 
-// Catch-all
+//
+// Catch-alls
+//
 
 LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NaNExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NaNExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NaNExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NaNExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 //
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NaNExtReal_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtPos_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NaNExtReal_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NaNExtReal_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtPos_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NaNExtReal_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+// Operations with NaN result in NaN
 //
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NaNExtReal_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtNeg_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NaNExtReal_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NaNExtReal_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtNeg_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NaNExtReal_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK)
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtReal_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // inf + -inf = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(+, ExtReal_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // inf + -inf = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtReal_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // inf + -inf = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(-, ExtReal_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // inf - inf = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtReal_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // 0 * infinity = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, ExtReal_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // 0 * infinity = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // NaN in the case of 0/0
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, ExtReal_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // NaN in the case of 0/0; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, ExtNonZero_s, NaNExtReal_s, ALLOW__NO_CHECK) // inf / inf = NaN
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(-, sub, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(/, div, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
+//
+// Adding Zero_s doesn't change the semantic class.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
+
+//
+// Subtracting Zero_s doesn't change the semantic class.
+//
+
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK) // 0 * infinity = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, ExtReal_s, Zero_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // 0 * infinity = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // 0 * infinity = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, Zero_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // 0 * infinity = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK) // NaN in the case of 0/0
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, ExtReal_s, Zero_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // NaN in the case of 0/0; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, ExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // NaN in the case of 0/0
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, Zero_s, ExtReal_s, ExtReal_s, ALLOW__VERIFY_OR_THROW) // NaN in the case of 0/0; throw
-
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
+
+//
+// Subtracting from Zero_s negates the semantic class.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Infinite_s, Infinite_s, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtNonZero_s, Zero_s, NaNExtReal_s, ALLOW__NO_CHECK) // 0 * infinity = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__VERIFY_OR_THROW) // 0 * infinity = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, ExtNonZero_s, NaNExtReal_s, ALLOW__NO_CHECK) // 0 * infinity = NaN
-// LVD_DEFINE_SEMANTIC_OPERATOR(*, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__VERIFY_OR_THROW) // 0 * infinity = NaN; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK) // ?
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__VERIFY_OR_THROW) // NaN in the case of 0/0; throw
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, ExtNonZero_s, ExtReal_s, ALLOW__NO_CHECK) // ?
-// LVD_DEFINE_SEMANTIC_OPERATOR(/, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__VERIFY_OR_THROW) // NaN in the case of 0/0; throw
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonNeg_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonPos_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Infinity_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NegInfinity_s, Infinity_s, ALLOW__NO_CHECK)
 
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Real_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonZero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonNeg_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonPos_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
 
-// Trying to define the minimal set of operator overloads
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+
+//
+// Multiplying by Zero_s produces Zero_s in most cases.  The semantic class hierarchy can be
+// used to advantage here.  Note that inf*0 = NaN, so all the ext and infinite classes can't
+// have anything more specific without creating NaNOrZero_s.
+//
+
+// This one is sufficient to catch all cases except for Zero_s * Zero_s.
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+
+//
+// Zero_s divided by anything finite and nonzero is Zero_s, although 0/0 is NaN.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // Should be a catch-all
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Infinite_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, ExtNonZero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Infinity_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NegInfinity_s, Zero_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NonZero_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Pos_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Neg_s, Zero_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Zero_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, One_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NegOne_s, Zero_s, ALLOW__NO_CHECK)
+
+//
+// Dividing by zero is a big no-no.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+//
+// Adding by one changes some semantic classes.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK) // Catch-all
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonNeg_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Real_s, One_s, Real_s, ALLOW__NO_CHECK) // Catch-all
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonNeg_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegOne_s, One_s, Zero_s, ALLOW__NO_CHECK)
+
+// TODO: sub
+
+//
+// Multiplying by One_s leaves all classes the same.  TODO: Could just make a templatized function that does
+// this, since this sort of enumeration won't work in general.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, One_s, One_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+
+//
+// Multiplying by NegOne_s negates classes' signs.  TODO: Could just make a templatized function that does
+// this, since this sort of enumeration won't work in general.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+
+//
+// Dividing by One_s leaves all classes the same.  TODO: Could just make a templatized function that does
+// this, since this sort of enumeration won't work in general.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, One_s, One_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+
+//
+// Dividing by NegOne_s negates some classes.  TODO: Could just make a templatized function that does
+// this, since this sort of enumeration won't work in general.
+//
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, One_s, NegOne_s, NegOne_s, ALLOW__NO_CHECK)
+
+// TODO: One_s divided by stuff
+// TODO: NegOne_s divided by stuff
+
+//
+// Various signed operations
+//
+
+// TODO: ExtNonNeg_s, ExtNonPos_s, NonNeg_s, NonPos_s
 
 LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtNeg_s, ExtNeg_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Sum of inf and -inf is NaN
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Sum of inf and -inf is NaN
 LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtPos_s, ExtPos_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtPos_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Sum of inf and -inf is NaN
 
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Difference of infinities is NaN
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
@@ -297,9 +485,8 @@ LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO
 LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
 
 LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtNeg_s, ExtNeg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtNeg_s, ExtPos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, ExtPos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
 LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtPos_s, ExtPos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtPos_s, ExtNeg_s, ExtNonPos_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
 
 LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
 LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
@@ -307,139 +494,23 @@ LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO
 LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
 
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Neg_s, Neg_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Neg_s, Pos_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Pos_s, Pos_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Pos_s, Neg_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Neg_s, Neg_s, ExtNeg_s, ALLOW__NO_CHECK) // -big+-big can be -inf
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Neg_s, Pos_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Pos_s, Pos_s, ExtPos_s, ALLOW__NO_CHECK) // big+big can be inf
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Neg_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Pos_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Neg_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Pos_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Pos_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Neg_s, ExtPos_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Neg_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Neg_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Pos_s, Pos_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Pos_s, Neg_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*-big can be inf.
+LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*big can be -inf.
+LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, big*big can be inf.
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Pos_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Neg_s, Neg_s, ALLOW__NO_CHECK)
-
-
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Zero_s, NaN_s, ALLOW__NO_CHECK)
-
-// // TODO: Set the CheckPolicy
-// // Zero_s acts as additive identity.
-// // inline decltype(auto) constexpr operator+ (Zero_s, ExtReal_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// // inline decltype(auto) constexpr operator+ (ExtReal_s, Zero_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (NonNeg_s, Zero_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, NonPos_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (NonPos_s, Zero_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, Neg_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Neg_s, Zero_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, Pos_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Pos_s, Zero_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, NegOne_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (NegOne_s, Zero_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, One_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (One_s, Zero_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator+ (Zero_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // Zero_s also has simple action with respect to subtraction
-// // inline decltype(auto) constexpr operator- (Zero_s, ExtReal_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// // inline decltype(auto) constexpr operator- (ExtReal_s, Zero_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, NonNeg_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (NonNeg_s, Zero_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, NonPos_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (NonPos_s, Zero_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, Neg_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Neg_s, Zero_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, Pos_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Pos_s, Zero_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, NegOne_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (NegOne_s, Zero_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, One_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (One_s, Zero_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator- (Zero_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // Zero_s crushes everything multiplicatively.
-// // inline decltype(auto) constexpr operator* (Zero_s, ExtReal_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// // inline decltype(auto) constexpr operator* (ExtReal_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, NonNeg_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NonNeg_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, NonPos_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NonPos_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, Neg_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Neg_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, Pos_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Pos_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, NegOne_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NegOne_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, One_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Zero_s, Zero_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // Zero_s causes problems through division.
-// // inline decltype(auto) constexpr operator/ (Zero_s, ExtReal_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// // inline decltype(auto) constexpr operator/ (ExtReal_s, Zero_s) { return std::pair(NaN_s{}, ALLOW__VERIFY_OR_THROW); } // Should be NonFinite_s{}, ALLOW__NO_CHECK
-// inline decltype(auto) constexpr operator/ (Zero_s, NonNeg_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NonNeg_s, Zero_s) { return std::pair(Infinity_s{}, ALLOW__VERIFY_OR_THROW); } // Could also be NaN_s
-// inline decltype(auto) constexpr operator/ (Zero_s, NonPos_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NonPos_s, Zero_s) { return std::pair(NegInfinity_s{}, ALLOW__VERIFY_OR_THROW); } // Could also be NaN_s
-// inline decltype(auto) constexpr operator/ (Zero_s, Neg_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (Neg_s, Zero_s) { return std::pair(NegInfinity_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (Zero_s, Pos_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (Pos_s, Zero_s) { return std::pair(Infinity_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (Zero_s, NegOne_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NegOne_s, Zero_s) { return std::pair(NegInfinity_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (Zero_s, One_s) { return std::pair(Zero_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, Zero_s) { return std::pair(Infinity_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (Zero_s, Zero_s) { return std::pair(NaN_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // One_s is multiplicative identity.
-// inline decltype(auto) constexpr operator* (One_s, ExtReal_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (ExtReal_s, One_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NonNeg_s, One_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, NonPos_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NonPos_s, One_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, Neg_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Neg_s, One_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, Pos_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (Pos_s, One_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, NegOne_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (NegOne_s, One_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator* (One_s, One_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // One_s also has a simple action with respect to division.
-// inline decltype(auto) constexpr operator/ (One_s, ExtReal_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (ExtReal_s, One_s) { return std::pair(ExtReal_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NonNeg_s, One_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, NonPos_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NonPos_s, One_s) { return std::pair(NonPos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, Neg_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (Neg_s, One_s) { return std::pair(Neg_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, Pos_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (Pos_s, One_s) { return std::pair(Pos_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, NegOne_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (NegOne_s, One_s) { return std::pair(NegOne_s{}, ALLOW__VERIFY_OR_THROW); }
-// inline decltype(auto) constexpr operator/ (One_s, One_s) { return std::pair(One_s{}, ALLOW__VERIFY_OR_THROW); }
-//
-// // MISC -- TODO: complete these
-// inline decltype(auto) constexpr operator+ (NonNeg_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator* (NonNeg_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (NonNeg_s, NonNeg_s) { return std::pair(NonNeg_s{}, ALLOW__NO_CHECK); }
-//
-// inline decltype(auto) constexpr operator+ (NonPos_s, NonPos_s) { return std::pair(NonPos_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator* (NonPos_s, NonPos_s) { return std::pair(NonNeg_s{}, ALLOW__NO_CHECK); }
-// inline decltype(auto) constexpr operator/ (NonPos_s, NonPos_s) { return std::pair(NonNeg_s{}, ALLOW__VERIFY_OR_THROW); }
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // -1/-subnormal can be inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // -1/subnormal can be -inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // 1/subnormal can be inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Neg_s, ExtNonPos_s, ALLOW__NO_CHECK) // 1/-subnormal can be -inf, subnormal/big can be 0.
 
 // Semantic value type factories.
 
@@ -712,12 +783,75 @@ LVD_TEST_BEGIN(007__semantic_subtype__04)
     auto en6b = ExtNeg{-std::numeric_limits<double>::max()};
     auto en7b = ExtNeg{-std::numeric_limits<double>::infinity()};
 
+    auto i7a = Infinity{std::numeric_limits<double>::infinity()};
+
+    auto ni7b = NegInfinity{-std::numeric_limits<double>::infinity()};
+
+    auto r0a = Real{0};
+    auto r0b = Real{-0};
+    auto r1a = Real{std::numeric_limits<double>::denorm_min()};
+    auto r1b = Real{-std::numeric_limits<double>::denorm_min()};
+    auto r2a = Real{std::numeric_limits<double>::min()};
+    auto r2b = Real{-std::numeric_limits<double>::min()};
+    auto r3a = Real{1};
+    auto r3b = Real{-1};
+    auto r4a = Real{0.5};
+    auto r4b = Real{-0.5};
+    auto r5a = Real{2};
+    auto r5b = Real{-2};
+    auto r6a = Real{std::numeric_limits<double>::max()};
+    auto r6b = Real{-std::numeric_limits<double>::max()};
+
+    auto nz1a = NonZero{std::numeric_limits<double>::denorm_min()};
+    auto nz1b = NonZero{-std::numeric_limits<double>::denorm_min()};
+    auto nz2a = NonZero{std::numeric_limits<double>::min()};
+    auto nz2b = NonZero{-std::numeric_limits<double>::min()};
+    auto nz3a = NonZero{1};
+    auto nz3b = NonZero{-1};
+    auto nz4a = NonZero{0.5};
+    auto nz4b = NonZero{-0.5};
+    auto nz5a = NonZero{2};
+    auto nz5b = NonZero{-2};
+    auto nz6a = NonZero{std::numeric_limits<double>::max()};
+    auto nz6b = NonZero{-std::numeric_limits<double>::max()};
+
+    auto nn0a = NonNeg{0};
+    auto nn1a = NonNeg{std::numeric_limits<double>::denorm_min()};
+    auto nn2a = NonNeg{std::numeric_limits<double>::min()};
+    auto nn3a = NonNeg{1};
+    auto nn4a = NonNeg{0.5};
+    auto nn5a = NonNeg{2};
+    auto nn6a = NonNeg{std::numeric_limits<double>::max()};
+
+    auto np0b = NonPos{-0};
+    auto np1b = NonPos{-std::numeric_limits<double>::denorm_min()};
+    auto np2b = NonPos{-std::numeric_limits<double>::min()};
+    auto np3b = NonPos{-1};
+    auto np4b = NonPos{-0.5};
+    auto np5b = NonPos{-2};
+    auto np6b = NonPos{-std::numeric_limits<double>::max()};
+
+    auto p1a = Pos{std::numeric_limits<double>::denorm_min()};
+    auto p2a = Pos{std::numeric_limits<double>::min()};
+    auto p3a = Pos{1};
+    auto p4a = Pos{0.5};
+    auto p5a = Pos{2};
+    auto p6a = Pos{std::numeric_limits<double>::max()};
+
+    auto n1b = Neg{-std::numeric_limits<double>::denorm_min()};
+    auto n2b = Neg{-std::numeric_limits<double>::min()};
+    auto n3b = Neg{-1};
+    auto n4b = Neg{-0.5};
+    auto n5b = Neg{-2};
+    auto n6b = Neg{-std::numeric_limits<double>::max()};
+
     auto z0a = Zero{0};
     auto z0b = Zero{-0};
 
     auto all = std::tuple(
         ner0a, ner0b, ner1a, ner1b, ner2a, ner2b, ner3a, ner3b, ner4a, ner4b, ner5a, ner5b, ner6a, ner6b, ner7a, ner7b, ner8a, ner8b,
         nan8a, nan8b,
+
         er0a, er0b, er1a, er1b, er2a, er2b, er3a, er3b, er4a, er4b, er5a, er5b, er6a, er6b, er7a, er7b,
         infinite7a, infinite7b,
         enz1a, enz1b, enz2a, enz2b, enz3a, enz3b, enz4a, enz4b, enz5a, enz5b, enz6a, enz6b, enz7a, enz7b,
@@ -725,6 +859,16 @@ LVD_TEST_BEGIN(007__semantic_subtype__04)
         enp0b, enp1b, enp2b, enp3b, enp4b, enp5b, enp6b, enp7b,
         ep1a, ep2a, ep3a, ep4a, ep5a, ep6a, ep7a,
         en1b, en2b, en3b, en4b, en5b, en6b, en7b,
+        i7a,
+        ni7b,
+
+        r0a, r0b, r1a, r1b, r2a, r2b, r3a, r3b, r4a, r4b, r5a, r5b, r6a, r6b,
+        nz1a, nz1b, nz2a, nz2b, nz3a, nz3b, nz4a, nz4b, nz5a, nz5b, nz6a, nz6b,
+        nn0a, nn1a, nn2a, nn3a, nn4a, nn5a, nn6a,
+        np0b, np1b, np2b, np3b, np4b, np5b, np6b,
+        p1a, p2a, p3a, p4a, p5a, p6a,
+        n1b, n2b, n3b, n4b, n5b, n6b,
+
         z0a, z0b
     );
 
