@@ -218,6 +218,11 @@ public:
     static std::ostream &print (std::ostream &out, C_ const &cv) {
         return out << S_::template type_string<S_>() << '(' << cv << ')';
     }
+    // Another implementation of print where it excludes the parens, in case the concrete value prints them.
+    template <typename S_, typename C_>
+    static std::ostream &print_without_extra_parens (std::ostream &out, C_ const &cv) {
+        return out << S_::template type_string<S_>() << cv;
+    }
 
     inline static CheckPolicy constexpr __ctor_default__ = ALLOW__VERIFY_OR_THROW;
 
@@ -261,34 +266,6 @@ public:
     LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(shr_eq)
 
     #undef LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR
-
-    #define LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(opname) \
-    inline static ResultPolicy constexpr __##opname##_SV_SV__ = DONT_CAST; \
-    template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __##opname##_SV_T__ () { return DONT_CAST; } \
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __##opname##_T_SV__ () { return DONT_CAST; }
-
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(add)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(sub)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(mul)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(div)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(mod)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(xor)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(and)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(or)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(shl)
-    LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR(shr)
-
-    #undef LVD_DEFINE_GLOBAL_OPERATOR_PROPERTIES_FOR
-
-    #define LVD_DEFINE_UNARY_OPERATOR_PROPERTIES_FOR(opname) \
-    inline static ResultPolicy constexpr __##opname##_SV__ = DONT_CAST;
-
-    LVD_DEFINE_UNARY_OPERATOR_PROPERTIES_FOR(not)
-    LVD_DEFINE_UNARY_OPERATOR_PROPERTIES_FOR(bang)
-
-    #undef LVD_DEFINE_UNARY_OPERATOR_PROPERTIES_FOR
-
-    // TODO: pre and post increment and decrement.
 };
 
 template <typename S_, typename C_>
@@ -533,23 +510,6 @@ public:
 
     #undef LVD_DEFINE_INPLACE_OPERATOR_METHODS_FOR
 
-    #define LVD_DEFINE_UNARY_OPERATOR_METHODS_FOR(op, opname) \
-    decltype(auto) operator op () const { \
-        auto retval = op cv(); \
-        if constexpr (S_::__##opname##_SV__ != DONT_CAST) { \
-            auto SV_retval = SV_t<S_,C_>{no_check, retval}; \
-            SV_retval.template check<as_check_policy(S_::__##opname##_SV__)>(); \
-            return SV_retval; \
-        } else { \
-            return retval; \
-        } \
-    } \
-
-    LVD_DEFINE_UNARY_OPERATOR_METHODS_FOR(~, not)
-    LVD_DEFINE_UNARY_OPERATOR_METHODS_FOR(!, bang)
-
-    #undef LVD_DEFINE_UNARY_OPERATOR_METHODS_FOR
-
     // TODO: Figure out how to define this generally.
     // TODO: Figure out how to allow non-const version of this
     decltype(auto) operator* () const { return cv().operator*(); }
@@ -616,8 +576,14 @@ private:
     C m_cv;
 };
 
+template <typename T_, T_ VALUE_>
+struct Value_t {
+    using T = T_;
+    inline static constexpr T VALUE = VALUE_;
+};
+
 //
-// Binary operator overloads
+// Operator overloads
 //
 
 inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
@@ -631,11 +597,17 @@ inline decltype(auto) constexpr operator| (Base_s, Base_s) { return Base_s{}; }
 inline decltype(auto) constexpr operator<< (Base_s, Base_s) { return Base_s{}; }
 inline decltype(auto) constexpr operator>> (Base_s, Base_s) { return Base_s{}; }
 
-template <typename T_, T_ VALUE_>
-struct Value_t {
-    using T = T_;
-    inline static constexpr T VALUE = VALUE_;
-};
+inline decltype(auto) constexpr operator+ (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator- (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator~ (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator! (Base_s) { return Base_s{}; }
+
+// Pre-increment/decrement
+inline decltype(auto) constexpr operator++ (Base_s &) { return Base_s{}; }
+inline decltype(auto) constexpr operator-- (Base_s &) { return Base_s{}; }
+// Post-increment/decrement
+inline decltype(auto) constexpr operator++ (Base_s &, int) { return Base_s{}; }
+inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
 
 inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
@@ -648,7 +620,17 @@ inline decltype(auto) constexpr check_policy_for__or  (Base_s, Base_s) { return 
 inline decltype(auto) constexpr check_policy_for__shl (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__shr (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
-#define LVD_DEFINE_GLOBAL_OPERATORS_FOR(op, opname) \
+inline decltype(auto) constexpr check_policy_for__pos (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__neg (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__not (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__bang (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__preincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+#define LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(op, opname) \
 template <typename LhsS_, typename RhsS_, typename C_> \
 decltype(auto) operator op (SV_t<LhsS_,C_> const &lhs, SV_t<RhsS_,C_> const &rhs) { \
     auto retval = lhs.cv() op rhs.cv(); \
@@ -686,18 +668,109 @@ decltype(auto) operator op (T_ const &lhs, SV_t<S_,C_> const &rhs) { \
     } \
 }
 
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(+, add)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(-, sub)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(*, mul)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(/, div)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(%, mod)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(^, xor)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(&, and)
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(|, or)
-// LVD_DEFINE_GLOBAL_OPERATORS_FOR(<<, shl) // TODO: Figure out how this can work
-LVD_DEFINE_GLOBAL_OPERATORS_FOR(>>, shr)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(+, add)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(-, sub)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(*, mul)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(/, div)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(%, mod)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(^, xor)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(&, and)
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(|, or)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(<<, shl) // TODO: Figure out how this can work
+LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(>>, shr)
 
-#undef LVD_DEFINE_GLOBAL_OPERATORS_FOR
+#undef LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR
+
+//
+// Unary operators
+//
+
+#define LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(op, opname) \
+template <typename S_, typename C_> \
+decltype(auto) operator op (SV_t<S_,C_> const &operand) { \
+    auto retval = op operand.cv(); \
+    using RetvalSemanticType = decltype(op S_{}); \
+    using CheckPolicyValueType = decltype(check_policy_for__##opname(S_{})); \
+    auto constexpr check_policy = CheckPolicyValueType::VALUE; \
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
+        SV_retval.template check<check_policy>(); \
+        return SV_retval; \
+    } else { \
+        return retval; \
+    } \
+}
+
+LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(+, pos)
+LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(-, neg)
+LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(~, not)
+LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(!, bang)
+
+#undef LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR
+
+//
+// Just define the operators for pre- and post-increment and decrement directly.
+//
+
+template <typename S_, typename C_>
+decltype(auto) operator++ (SV_t<S_,C_> &operand) {
+    auto retval = ++operand.cv();
+    using RetvalSemanticType = decltype(S_{}.operator++());
+    using CheckPolicyValueType = decltype(check_policy_for__preincr(S_{}));
+    auto constexpr check_policy = CheckPolicyValueType::VALUE;
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+        SV_retval.template check<check_policy>();
+        return SV_retval;
+    } else {
+        return retval;
+    }
+}
+template <typename S_, typename C_>
+decltype(auto) operator-- (SV_t<S_,C_> &operand) {
+    auto retval = --operand.cv();
+    using RetvalSemanticType = decltype(S_{}.operator--());
+    using CheckPolicyValueType = decltype(check_policy_for__predecr(S_{}));
+    auto constexpr check_policy = CheckPolicyValueType::VALUE;
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+        SV_retval.template check<check_policy>();
+        return SV_retval;
+    } else {
+        return retval;
+    }
+}
+
+template <typename S_, typename C_>
+decltype(auto) operator++ (SV_t<S_,C_> &operand, int dummy) {
+    auto retval = operand.cv()++;
+    using RetvalSemanticType = decltype(S_{}.operator++(dummy));
+    using CheckPolicyValueType = decltype(check_policy_for__postincr(S_{}));
+    auto constexpr check_policy = CheckPolicyValueType::VALUE;
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+        SV_retval.template check<check_policy>();
+        return SV_retval;
+    } else {
+        return retval;
+    }
+}
+template <typename S_, typename C_>
+decltype(auto) operator-- (SV_t<S_,C_> &operand, int dummy) {
+    auto retval = operand.cv()--;
+    using RetvalSemanticType = decltype(S_{}.operator--(dummy));
+    using CheckPolicyValueType = decltype(check_policy_for__postdecr(S_{}));
+    auto constexpr check_policy = CheckPolicyValueType::VALUE;
+    if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+        SV_retval.template check<check_policy>();
+        return SV_retval;
+    } else {
+        return retval;
+    }
+}
+
+// Convenient printing of SV_t.
 
 template <typename S_, typename C_>
 inline std::ostream &operator<< (std::ostream &out, SV_t<S_,C_> const &sv) {

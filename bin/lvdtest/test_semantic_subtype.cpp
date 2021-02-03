@@ -26,15 +26,19 @@ using namespace std::string_literals;
     }
 
 // TODO: Make the CheckPolicy part actually use `operator op` using some special types that include Lhs_s and Rhs_s.
-#define LVD_DEFINE_SEMANTIC_OPERATOR(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
     inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
     inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
 
-#define LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
     inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
     inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
     inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
     inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
 
 namespace lvd {
 
@@ -62,7 +66,7 @@ struct NonEmpty_s : public Base_s {
 };
 
 // inline decltype(auto) constexpr operator+ (NonEmpty_s, NonEmpty_s) { return std::pair(NonEmpty_s{}, ALLOW__NO_CHECK); }
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NonEmpty_s, NonEmpty_s, NonEmpty_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, NonEmpty_s, NonEmpty_s, NonEmpty_s, ALLOW__NO_CHECK)
 
 // Semantic value type factories.
 template <typename C_> using NonEmpty_t = SV_t<NonEmpty_s,C_>;
@@ -225,93 +229,146 @@ struct NegOne_s : virtual Neg_s {
 // Catch-alls
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NaNExtReal_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK)
+
+//
+// It's easy enough to define the unary operators
+//
+
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NaN_s, NaN_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Infinite_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtNonZero_s, ExtNonZero_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtNonNeg_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtNonPos_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtPos_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, ExtNeg_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Infinity_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NegInfinity_s, NegInfinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Real_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NonZero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NonNeg_s, NonNeg_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NonPos_s, NonPos_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Pos_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Neg_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, One_s, One_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, NegOne_s, NegOne_s , ALLOW__NO_CHECK)
+
+
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NaN_s, NaN_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Infinite_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtNonZero_s, ExtNonZero_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtNonNeg_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtNonPos_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Infinity_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NegInfinity_s, Infinity_s, ALLOW__NO_CHECK)
+
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Real_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NonZero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NonNeg_s, NonPos_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NonPos_s, NonNeg_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Pos_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Neg_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, One_s, NegOne_s , ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, NegOne_s, One_s , ALLOW__NO_CHECK)
+
+
 
 //
 // Operations with NaN result in NaN
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(-, sub, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(/, div, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(-, sub, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(/, div, NaNExtReal_s, NaN_s, NaN_s, ALLOW__NO_CHECK)
 
 //
 // Adding Zero_s doesn't change the semantic class.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
 
 //
 // Subtracting Zero_s doesn't change the semantic class.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtReal_s, Zero_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Infinite_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNonZero_s, Zero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNonNeg_s, Zero_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNonPos_s, Zero_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtPos_s, Zero_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNeg_s, Zero_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Infinity_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NegInfinity_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Real_s, Zero_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NonZero_s, Zero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NonNeg_s, Zero_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NonPos_s, Zero_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Pos_s, Zero_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Neg_s, Zero_s, Neg_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, One_s, Zero_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, NegOne_s, Zero_s, NegOne_s, ALLOW__NO_CHECK)
 
 //
 // Subtracting from Zero_s negates the semantic class.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Infinite_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonNeg_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNonPos_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Infinity_s, NegInfinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NegInfinity_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtReal_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Infinite_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtNonZero_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtNonNeg_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtNonPos_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Infinity_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, NegInfinity_s, Infinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Real_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonZero_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonNeg_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NonPos_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Real_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, NonZero_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, NonNeg_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, NonPos_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Pos_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, Neg_s, Pos_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, One_s, NegOne_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Zero_s, NegOne_s, One_s, ALLOW__NO_CHECK)
 
 //
 // Multiplying by Zero_s produces Zero_s in most cases.  The semantic class hierarchy can be
@@ -320,50 +377,50 @@ LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Zero_s, NegOne_s, One_s, ALLOW__NO_CHECK)
 //
 
 // This one is sufficient to catch all cases except for Zero_s * Zero_s.
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Real_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, Zero_s, Zero_s, Zero_s, ALLOW__NO_CHECK)
 
 //
 // Zero_s divided by anything finite and nonzero is Zero_s, although 0/0 is NaN.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // Should be a catch-all
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, NaNExtReal_s, NaNExtReal_s, ALLOW__NO_CHECK) // Should be a catch-all
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Infinite_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, ExtNonZero_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Infinity_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NegInfinity_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, Infinite_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, ExtNonZero_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, Infinity_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, NegInfinity_s, Zero_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NonZero_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Pos_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Neg_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, NonZero_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, Pos_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, Neg_s, Zero_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, Zero_s, NaN_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, One_s, Zero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Zero_s, NegOne_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, Zero_s, NaN_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, One_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Zero_s, NegOne_s, Zero_s, ALLOW__NO_CHECK)
 
 //
 // Dividing by zero is a big no-no.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonZero_s, Zero_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtPos_s, Zero_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNeg_s, Zero_s, NegInfinity_s, ALLOW__NO_CHECK)
 
 //
 // Adding by one changes some semantic classes.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK) // Catch-all
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNonNeg_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK) // Catch-all
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNonNeg_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Real_s, One_s, Real_s, ALLOW__NO_CHECK) // Catch-all
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NonNeg_s, One_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegOne_s, One_s, Zero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Real_s, One_s, Real_s, ALLOW__NO_CHECK) // Catch-all
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NonNeg_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, NegOne_s, One_s, Zero_s, ALLOW__NO_CHECK)
 
 // TODO: sub
 
@@ -372,99 +429,99 @@ LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, NegOne_s, One_s, Zero_s, ALLOW_
 // this, since this sort of enumeration won't work in general.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, One_s, One_s, One_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, One_s, One_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
 
 //
 // Multiplying by NegOne_s negates classes' signs.  TODO: Could just make a templatized function that does
 // this, since this sort of enumeration won't work in general.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
 
 //
 // Dividing by One_s leaves all classes the same.  TODO: Could just make a templatized function that does
 // this, since this sort of enumeration won't work in general.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtReal_s, One_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Infinite_s, One_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonZero_s, One_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonNeg_s, One_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonPos_s, One_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtPos_s, One_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNeg_s, One_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Infinity_s, One_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NegInfinity_s, One_s, NegInfinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Real_s, One_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonZero_s, One_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonNeg_s, One_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonPos_s, One_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Pos_s, One_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Neg_s, One_s, Neg_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, One_s, One_s, One_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, One_s, One_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NegOne_s, One_s, NegOne_s, ALLOW__NO_CHECK)
 
 //
 // Dividing by NegOne_s negates some classes.  TODO: Could just make a templatized function that does
 // this, since this sort of enumeration won't work in general.
 //
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtReal_s, NegOne_s, ExtReal_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Infinite_s, NegOne_s, Infinite_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonZero_s, NegOne_s, ExtNonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonNeg_s, NegOne_s, ExtNonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNonPos_s, NegOne_s, ExtNonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtPos_s, NegOne_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNeg_s, NegOne_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Infinity_s, NegOne_s, NegInfinity_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NegInfinity_s, NegOne_s, Infinity_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Real_s, NegOne_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonZero_s, NegOne_s, NonZero_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonNeg_s, NegOne_s, NonPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NonPos_s, NegOne_s, NonNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Pos_s, NegOne_s, Neg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Neg_s, NegOne_s, Pos_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, One_s, NegOne_s, NegOne_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, NegOne_s, NegOne_s, One_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, One_s, NegOne_s, NegOne_s, ALLOW__NO_CHECK)
 
 // TODO: One_s divided by stuff
 // TODO: NegOne_s divided by stuff
@@ -475,42 +532,42 @@ LVD_DEFINE_SEMANTIC_OPERATOR(/, div, One_s, NegOne_s, NegOne_s, ALLOW__NO_CHECK)
 
 // TODO: ExtNonNeg_s, ExtNonPos_s, NonNeg_s, NonPos_s
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtNeg_s, ExtNeg_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Sum of inf and -inf is NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, ExtPos_s, ExtPos_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, ExtNeg_s, ExtNeg_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Sum of inf and -inf is NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, ExtPos_s, ExtPos_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Difference of infinities is NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtNeg_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Difference of infinities is NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, ExtPos_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Difference of infinities is NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtNeg_s, ExtPos_s, ExtNeg_s, ALLOW__NO_CHECK) // Overflow goes infinite
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Difference of infinities is NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, ExtPos_s, ExtNeg_s, ExtPos_s, ALLOW__NO_CHECK) // Overflow goes infinite
 
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtNeg_s, ExtNeg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, ExtNeg_s, ExtPos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, ExtPos_s, ExtPos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, ExtNeg_s, ExtNeg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, ExtNeg_s, ExtPos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, ExtPos_s, ExtPos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Product of near-zero values can be 0.
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, ExtPos_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNeg_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtNeg_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtPos_s, ExtPos_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, ExtPos_s, ExtNeg_s, NaNExtReal_s, ALLOW__NO_CHECK) // Dividing infinities gives NaN
 
 
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Neg_s, Neg_s, ExtNeg_s, ALLOW__NO_CHECK) // -big+-big can be -inf
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(+, add, Neg_s, Pos_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(+, add, Pos_s, Pos_s, ExtPos_s, ALLOW__NO_CHECK) // big+big can be inf
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, Neg_s, Neg_s, ExtNeg_s, ALLOW__NO_CHECK) // -big+-big can be -inf
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(+, add, Neg_s, Pos_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, Pos_s, Pos_s, ExtPos_s, ALLOW__NO_CHECK) // big+big can be inf
 
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Neg_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Neg_s, Pos_s, ExtNeg_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Pos_s, Real_s, ALLOW__NO_CHECK)
-LVD_DEFINE_SEMANTIC_OPERATOR(-, sub, Pos_s, Neg_s, ExtPos_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Neg_s, Neg_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Neg_s, Pos_s, ExtNeg_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Pos_s, Pos_s, Real_s, ALLOW__NO_CHECK)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Pos_s, Neg_s, ExtPos_s, ALLOW__NO_CHECK)
 
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*-big can be inf.
-LVD_DEFINE_SEMANTIC_OPERATOR_COMMUTATIVE(*, mul, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*big can be -inf.
-LVD_DEFINE_SEMANTIC_OPERATOR(*, mul, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, big*big can be inf.
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*-big can be inf.
+LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(*, mul, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, -big*big can be -inf.
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // Subnormal*subnormal can be 0, big*big can be inf.
 
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // -1/-subnormal can be inf, subnormal/big can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // -1/subnormal can be -inf, subnormal/big can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // 1/subnormal can be inf, subnormal/big can be 0.
-LVD_DEFINE_SEMANTIC_OPERATOR(/, div, Pos_s, Neg_s, ExtNonPos_s, ALLOW__NO_CHECK) // 1/-subnormal can be -inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Neg_s, Neg_s, ExtNonNeg_s, ALLOW__NO_CHECK) // -1/-subnormal can be inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Neg_s, Pos_s, ExtNonPos_s, ALLOW__NO_CHECK) // -1/subnormal can be -inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Pos_s, Pos_s, ExtNonNeg_s, ALLOW__NO_CHECK) // 1/subnormal can be inf, subnormal/big can be 0.
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Pos_s, Neg_s, ExtNonPos_s, ALLOW__NO_CHECK) // 1/-subnormal can be -inf, subnormal/big can be 0.
 
 // Semantic value type factories.
 
@@ -653,7 +710,7 @@ LVD_TEST_BEGIN(007__semantic_subtype__03)
 LVD_TEST_END
 
 template <typename Lhs_, typename Rhs_>
-void test_operators (req::Context &req_context, Lhs_ const &lhs, Rhs_ const &rhs) {
+void test_ops (req::Context &req_context, Lhs_ const &lhs, Rhs_ const &rhs) {
     auto &test_log = req_context.log();
     test_log << Log::dbg() << "testing " << lhs << " and " << rhs << '\n';
     IndentGuard ig(test_log);
@@ -661,33 +718,37 @@ void test_operators (req::Context &req_context, Lhs_ const &lhs, Rhs_ const &rhs
     test_log << Log::trc() << lhs << " - " << rhs << " = " << (lhs - rhs) << '\n';
     test_log << Log::trc() << lhs << " * " << rhs << " = " << (lhs * rhs) << '\n';
     test_log << Log::trc() << lhs << " / " << rhs << " = " << (lhs / rhs) << '\n';
+    test_log << Log::trc() << "+" << lhs << " = " << (+lhs) << '\n';
+    test_log << Log::trc() << "-" << lhs << " = " << (-lhs) << '\n';
 
     // Do explicit checks on each.
     (lhs + rhs).template check<ALLOW__VERIFY_OR_THROW>();
     (lhs - rhs).template check<ALLOW__VERIFY_OR_THROW>();
     (lhs * rhs).template check<ALLOW__VERIFY_OR_THROW>();
     (lhs / rhs).template check<ALLOW__VERIFY_OR_THROW>();
+    (+lhs).template check<ALLOW__VERIFY_OR_THROW>();
+    (-lhs).template check<ALLOW__VERIFY_OR_THROW>();
 }
 
 template <size_t LHS_INDEX_, typename... LhsArgs_, typename Rhs_>
-void test_operators_lhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsArgs_...> const &lhs, Rhs_ const &rhs) {
+void test_ops_lhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsArgs_...> const &lhs, Rhs_ const &rhs) {
     if constexpr (lhs.has_ended()) {
         // Base case; nothing to do.
     } else {
         // Inductive case.
-        test_operators(req_context, lhs.current(), rhs);
-        test_operators_lhs(req_context, lhs.incremented(), rhs);
+        test_ops(req_context, lhs.current(), rhs);
+        test_ops_lhs(req_context, lhs.incremented(), rhs);
     }
 }
 
 template <size_t LHS_INDEX_, typename... LhsArgs_, size_t RHS_INDEX_, typename... RhsArgs_>
-void test_operators_lhs_rhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsArgs_...> const &lhs, IndexedTuple_t<RHS_INDEX_,RhsArgs_...> const &rhs) {
+void test_ops_lhs_rhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsArgs_...> const &lhs, IndexedTuple_t<RHS_INDEX_,RhsArgs_...> const &rhs) {
     if constexpr (rhs.has_ended()) {
         // Base case; nothing to do.
     } else {
         // Inductive case.
-        test_operators_lhs(req_context, lhs, rhs.current());
-        test_operators_lhs_rhs(req_context, lhs, rhs.incremented());
+        test_ops_lhs(req_context, lhs, rhs.current());
+        test_ops_lhs_rhs(req_context, lhs, rhs.incremented());
     }
 }
 
@@ -874,7 +935,7 @@ LVD_TEST_BEGIN(007__semantic_subtype__04)
 
     std::ignore = all;
 
-    test_operators_lhs_rhs(req_context, begin_indexed_tuple(all), begin_indexed_tuple(all));
+    test_ops_lhs_rhs(req_context, begin_indexed_tuple(all), begin_indexed_tuple(all));
 LVD_TEST_END
 
 } // end namespace lvd
