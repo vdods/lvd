@@ -271,6 +271,9 @@ public:
     template <typename... Args_> decltype(auto) constexpr operator() (Args_&&... args) const { return Base_s{}; }
     // Element operator
     template <typename T_> decltype(auto) constexpr operator[] (T_ &&arg) const { return Base_s{}; }
+
+    decltype(auto) operator* () const { return Base_s{}; }
+    decltype(auto) operator-> () const { return Base_s{}; }
 };
 
 template <typename S_, typename C_>
@@ -516,12 +519,34 @@ public:
 
     #undef LVD_DEFINE_INPLACE_OPERATOR_METHODS_FOR
 
-    // TODO: Figure out how to define this generally.
     // TODO: Figure out how to allow non-const version of this -- use scope guard with check at end
-    decltype(auto) operator* () const { return cv().operator*(); }
-
-    // TODO: Figure out how to allow non-const version of this -- use scope guard with check at end
-    decltype(auto) operator-> () const { return cv().operator->(); }
+    decltype(auto) operator* () const {
+        auto retval = *cv();
+        using RetvalSemanticType = decltype(*S{});
+        using CheckPolicyValueType = decltype(check_policy_for__deref(S{}));
+        if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+            auto constexpr check_policy = CheckPolicyValueType::VALUE;
+            auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+            SV_retval.template check<check_policy>();
+            return SV_retval;
+        } else {
+            return retval;
+        }
+    }
+    decltype(auto) operator-> () const {
+        // A bit of a hack, but apparently you can't call .operator->() as a method on built-in pointer types.
+        auto retval = operator_arrow(cv());
+        using RetvalSemanticType = decltype(S{}.operator->());
+        using CheckPolicyValueType = decltype(check_policy_for__arrow(S{}));
+        if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+            auto constexpr check_policy = CheckPolicyValueType::VALUE;
+            auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+            SV_retval.template check<check_policy>();
+            return SV_retval;
+        } else {
+            return retval;
+        }
+    }
 
     explicit operator bool () const { return cv().operator bool(); }
 
@@ -594,14 +619,60 @@ private:
 
     C &cv_nonconst () { return m_cv; }
 
+    // This simulates being able to call x.operator->() even when x is a built-in pointer type.
+    template <typename T_>
+    static decltype(auto) operator_arrow (T_ const &x) {
+        if constexpr (std::is_pointer_v<std::decay_t<T_>>) {
+            // There is no operator-> method on a built-in pointer type.
+            return x;
+        } else {
+            return x.operator->();
+        }
+    }
+
     C m_cv;
 };
+
+template <typename T_> struct is_SV_t_ : public std::false_type { };
+template <typename S_, typename C_> struct is_SV_t_<SV_t<S_,C_>> : public std::true_type { };
+
+// Determines if a given type T_ is a SV_t<S_,C_> for some types S_, C_.
+template <typename T_>
+inline bool constexpr is_SV_t = is_SV_t_<T_>::value;
+
+
+// This will make a semantic value (SV_t) with a specified semantic class and [potentially] deduced concrete type.
+template <typename S_, typename C_>
+decltype(auto) make_sv (C_ &&cv) {
+    return SV_t<S_,std::decay_t<C_>>(std::forward<C_>(cv));
+}
+
+// This is the same as make_sv, except that it will "collapse" a SV_t that has matching semantic class passed in
+// as the concrete type, so that no nesting of SV_t types happen.
+template <typename S_, typename C_>
+decltype(auto) make_sv__with_collapse (C_ &&cv) {
+    using decay_C = std::decay_t<C_>;
+    if constexpr (is_SV_t<decay_C>) {
+        if constexpr (std::is_same_v<typename decay_C::S,S_>) {
+            // Collapse if the semantic classes are the same.
+            return make_sv__with_collapse<S_>(cv.cv());
+        } else {
+            // Otherwise don't collapse.
+            return make_sv<S_>(std::forward<C_>(cv));
+        }
+    } else {
+        // If it's not an SV_t, then no possibility for collapse.
+        return make_sv<S_>(std::forward<C_>(cv));
+    }
+}
+
 
 template <typename T_, T_ VALUE_>
 struct Value_t {
     using T = T_;
     inline static constexpr T VALUE = VALUE_;
 };
+
 
 //
 // Operator overloads
@@ -671,6 +742,9 @@ template <typename... Args_>
 inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 template <typename T_>
 inline decltype(auto) constexpr check_policy_for__elem (Base_s, T_ &&) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__deref (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
 #define LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(op, opname) \
 template <typename LhsS_, typename RhsS_, typename C_> \

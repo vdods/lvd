@@ -193,6 +193,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_read_write_bin.cpp
         bin/lvdtest/test_req.cpp
         bin/lvdtest/test__semantic_subtype__float.cpp
+        bin/lvdtest/test__semantic_subtype__pointer.cpp
         bin/lvdtest/test__semantic_subtype__string.cpp
         bin/lvdtest/test_serialization.cpp
         bin/lvdtest/test_TotalOrder.cpp
