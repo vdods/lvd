@@ -266,6 +266,11 @@ public:
     LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(shr_eq)
 
     #undef LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR
+
+    // Call operator
+    template <typename... Args_> decltype(auto) constexpr operator() (Args_&&... args) const { return Base_s{}; }
+    // Element operator
+    template <typename T_> decltype(auto) constexpr operator[] (T_ &&arg) const { return Base_s{}; }
 };
 
 template <typename S_, typename C_>
@@ -477,6 +482,7 @@ public:
         return *this;
     }
 
+    // NOTE: These are best defined in the plain way for now.  Only provide ability to override them using global functions later if needed.
     decltype(auto) operator== (SV_t const &rhs) const { return m_cv == rhs.cv(); }
     decltype(auto) operator!= (SV_t const &rhs) const { return m_cv != rhs.cv(); }
     decltype(auto) operator< (SV_t const &rhs) const { return m_cv < rhs.cv(); }
@@ -511,10 +517,10 @@ public:
     #undef LVD_DEFINE_INPLACE_OPERATOR_METHODS_FOR
 
     // TODO: Figure out how to define this generally.
-    // TODO: Figure out how to allow non-const version of this
+    // TODO: Figure out how to allow non-const version of this -- use scope guard with check at end
     decltype(auto) operator* () const { return cv().operator*(); }
 
-    // TODO: Figure out how to allow non-const version of this
+    // TODO: Figure out how to allow non-const version of this -- use scope guard with check at end
     decltype(auto) operator-> () const { return cv().operator->(); }
 
     explicit operator bool () const { return cv().operator bool(); }
@@ -527,19 +533,34 @@ public:
     }
 
     // TODO: Figure out how to allow non-const version of this -- it would be some delegate
-    // that calls check<...>() after the value of this is changed.
+    // that calls check<...>() after the value of this is changed.  Use a scope guard.
     template <typename... Args_>
     decltype(auto) operator() (Args_&&... args) const {
-        // TODO: Implement ResultPolicy logic here
-        return cv().operator()(std::forward<Args_>(args)...);
+        auto retval = cv()(std::forward<Args_>(args)...);
+        using RetvalSemanticType = decltype(S{}(std::forward<Args_>(args)...));
+        using CheckPolicyValueType = decltype(check_policy_for__call(S{}, std::forward<Args_>(args)...));
+        if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+            auto constexpr check_policy = CheckPolicyValueType::VALUE;
+            auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+            SV_retval.template check<check_policy>();
+            return SV_retval;
+        } else {
+            return retval;
+        }
     }
-
-    // TODO: Figure out how to allow non-const version of this -- it would be some delegate
-    // that calls check<...>() after the value of this is changed.
     template <typename T_>
-    decltype(auto) operator[] (T_ &&x) const {
-        // TODO: Implement ResultPolicy logic here
-        return cv().operator[](std::forward<T_>(x));
+    decltype(auto) operator[] (T_ &&arg) const {
+        auto retval = cv()[std::forward<T_>(arg)];
+        using RetvalSemanticType = decltype(S{}[std::forward<T_>(arg)]);
+        using CheckPolicyValueType = decltype(check_policy_for__elem(S{}, std::forward<T_>(arg)));
+        if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+            auto constexpr check_policy = CheckPolicyValueType::VALUE;
+            auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
+            SV_retval.template check<check_policy>();
+            return SV_retval;
+        } else {
+            return retval;
+        }
     }
 
     C const &cv () const { return m_cv; }
@@ -586,6 +607,14 @@ struct Value_t {
 // Operator overloads
 //
 
+// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
+// inline decltype(auto) constexpr operator== (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator!= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator<= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator< (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator>= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator> (Base_s, Base_s) { return Base_s{}; }
+
 inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
 inline decltype(auto) constexpr operator- (Base_s, Base_s) { return Base_s{}; }
 inline decltype(auto) constexpr operator* (Base_s, Base_s) { return Base_s{}; }
@@ -609,6 +638,14 @@ inline decltype(auto) constexpr operator-- (Base_s &) { return Base_s{}; }
 inline decltype(auto) constexpr operator++ (Base_s &, int) { return Base_s{}; }
 inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
 
+// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
+// inline decltype(auto) constexpr check_policy_for__eq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__neq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__leq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__lt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
 inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
@@ -630,14 +667,19 @@ inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Valu
 inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
+template <typename... Args_>
+inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+template <typename T_>
+inline decltype(auto) constexpr check_policy_for__elem (Base_s, T_ &&) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
 #define LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(op, opname) \
 template <typename LhsS_, typename RhsS_, typename C_> \
 decltype(auto) operator op (SV_t<LhsS_,C_> const &lhs, SV_t<RhsS_,C_> const &rhs) { \
     auto retval = lhs.cv() op rhs.cv(); \
     using RetvalSemanticType = decltype(LhsS_{} op RhsS_{}); \
     using CheckPolicyValueType = decltype(check_policy_for__##opname(LhsS_{}, RhsS_{})); \
-    auto constexpr check_policy = CheckPolicyValueType::VALUE; \
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
+        auto constexpr check_policy = CheckPolicyValueType::VALUE; \
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
         SV_retval.template check<check_policy>(); \
         return SV_retval; \
@@ -668,6 +710,14 @@ decltype(auto) operator op (T_ const &lhs, SV_t<S_,C_> const &rhs) { \
     } \
 }
 
+// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(==, eq)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(!=, neq)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(<=, leq)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(<, lt)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(>=, geq)
+// LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(>, gt)
+
 LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(+, add)
 LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(-, sub)
 LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(*, mul)
@@ -691,8 +741,8 @@ decltype(auto) operator op (SV_t<S_,C_> const &operand) { \
     auto retval = op operand.cv(); \
     using RetvalSemanticType = decltype(op S_{}); \
     using CheckPolicyValueType = decltype(check_policy_for__##opname(S_{})); \
-    auto constexpr check_policy = CheckPolicyValueType::VALUE; \
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
+        auto constexpr check_policy = CheckPolicyValueType::VALUE; \
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
         SV_retval.template check<check_policy>(); \
         return SV_retval; \
@@ -717,8 +767,8 @@ decltype(auto) operator++ (SV_t<S_,C_> &operand) {
     auto retval = ++operand.cv();
     using RetvalSemanticType = decltype(S_{}.operator++());
     using CheckPolicyValueType = decltype(check_policy_for__preincr(S_{}));
-    auto constexpr check_policy = CheckPolicyValueType::VALUE;
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto constexpr check_policy = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
         SV_retval.template check<check_policy>();
         return SV_retval;
@@ -731,8 +781,8 @@ decltype(auto) operator-- (SV_t<S_,C_> &operand) {
     auto retval = --operand.cv();
     using RetvalSemanticType = decltype(S_{}.operator--());
     using CheckPolicyValueType = decltype(check_policy_for__predecr(S_{}));
-    auto constexpr check_policy = CheckPolicyValueType::VALUE;
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto constexpr check_policy = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
         SV_retval.template check<check_policy>();
         return SV_retval;
@@ -746,8 +796,8 @@ decltype(auto) operator++ (SV_t<S_,C_> &operand, int dummy) {
     auto retval = operand.cv()++;
     using RetvalSemanticType = decltype(S_{}.operator++(dummy));
     using CheckPolicyValueType = decltype(check_policy_for__postincr(S_{}));
-    auto constexpr check_policy = CheckPolicyValueType::VALUE;
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto constexpr check_policy = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
         SV_retval.template check<check_policy>();
         return SV_retval;
@@ -760,8 +810,8 @@ decltype(auto) operator-- (SV_t<S_,C_> &operand, int dummy) {
     auto retval = operand.cv()--;
     using RetvalSemanticType = decltype(S_{}.operator--(dummy));
     using CheckPolicyValueType = decltype(check_policy_for__postdecr(S_{}));
-    auto constexpr check_policy = CheckPolicyValueType::VALUE;
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
+        auto constexpr check_policy = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
         SV_retval.template check<check_policy>();
         return SV_retval;
@@ -778,3 +828,31 @@ inline std::ostream &operator<< (std::ostream &out, SV_t<S_,C_> const &sv) {
 }
 
 } // end namespace lvd
+
+#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING(str) \
+    template <typename S_> \
+    static std::string const &type_string () { \
+        static std::string const STR{str}; \
+        return STR; \
+    }
+
+// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
+#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(function_body) \
+    template <typename C> \
+    static bool constexpr is_valid (C const &cv) { \
+        function_body \
+    }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }

@@ -9,220 +9,112 @@
 #include "lvd/type_string_of.hpp"
 #include <limits>
 
-using namespace std::string_literals;
-
-#define LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING(str) \
-    template <typename S_> \
-    static std::string const &type_string () { \
-        static std::string const STR{str}; \
-        return STR; \
-    }
-
-// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
-#define LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(function_body) \
-    template <typename C> \
-    static bool constexpr is_valid (C const &cv) { \
-        function_body \
-    }
-
-// TODO: Make the CheckPolicy part actually use `operator op` using some special types that include Lhs_s and Rhs_s.
-#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
 namespace lvd {
-
-struct NonEmpty_s : public Base_s {
-    template <typename S_>
-    static std::string const &type_string () {
-        static std::string const STR{"NonEmpty"};
-        return STR;
-    }
-    template <typename C_>
-    static bool const is_valid (C_ const &cv) {
-        return !cv.empty();
-    }
-
-    // Disallow default construction, since that would be an empty string.
-    inline static CheckPolicy constexpr __ctor_default__ = PROHIBIT;
-
-    // Adding to a nonempty string can't make it empty.
-    inline static ResultPolicy constexpr __add_eq_SV__ = CAST_TO_SV__NO_CHECK;
-    template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_eq_T__ () { return CAST_TO_SV__NO_CHECK; }
-    // Sum of nonempty string with anything else is nonempty string.
-    inline static ResultPolicy constexpr __add_SV_SV__ = CAST_TO_SV__NO_CHECK;
-    template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_SV_T__ () { return CAST_TO_SV__NO_CHECK; }
-    template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_T_SV__ () { return CAST_TO_SV__NO_CHECK; }
-};
-
-// inline decltype(auto) constexpr operator+ (NonEmpty_s, NonEmpty_s) { return std::pair(NonEmpty_s{}, ALLOW__NO_CHECK); }
-LVD_DEFINE_SEMANTIC_BIN_OP(+, add, NonEmpty_s, NonEmpty_s, NonEmpty_s, ALLOW__NO_CHECK)
-
-// Semantic value type factories.
-template <typename C_> using NonEmpty_t = SV_t<NonEmpty_s,C_>;
-
-// Arguably this alias is not necessary, NonEmpty_t<std::string> is plenty terse.
-using NonEmptyString = NonEmpty_t<std::string>;
-
-NonEmptyString make_nonempty_string () {
-    return NonEmptyString("OSTRICH");
-}
-
-LVD_TEST_BEGIN(007__semantic_subtype__00)
-    auto s1 = NonEmptyString{"blah"};
-    auto s2 = NonEmptyString{"thingy"s};
-
-    test_log << Log::dbg() << LVD_REFLECT(s1) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s2) << '\n';
-
-    auto s3 = s1 + s2;
-    auto s4 = s1 + "stuff";
-    auto s5 = s1 + 'a';
-    auto s6 = s1 + "ostriches"s;
-
-    test_log << Log::dbg() << LVD_REFLECT(s3) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s4) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s5) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s6) << '\n';
-
-    // Testing use of some of std::string's other constructors
-    auto s7 = NonEmptyString{10, 'x'};
-    auto s8 = NonEmptyString{{'a', 'b', 'c', 'd'}};
-    auto s9 = NonEmptyString{"a very long string", 10};
-
-    test_log << Log::dbg() << LVD_REFLECT(s7) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s8) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s9) << '\n';
-
-    // Testing copy and move constructors
-    auto s10 = NonEmptyString{s7};
-    auto s11 = NonEmptyString{make_nonempty_string()};
-
-    test_log << Log::dbg() << LVD_REFLECT(s10) << '\n';
-    test_log << Log::dbg() << LVD_REFLECT(s11) << '\n';
-
-    // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
-//     auto bad = NonEmptyString{};
-
-    test::call_function_and_expect_exception<std::runtime_error>([](){
-        NonEmptyString{""};
-    });
-LVD_TEST_END
 
 // Extended real line (this includes positive and negative infinity) with not-a-number value(s).
 struct NaNExtReal_s : virtual Base_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NaNExtReal")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return true;)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NaNExtReal")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return true;)
 };
 
 // TODO: Create NaNOrZero_s, which would be the result of Zero_s * ExtXYZ_s
 
 struct NaN_s : virtual NaNExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NaN")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return std::isnan(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NaN")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return std::isnan(cv);)
 };
 
 // NOTE: This sort of thing could go in semantic_subtype.hpp itself.
 // https://en.wikipedia.org/wiki/Extended_real_number_line -- this includes positive and negative infinity, but not NaN.
 struct ExtReal_s : virtual NaNExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtReal")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return !std::isnan(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtReal")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return !std::isnan(cv);)
 };
 
 struct Infinite_s : virtual ExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Infinite")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return !std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Infinite")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return !std::isfinite(cv);)
 };
 
 struct ExtNonZero_s : virtual ExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtNonZero")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv != C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtNonZero")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv != C(0);)
 };
 
 struct ExtNonNeg_s : virtual ExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtNonNeg")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv >= C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtNonNeg")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv >= C(0);)
 };
 
 struct ExtNonPos_s : virtual ExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtNonPos")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv <= C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtNonPos")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv <= C(0);)
 };
 
 struct ExtPos_s : virtual ExtNonNeg_s, virtual ExtNonZero_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtPos")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv > C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtPos")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv > C(0);)
 };
 
 struct ExtNeg_s : virtual ExtNonPos_s, virtual ExtNonZero_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("ExtNeg")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv < C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("ExtNeg")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv < C(0);)
 };
 
 struct Infinity_s : virtual ExtPos_s, virtual Infinite_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Infinity")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == std::numeric_limits<C>::infinity();)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Infinity")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv == std::numeric_limits<C>::infinity();)
 };
 
 struct NegInfinity_s : virtual ExtNeg_s, virtual Infinite_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NegInfinity")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == -std::numeric_limits<C>::infinity();)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NegInfinity")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv == -std::numeric_limits<C>::infinity();)
 };
 
 // Represents real numbers.  Relative to ExtReal_s, this is the subset of finite values.
 struct Real_s : virtual ExtReal_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Real")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Real")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return std::isfinite(cv);)
 };
 
 struct NonZero_s : virtual Real_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NonZero")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv != C(0) && std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NonZero")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv != C(0) && std::isfinite(cv);)
 };
 
 struct NonPos_s : virtual Real_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NonPos")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv <= C(0) && std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NonPos")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv <= C(0) && std::isfinite(cv);)
 };
 
 struct NonNeg_s : virtual Real_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NonNeg")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv >= C(0) && std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NonNeg")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv >= C(0) && std::isfinite(cv);)
 };
 
 struct Pos_s : virtual NonNeg_s, virtual NonZero_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Pos")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv > C(0) && std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Pos")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv > C(0) && std::isfinite(cv);)
 };
 
 struct Neg_s : virtual NonPos_s, virtual NonZero_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Neg")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv < C(0) && std::isfinite(cv);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Neg")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv < C(0) && std::isfinite(cv);)
 };
 
 struct Zero_s : virtual NonNeg_s, virtual NonPos_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("Zero")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == C(0);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("Zero")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv == C(0);)
 };
 
 struct One_s : virtual Pos_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("One")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == C(1);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("One")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv == C(1);)
 };
 
 struct NegOne_s : virtual Neg_s {
-    LVD_DEFINE_SEMANTIC_CLASS_TYPE_STRING("NegOne")
-    LVD_DEFINE_SEMANTIC_CLASS_IS_VALID(return cv == C(-1);)
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING("NegOne")
+    LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(return cv == C(-1);)
 };
 
 //
@@ -594,7 +486,7 @@ DEFINE_SEMANTIC_VALUE_TYPE(Zero)
 DEFINE_SEMANTIC_VALUE_TYPE(One)
 DEFINE_SEMANTIC_VALUE_TYPE(NegOne)
 
-LVD_TEST_BEGIN(007__semantic_subtype__01)
+LVD_TEST_BEGIN(007__semantic_subtype__01__float__00)
     auto z1 = Zero{0};
 
     test_log << Log::dbg() << LVD_REFLECT(z1) << '\n';
@@ -635,7 +527,7 @@ LVD_DEFINE_TYPE_STRING(lvd::NegOne_s);
 
 namespace lvd {
 
-LVD_TEST_BEGIN(007__semantic_subtype__03)
+LVD_TEST_BEGIN(007__semantic_subtype__01__float__01)
     auto p1 = Pos{0.5};
     auto p2 = Pos{0.75};
 
@@ -752,7 +644,7 @@ void test_ops_lhs_rhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsA
     }
 }
 
-LVD_TEST_BEGIN(007__semantic_subtype__04)
+LVD_TEST_BEGIN(007__semantic_subtype__01__float__02)
     auto ner0a = NaNExtReal{0};
     auto ner0b = NaNExtReal{-0};
     auto ner1a = NaNExtReal{std::numeric_limits<double>::denorm_min()};
