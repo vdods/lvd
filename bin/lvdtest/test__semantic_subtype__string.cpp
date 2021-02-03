@@ -1,6 +1,5 @@
 // 2021.01.28 - Copyright Victor Dods - Licensed under Apache 2.0
 
-#include "lvd/IndexedTuple_t.hpp"
 #include "lvd/req.hpp"
 #include "lvd/semantic_subtype.hpp"
 #include "lvd/test.hpp"
@@ -8,35 +7,6 @@
 #include "lvd/type_string_of.hpp"
 
 using namespace std::string_literals;
-
-#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING(str) \
-    template <typename S_> \
-    static std::string const &type_string () { \
-        static std::string const STR{str}; \
-        return STR; \
-    }
-
-// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
-#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(function_body) \
-    template <typename C> \
-    static bool constexpr is_valid (C const &cv) { \
-        function_body \
-    }
-
-// TODO: Make the CheckPolicy part actually use `operator op` using some special types that include Lhs_s and Rhs_s.
-#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
 
 namespace lvd {
 
