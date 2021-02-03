@@ -30,14 +30,17 @@ public:
 
     Context () = delete;
     Context (Context const &) = delete;
-    Context (Context &&) = default;
+    Context (Context &&other)
+        :   m_log(other.m_log)
+        ,   m_failure_behavior(other.m_failure_behavior)
+    { }
     Context (Log &log)
         :   m_log(log)
         ,   m_failure_behavior(FailureBehavior::THROW)
     { }
 
     Context &operator = (Context const &) = delete;
-    Context &operator = (Context &&) = default;
+    Context &operator = (Context &&) = delete;
 
     //
     // Builder pattern methods

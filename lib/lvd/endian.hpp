@@ -45,6 +45,7 @@ inline Endianness constexpr machine_endianness () {
 }
 
 // Is true iff a type has endianness (arithmetic types) or is invariant under byte-order-swap (e.g. 1-byte types).
+// TODO: Use std::is_scalar_v<T_> instead
 template <typename T_>
 inline bool constexpr is_endiannated_type_v = std::is_arithmetic_v<T_> || std::is_same_v<T_,std::byte> || std::is_same_v<T_,bool>;
 

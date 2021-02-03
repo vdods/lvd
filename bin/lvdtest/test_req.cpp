@@ -9,7 +9,7 @@ LVD_TEST_BEGIN(010__req__0)
 
     // Default FailureBehavior for lvd::req::g_req_context is THROW
     lvd::test::call_function_and_expect_exception<lvd::req::Failure>([](){
-        LVD_G_REQ_EQ(1, 2);
+        LVD_G_REQ_EQ(1, 2, "NOTE: If this causes the test process to abort, it's because you specified --failure-behavior=abort; disable that.");
     });
 LVD_TEST_END
 

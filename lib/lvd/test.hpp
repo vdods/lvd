@@ -34,7 +34,7 @@ public:
     { }
 
     Context &operator = (Context const &) = delete;
-    Context &operator = (Context &&) = default;
+    Context &operator = (Context &&) = delete;
 
     //
     // Builder pattern methods

@@ -37,9 +37,10 @@ class InfixDelimiter_t {
 public:
 
     InfixDelimiter_t () = delete;
-    InfixDelimiter_t (auto &&delimiter)
+    template <typename Delimiter_>
+    InfixDelimiter_t (Delimiter_ &&delimiter)
         :   m_has_printed_delimiter(false)
-        ,   m_delimiter(std::forward<decltype(delimiter)>(delimiter))
+        ,   m_delimiter(std::forward<Delimiter_>(delimiter))
     { }
 
     std::ostream &print (std::ostream &out) {

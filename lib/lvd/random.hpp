@@ -23,26 +23,26 @@ namespace lvd {
 // parameter after T_ in the various functions, and if there were any state to that struct,
 // such as specific params for distributions, then that would be passed in after rng.
 
-// Implementations should provide `void operator() (T_ &dest, auto &rng) const`, which
+// Implementations should provide `void operator() (T_ &dest, Rng_ &rng) const`, which
 // populates dest in-place with a random value, and where ... is an optional is_valid function
 // which determines what a valid value is; the result should satisfy is_valid(dest), or
 // throw or abort.
 template <typename T_> struct PopulateRandom_t;
 
-// Implementations should provide `T_ operator() (auto &rng, ...) const`, which returns an
+// Implementations should provide `T_ operator() (Rng_ &rng, ...) const`, which returns an
 // appropriate random value, and where ... is an optional is_valid function which determines
 // what a valid value is; the return value should satisfy is_valid(retval), or throw or abort.
 // Note that if T_ is default constructible, then the default implementation of MakeRandom_t
 // will use PopulateRandom_t.  Otherwise, template-specialize MakeRandom_t.
 template <typename T_> struct MakeRandom_t;
 
-template <typename T_>
-void populate_random (T_ &dest, auto &rng) {
+template <typename T_, typename Rng_>
+void populate_random (T_ &dest, Rng_ &rng) {
     return PopulateRandom_t<T_>()(dest, rng);
 }
 
-template <typename T_>
-void populate_random (T_ &dest, auto &rng, auto is_valid) {
+template <typename T_, typename Rng_, typename IsValid_>
+void populate_random (T_ &dest, Rng_ &rng, IsValid_ is_valid) {
     auto pr = PopulateRandom_t<T_>();
     size_t constexpr ITERATION_LIMIT = 1000;
     for (size_t i = 0; i < ITERATION_LIMIT; ++i) {
@@ -54,8 +54,8 @@ void populate_random (T_ &dest, auto &rng, auto is_valid) {
 }
 
 // Convenience function which calls the appropriate template specialization of MakeRandom_t.
-template <typename T_>
-T_ make_random (auto &rng) {
+template <typename T_, typename Rng_>
+T_ make_random (Rng_ &rng) {
     // We call the constructor explicitly here so that if T_ has an explicit constructor but the
     // implementation of MakeRandom_t produces a different type, it still works.
     return T_(MakeRandom_t<T_>()(rng));
@@ -63,8 +63,8 @@ T_ make_random (auto &rng) {
 
 // This is a form takes an `is_valid` function which is used to filter out values in
 // a loop until one is produced.
-template <typename T_>
-T_ make_random (auto &rng, auto is_valid) {
+template <typename T_, typename Rng_, typename IsValid_>
+T_ make_random (Rng_ &rng, IsValid_ is_valid) {
     auto mr = MakeRandom_t<T_>();
     size_t constexpr ITERATION_LIMIT = 1000;
     for (size_t i = 0; i < ITERATION_LIMIT; ++i) {
@@ -83,7 +83,8 @@ T_ make_random (auto &rng, auto is_valid) {
 // outside of just 0 and 1.
 template <>
 struct PopulateRandom_t<bool> {
-    void operator() (bool &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (bool &dest, Rng_ &rng) const {
         // There's probably a faster way to generate a single random bit.
         static std::uniform_int_distribution<uint8_t> d(0, 1);
         dest = d(rng) != 0;
@@ -93,7 +94,8 @@ struct PopulateRandom_t<bool> {
 // Need to specify implementation for std::byte, since it's not considered an arithmetic type.
 template <>
 struct PopulateRandom_t<std::byte> {
-    void operator() (std::byte &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::byte &dest, Rng_ &rng) const {
         static std::uniform_int_distribution<uint8_t> d;
         dest = std::byte(d(rng));
     }
@@ -106,7 +108,8 @@ struct PopulateRandom_t<std::byte> {
 // Helper template
 template <typename Int_>
 struct PopulateRandom_Int_t {
-    void operator() (Int_ &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (Int_ &dest, Rng_ &rng) const {
         static_assert(std::is_integral_v<Int_>);
         static std::uniform_int_distribution<Int_> d;
         dest = d(rng);
@@ -143,7 +146,8 @@ struct PopulateRandom_t<uint64_t> : public PopulateRandom_Int_t<uint64_t> { };
 // Helper template
 template <typename Float_>
 struct PopulateRandom_Float_t {
-    void operator() (Float_ &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (Float_ &dest, Rng_ &rng) const {
         static_assert(std::is_floating_point_v<Float_>);
         static std::normal_distribution<float> d(Float_(0));
         dest = d(rng);
@@ -162,8 +166,8 @@ struct PopulateRandom_t<long double> : public PopulateRandom_Float_t<long double
 // constructible, then you must provide your own template specialization of MakeRandom_t.
 template <typename T_>
 struct MakeRandom_t {
-    template <typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
-    T_ operator() (auto &rng) const {
+    template <typename Rng_, typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
+    T_ operator() (Rng_ &rng) const {
         T_ retval;
         PopulateRandom_t<T_>()(retval, rng);
         return retval;
@@ -180,7 +184,8 @@ template <>
 struct PopulateRandom_t<std::string> {
     static bool ascii_char_is_printable (char c) { return ' ' <= c && c <= '~'; }
 
-    void operator() (std::string &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::string &dest, Rng_ &rng) const {
         dest.resize(std::uniform_int_distribution<size_t>(0, 10)(rng), ' ');
         for (auto &c : dest)
             populate_random(c, rng, ascii_char_is_printable);
@@ -191,7 +196,8 @@ struct PopulateRandom_t<std::string> {
 template <typename... Types_>
 struct PopulateRandom_t<std::vector<Types_...>> {
     using Vector = std::vector<Types_...>;
-    void operator() (Vector &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (Vector &dest, Rng_ &rng) const {
         dest.resize(std::uniform_int_distribution<size_t>(0, 10)(rng));
         for (auto &c : dest)
             populate_random(c, rng);
@@ -201,7 +207,8 @@ struct PopulateRandom_t<std::vector<Types_...>> {
 // Generates a random std::array.
 template <typename T_, size_t N_>
 struct PopulateRandom_t<std::array<T_,N_>> {
-    void operator() (std::array<T_,N_> &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::array<T_,N_> &dest, Rng_ &rng) const {
         for (auto &c : dest)
             populate_random(c, rng);
     }
@@ -210,7 +217,8 @@ struct PopulateRandom_t<std::array<T_,N_>> {
 // Generates a random std::pair.
 template <typename F_, typename S_>
 struct PopulateRandom_t<std::pair<F_,S_>> {
-    void operator() (std::pair<F_,S_> &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::pair<F_,S_> &dest, Rng_ &rng) const {
         populate_random(dest.first, rng);
         populate_random(dest.second, rng);
     }
@@ -219,7 +227,8 @@ struct PopulateRandom_t<std::pair<F_,S_>> {
 // Generates a random std::tuple.
 template <size_t INDEX_, typename... Types_>
 struct PopulateRandom_t<IndexedTuple_t<INDEX_,Types_...>> {
-    void operator() (IndexedTuple_t<INDEX_,Types_...> &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (IndexedTuple_t<INDEX_,Types_...> &dest, Rng_ &rng) const {
         if constexpr (!dest.has_ended()) {
             populate_random(dest.current(), rng);
             populate_random(dest.incremented(), rng);
@@ -230,7 +239,8 @@ struct PopulateRandom_t<IndexedTuple_t<INDEX_,Types_...>> {
 // Generates a random std::tuple.
 template <typename... Types_>
 struct PopulateRandom_t<std::tuple<Types_...>> {
-    void operator() (std::tuple<Types_...> &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::tuple<Types_...> &dest, Rng_ &rng) const {
         populate_random(begin_indexed_tuple(dest), rng);
     }
 };
@@ -238,7 +248,8 @@ struct PopulateRandom_t<std::tuple<Types_...>> {
 // Helper implementation for associative containers.  Generates a container having size between 0 and 10, inclusive.
 template <typename Container_>
 struct PopulateRandom_AssociativeContainer_t {
-    void operator() (Container_ &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (Container_ &dest, Rng_ &rng) const {
         using ValueType = remove_cv_recursive_t<typename Container_::value_type>;
         auto desired_size = std::uniform_int_distribution<size_t>(0, 10)(rng);
         dest.clear();
@@ -275,7 +286,8 @@ struct PopulateRandom_t<std::unordered_set<Types_...>> : public PopulateRandom_A
 // Generates a random std::optional with 75% likelihood of holding a value.
 template <typename T_>
 struct PopulateRandom_t<std::optional<T_>> {
-    void operator() (std::optional<T_> &dest, auto &rng) const {
+    template <typename Rng_>
+    void operator() (std::optional<T_> &dest, Rng_ &rng) const {
         bool has_value = std::uniform_int_distribution<size_t>(0, 3)(rng) != 0;
         if (has_value)
             dest = make_random<T_>(rng);
