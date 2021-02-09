@@ -147,6 +147,10 @@ TODO
         Should have one corresponding to xor as well as the `and` and `or` of intersection and union.
 -   IDEA: Could add "clamp" to extend checkpolicy, e.g. when float underflow happens, but it's desired
     to have a strictly positive value, clamp the value to the smallest [subnormal] positive value.
+
+Random notes
+-   Here's a conceptually similar, but awkward proto-attempt at solving the problem that semantic subtyping solves:
+    https://github.com/Keats/validator
 */
 
 namespace lvd {
@@ -224,32 +228,6 @@ public:
         return out << S_::template type_string<S_>() << cv;
     }
 
-    inline static CheckPolicy constexpr __ctor_default__ = ALLOW__VERIFY_OR_THROW;
-
-    // The incoming SV is already valid, ostensibly.
-    inline static CheckPolicy constexpr __ctor_copy_SV__ = ALLOW__NO_CHECK;
-    inline static CheckPolicy constexpr __ctor_copy_SubSV__ = ALLOW__ASSERT;
-    inline static CheckPolicy constexpr __ctor_copy_C__ = ALLOW__VERIFY_OR_THROW;
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __ctor_copy_T__ () { return ALLOW__VERIFY_OR_THROW; }
-
-    // The incoming SV is already valid, ostensibly.
-    inline static CheckPolicy constexpr __ctor_move_SV__ = ALLOW__NO_CHECK;
-    inline static CheckPolicy constexpr __ctor_move_SubSV__ = ALLOW__ASSERT;
-    inline static CheckPolicy constexpr __ctor_move_C__ = ALLOW__VERIFY_OR_THROW;
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __ctor_move_T__ () { return ALLOW__VERIFY_OR_THROW; }
-
-    template <typename SV_, typename C_, typename... Args_> static CheckPolicy constexpr __ctor_variadic__ () { return ALLOW__VERIFY_OR_THROW; }
-
-    // The incoming SV is already valid, ostensibly.
-    inline static CheckPolicy constexpr __assign_copy_SV__ = ALLOW__NO_CHECK;
-    inline static CheckPolicy constexpr __assign_copy_SubSV__ = ALLOW__ASSERT;
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __assign_copy_T__ () { return ALLOW__VERIFY_OR_THROW; }
-
-    // The incoming SV is already valid, ostensibly.
-    inline static CheckPolicy constexpr __assign_move_SV__ = ALLOW__NO_CHECK;
-    inline static CheckPolicy constexpr __assign_move_SubSV__ = ALLOW__ASSERT;
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __assign_move_T__ () { return ALLOW__VERIFY_OR_THROW; }
-
     #define LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(opname) \
     inline static CheckPolicy constexpr __##opname##_SV__ = ALLOW__VERIFY_OR_THROW; \
     template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __##opname##_T__ () { return ALLOW__VERIFY_OR_THROW; }
@@ -276,6 +254,160 @@ public:
     decltype(auto) operator-> () const { return Base_s{}; }
 };
 
+template <typename T_, T_ VALUE_>
+struct Value_t {
+    using T = T_;
+    inline static constexpr T VALUE = VALUE_;
+};
+
+template <typename T_, T_ VALUE_>
+inline static Value_t<T_,VALUE_> constexpr value_v = Value_t<T_,VALUE_>{};
+
+//
+// Operator overloads
+//
+
+// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
+// inline decltype(auto) constexpr operator== (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator!= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator<= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator< (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator>= (Base_s, Base_s) { return Base_s{}; }
+// inline decltype(auto) constexpr operator> (Base_s, Base_s) { return Base_s{}; }
+
+inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator- (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator* (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator/ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator% (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator^ (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator& (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator| (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator<< (Base_s, Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator>> (Base_s, Base_s) { return Base_s{}; }
+
+inline decltype(auto) constexpr operator+ (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator- (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator~ (Base_s) { return Base_s{}; }
+inline decltype(auto) constexpr operator! (Base_s) { return Base_s{}; }
+
+// Pre-increment/decrement
+inline decltype(auto) constexpr operator++ (Base_s &) { return Base_s{}; }
+inline decltype(auto) constexpr operator-- (Base_s &) { return Base_s{}; }
+// Post-increment/decrement
+inline decltype(auto) constexpr operator++ (Base_s &, int) { return Base_s{}; }
+inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
+
+//
+// Functions that define CheckPolicy for various operations
+//
+
+inline decltype(auto) constexpr check_policy_for__ctor_default (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+inline decltype(auto) constexpr check_policy_for__ctor_copy_SV (Base_s) { return value_v<CheckPolicy,ALLOW__NO_CHECK>; }
+inline decltype(auto) constexpr check_policy_for__ctor_copy_SubSV (Base_s) { return value_v<CheckPolicy,ALLOW__ASSERT>; }
+inline decltype(auto) constexpr check_policy_for__ctor_copy_C (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+// TODO: Figure out if this one is right, or should be modified.
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__ctor_copy_T (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+// The incoming SV is already valid, ostensibly.
+inline decltype(auto) constexpr check_policy_for__ctor_move_SV (Base_s) { return value_v<CheckPolicy,ALLOW__NO_CHECK>; }
+inline decltype(auto) constexpr check_policy_for__ctor_move_SubSV (Base_s) { return value_v<CheckPolicy,ALLOW__ASSERT>; }
+inline decltype(auto) constexpr check_policy_for__ctor_move_C (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+// TODO: Figure out if this one is right, or should be modified.
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__ctor_move_T (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+// TODO: Figure out if this one is right, or should be modified.
+template <typename SV_, typename C_, typename... Args_>
+inline decltype(auto) constexpr check_policy_for__ctor_variadic (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+// The incoming SV is already valid, ostensibly.
+inline decltype(auto) constexpr check_policy_for__assign_copy_SV (Base_s) { return value_v<CheckPolicy,ALLOW__NO_CHECK>; }
+inline decltype(auto) constexpr check_policy_for__assign_copy_SubSV (Base_s) { return value_v<CheckPolicy,ALLOW__ASSERT>; }
+// inline decltype(auto) constexpr check_policy_for__assign_copy_C (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+// TODO: Figure out if this one is right, or should be modified.
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__assign_copy_T (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+// The incoming SV is already valid, ostensibly.
+inline decltype(auto) constexpr check_policy_for__assign_move_SV (Base_s) { return value_v<CheckPolicy,ALLOW__NO_CHECK>; }
+inline decltype(auto) constexpr check_policy_for__assign_move_SubSV (Base_s) { return value_v<CheckPolicy,ALLOW__ASSERT>; }
+// inline decltype(auto) constexpr check_policy_for__assign_move_C (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+// TODO: Figure out if this one is right, or should be modified.
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__assign_move_T (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
+
+// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
+// inline decltype(auto) constexpr check_policy_for__eq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__neq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__leq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__lt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+// inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__div (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__mod (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__xor (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__and (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__or  (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__shl (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__shr (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__pos (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__neg (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__not (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__bang (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__preincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+template <typename... Args_>
+inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+template <typename T_>
+inline decltype(auto) constexpr check_policy_for__elem (Base_s, T_ &&) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+inline decltype(auto) constexpr check_policy_for__deref (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+
+#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING(str) \
+    template <typename S_> \
+    static std::string const &type_string () { \
+        static std::string const STR{str}; \
+        return STR; \
+    }
+
+// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
+#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(function_body) \
+    template <typename C> \
+    static bool constexpr is_valid (C const &cv) { \
+        function_body \
+    }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
+    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
+    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
+
+//
+// SV_t -- semantic value
+//
+
 template <typename S_, typename C_>
 class SV_t {
 public:
@@ -289,7 +421,7 @@ public:
     SV_t ()
         :   m_cv{}
     {
-        check<S::__ctor_default__>();
+        check<decltype(check_policy_for__ctor_default(S{}))::VALUE>();
     }
     // TODO: Should NoCheck be a template-only parameter instead?
     SV_t (NoCheck)
@@ -301,7 +433,7 @@ public:
     SV_t (SV_t const &other)
         :   m_cv{other.cv()}
     {
-        check<S::__ctor_copy_SV__>();
+        check<decltype(check_policy_for__ctor_copy_SV(S{}))::VALUE>();
     }
     SV_t (NoCheck, SV_t const &other)
         :   m_cv{other.cv()}
@@ -314,7 +446,7 @@ public:
     SV_t (SV_t &other)
         :   m_cv{other.cv()}
     {
-        check<S::__ctor_copy_SV__>();
+        check<decltype(check_policy_for__ctor_copy_SV(S{}))::VALUE>();
     }
     SV_t (NoCheck, SV_t &other)
         :   m_cv{other.cv()}
@@ -325,7 +457,7 @@ public:
     SV_t (SV_t &&other)
         :   m_cv{other.move_cv()}
     {
-        check<S::__ctor_move_SV__>();
+        check<decltype(check_policy_for__ctor_move_SV(S{}))::VALUE>();
     }
     SV_t (NoCheck, SV_t &&other)
         :   m_cv{other.move_cv()}
@@ -340,7 +472,7 @@ public:
     explicit SV_t (C const &other)
         :   m_cv{other}
     {
-        check<S::__ctor_copy_C__>();
+        check<decltype(check_policy_for__ctor_copy_C(S{}))::VALUE>();
     }
     explicit SV_t (NoCheck, C const &other)
         :   m_cv{other}
@@ -353,7 +485,7 @@ public:
     explicit SV_t (C &other)
         :   m_cv{static_cast<C const &>(other)}
     {
-        check<S::__ctor_copy_C__>();
+        check<decltype(check_policy_for__ctor_copy_C(S{}))::VALUE>();
     }
     explicit SV_t (NoCheck, C &other)
         :   m_cv{static_cast<C const &>(other)}
@@ -364,7 +496,7 @@ public:
     explicit SV_t (C &&other)
         :   m_cv{std::move(other)}
     {
-        check<S::__ctor_move_C__>();
+        check<decltype(check_policy_for__ctor_move_C(S{}))::VALUE>();
     }
     explicit SV_t (NoCheck, C &&other)
         :   m_cv{std::move(other)}
@@ -380,7 +512,7 @@ public:
     SV_t (SV_t<SubS_,C> const &other)
         :   m_cv{other.cv()}
     {
-        check<S::__ctor_copy_SubSV__>();
+        check<decltype(check_policy_for__ctor_copy_SubSV(S{}))::VALUE>();
     }
     template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
     SV_t (NoCheck, SV_t<SubS_,C> const &other)
@@ -395,7 +527,7 @@ public:
     SV_t (SV_t<SubS_,C> &other)
         :   m_cv{other.cv()}
     {
-        check<S::__ctor_copy_SubSV__>();
+        check<decltype(check_policy_for__ctor_copy_SubSV(S{}))::VALUE>();
     }
     template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
     SV_t (NoCheck, SV_t<SubS_,C> &other)
@@ -408,7 +540,7 @@ public:
     SV_t (SV_t<SubS_,C> &&other)
         :   m_cv{other.cv()}
     {
-        check<S::__ctor_move_SubSV__>();
+        check<decltype(check_policy_for__ctor_move_SubSV(S{}))::VALUE>();
     }
     template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
     SV_t (NoCheck, SV_t<SubS_,C> &&other)
@@ -433,7 +565,7 @@ public:
     explicit SV_t (First_ &&first, Rest_&&... rest)
         :   m_cv(std::forward<First_>(first), std::forward<Rest_>(rest)...)
     {
-        check<S::template __ctor_variadic__<SV_t,C,First_,Rest_...>()>();
+        check<decltype(check_policy_for__ctor_variadic<SV_t,C,First_,Rest_...>(S{}))::VALUE>();
     }
     template <
         typename First_,
@@ -452,36 +584,36 @@ public:
 
     SV_t &operator= (SV_t const &other) {
         m_cv = other.cv();
-        check<S::__assign_copy_SV__>();
+        check<decltype(check_policy_for__assign_copy_SV(S{}))::VALUE>();
         return *this;
     }
     SV_t &operator= (SV_t &&other) {
         m_cv = other.move_cv();
-        check<S::__assign_move_SV__>();
+        check<decltype(check_policy_for__assign_move_SV(S{}))::VALUE>();
         return *this;
     }
     template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
     SV_t &operator= (SV_t<SubS_,C> const &other) {
         m_cv = other.cv();
-        check<S::__assign_copy_SubSV__>();
+        check<decltype(check_policy_for__assign_copy_SubSV(S{}))::VALUE>();
         return *this;
     }
     template <typename SubS_, typename = std::enable_if_t<std::is_base_of_v<S,SubS_>>>
     SV_t &operator= (SV_t<SubS_,C> &&other) {
         m_cv = other.move_cv();
-        check<S::__assign_move_SubSV__>();
+        check<decltype(check_policy_for__assign_move_SubSV(S{}))::VALUE>();
         return *this;
     }
     template <typename T_>
     SV_t &operator= (T_ const &rhs) {
         m_cv = rhs;
-        check<S::template __assign_copy_T__<SV_t,C,T_>()>();
+        check<decltype(check_policy_for__assign_copy_T<SV_t,C,T_>(S{}))::VALUE>();
         return *this;
     }
     template <typename T_>
     SV_t &operator= (T_ &&rhs) {
         m_cv = std::move(rhs);
-        check<S::template __assign_move_T__<SV_t,C,T_>()>();
+        check<decltype(check_policy_for__assign_move_T<SV_t,C,T_>(S{}))::VALUE>();
         return *this;
     }
 
@@ -598,7 +730,7 @@ public:
 
     template <CheckPolicy L_>
     static void check (C const &cv) {
-        static_assert(L_ != PROHIBIT, "you tried to use a PROHIBIT'ed method; go up the call stack a few to find which one you had the gall to use.");
+        static_assert(L_ != PROHIBIT, "you tried to use a PROHIBIT'ed method; go up the call stack a few to find which prohibited method you had the gall to use.");
 
         if constexpr (L_ == ALLOW__VERIFY_OR_THROW) {
             if (!S::is_valid(cv))
@@ -666,85 +798,6 @@ decltype(auto) make_sv__with_collapse (C_ &&cv) {
     }
 }
 
-
-template <typename T_, T_ VALUE_>
-struct Value_t {
-    using T = T_;
-    inline static constexpr T VALUE = VALUE_;
-};
-
-
-//
-// Operator overloads
-//
-
-// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
-// inline decltype(auto) constexpr operator== (Base_s, Base_s) { return Base_s{}; }
-// inline decltype(auto) constexpr operator!= (Base_s, Base_s) { return Base_s{}; }
-// inline decltype(auto) constexpr operator<= (Base_s, Base_s) { return Base_s{}; }
-// inline decltype(auto) constexpr operator< (Base_s, Base_s) { return Base_s{}; }
-// inline decltype(auto) constexpr operator>= (Base_s, Base_s) { return Base_s{}; }
-// inline decltype(auto) constexpr operator> (Base_s, Base_s) { return Base_s{}; }
-
-inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator- (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator* (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator/ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator% (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator^ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator& (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator| (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator<< (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator>> (Base_s, Base_s) { return Base_s{}; }
-
-inline decltype(auto) constexpr operator+ (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator- (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator~ (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator! (Base_s) { return Base_s{}; }
-
-// Pre-increment/decrement
-inline decltype(auto) constexpr operator++ (Base_s &) { return Base_s{}; }
-inline decltype(auto) constexpr operator-- (Base_s &) { return Base_s{}; }
-// Post-increment/decrement
-inline decltype(auto) constexpr operator++ (Base_s &, int) { return Base_s{}; }
-inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
-
-// NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
-// inline decltype(auto) constexpr check_policy_for__eq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__neq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__leq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__lt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__div (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__mod (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__xor (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__and (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__or  (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__shl (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__shr (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__pos (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__neg (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__not (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__bang (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__preincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-template <typename... Args_>
-inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-template <typename T_>
-inline decltype(auto) constexpr check_policy_for__elem (Base_s, T_ &&) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__deref (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
 #define LVD_DEFINE_GLOBAL_BINARY_OPERATORS_FOR(op, opname) \
 template <typename LhsS_, typename RhsS_, typename C_> \
@@ -902,31 +955,3 @@ inline std::ostream &operator<< (std::ostream &out, SV_t<S_,C_> const &sv) {
 }
 
 } // end namespace lvd
-
-#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING(str) \
-    template <typename S_> \
-    static std::string const &type_string () { \
-        static std::string const STR{str}; \
-        return STR; \
-    }
-
-// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
-#define LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(function_body) \
-    template <typename C> \
-    static bool constexpr is_valid (C const &cv) { \
-        function_body \
-    }
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-    inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
-    inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
-    inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }

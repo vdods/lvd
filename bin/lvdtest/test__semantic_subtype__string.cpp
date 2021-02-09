@@ -21,9 +21,6 @@ struct NonEmpty_s : public Base_s {
         return !cv.empty();
     }
 
-    // Disallow default construction, since that would be an empty string.
-    inline static CheckPolicy constexpr __ctor_default__ = PROHIBIT;
-
     // Adding to a nonempty string can't make it empty.
     inline static ResultPolicy constexpr __add_eq_SV__ = CAST_TO_SV__NO_CHECK;
     template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_eq_T__ () { return CAST_TO_SV__NO_CHECK; }
@@ -32,6 +29,9 @@ struct NonEmpty_s : public Base_s {
     template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_SV_T__ () { return CAST_TO_SV__NO_CHECK; }
     template <typename SV_, typename C_, typename T_> static ResultPolicy constexpr __add_T_SV__ () { return CAST_TO_SV__NO_CHECK; }
 };
+
+// Disallow default construction, since that would be an empty string.
+inline decltype(auto) constexpr check_policy_for__ctor_default (NonEmpty_s) { return value_v<CheckPolicy,PROHIBIT>; }
 
 // LVD_DEFINE_SEMANTIC_BIN_OP(==, eq, NonEmpty_s, NonEmpty_s, TODO start here.. does this make sense?, ALLOW__NO_CHECK)
 LVD_DEFINE_SEMANTIC_BIN_OP(+, add, NonEmpty_s, NonEmpty_s, NonEmpty_s, ALLOW__NO_CHECK)
@@ -81,6 +81,7 @@ LVD_TEST_BEGIN(007__semantic_subtype__00__string__00)
 
     // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
 //     auto bad = NonEmptyString{};
+//     std::ignore = bad;
 
     test::call_function_and_expect_exception<std::runtime_error>([](){
         NonEmptyString{""};

@@ -9,6 +9,8 @@
 namespace lvd {
 
 struct NonNull_s : public Base_s {
+    using Super_s = Base_s;
+
     template <typename S_>
     static std::string const &type_string () {
         static std::string const STR{"NonNull"};
@@ -18,12 +20,33 @@ struct NonNull_s : public Base_s {
     static bool const is_valid (C_ const &cv) {
         return cv != nullptr;
     }
-
-    // Disallow default construction, since that would be an uninitialized pointer.
-    inline static CheckPolicy constexpr __ctor_default__ = PROHIBIT;
-
-    // TODO: explicitly prohibit construction from nullptr_t
 };
+
+inline decltype(auto) constexpr check_policy_for__ctor_default (NonNull_s) { return value_v<CheckPolicy,PROHIBIT>; }
+
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__ctor_copy_T (NonNull_s) {
+    if constexpr (std::is_same_v<std::decay_t<T_>,nullptr_t>)
+        return value_v<CheckPolicy,PROHIBIT>;
+    else
+        return check_policy_for__ctor_copy_T<SV_,C_,T_>(NonNull_s::Super_s{});
+}
+
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__ctor_move_T (NonNull_s) {
+    if constexpr (std::is_same_v<std::decay_t<T_>,nullptr_t>)
+        return value_v<CheckPolicy,PROHIBIT>;
+    else
+        return check_policy_for__ctor_move_T<SV_,C_,T_>(NonNull_s::Super_s{});
+}
+
+template <typename SV_, typename C_, typename First_, typename... Rest_>
+inline decltype(auto) constexpr check_policy_for__ctor_variadic (NonNull_s) {
+    if constexpr (sizeof...(Rest_) == 0 && std::is_same_v<std::decay_t<First_>,nullptr_t>)
+        return value_v<CheckPolicy,PROHIBIT>;
+    else
+        return check_policy_for__ctor_variadic<SV_,C_,First_,Rest_...>(NonNull_s::Super_s{});
+}
 
 template <typename C_>
 bool constexpr operator == (SV_t<NonNull_s,C_> const &, nullptr_t) {
@@ -79,6 +102,10 @@ inline std::ostream &operator<< (std::ostream &out, PointerLikeThing const &p) {
 }
 
 LVD_TEST_BEGIN(007__semantic_subtype__02__non_null_00)
+    // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
+//     auto p_null = SV_t<NonNull_s,int*>{nullptr};
+//     std::ignore = p_null;
+
     int a = 3;
     float b = 123.5f;
 
@@ -185,6 +212,7 @@ LVD_TEST_BEGIN(007__semantic_subtype__02__non_null_00)
     LVD_TEST_REQ_EQ(p6->x, plt2->x);
     LVD_TEST_REQ_EQ(p6->y, plt2->y);
 
+    // This should cause a runtime error (and be caught)
     test::call_function_and_expect_exception<std::runtime_error>([](){
         make_non_null<int*>(nullptr);
     });
