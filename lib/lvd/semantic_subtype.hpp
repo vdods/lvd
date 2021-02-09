@@ -347,6 +347,24 @@ inline decltype(auto) constexpr check_policy_for__assign_move_T (Base_s) { retur
 // inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 // inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
+#define LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(SemanticClass_s, opname, check_policy) \
+    inline decltype(auto) constexpr check_policy_for__##opname##_SV (SemanticClass_s) { return value_v<CheckPolicy,check_policy>; } \
+    template <typename SV_, typename C_, typename T_> \
+    inline decltype(auto) constexpr check_policy_for__##opname##_T (SemanticClass_s) { return value_v<CheckPolicy,check_policy>; }
+
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, add_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, sub_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, mul_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, div_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, mod_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, xor_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, and_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, or_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, shl_eq, ALLOW__VERIFY_OR_THROW)
+LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, shr_eq, ALLOW__VERIFY_OR_THROW)
+
+// TODO: Make macros for these.
+// TODO: Make SV_SV and templatized ones: SV_T, and T_SV.
 inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
@@ -368,6 +386,7 @@ inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Valu
 inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
+// TODO: Take out the args, since it shouldn't depend on the values, only the types.
 template <typename... Args_>
 inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 template <typename T_>
@@ -553,6 +572,8 @@ public:
     // Perfect variadic forwarding constructor, intended to allow use of C's constructors.
     //
 
+    // TODO: Figure out if this should have First_ and Second_, so that overload resolution between
+    // this and the T ctor is mutually exclusive.
     template <
         typename First_,
         typename... Rest_,
@@ -567,6 +588,8 @@ public:
     {
         check<decltype(check_policy_for__ctor_variadic<SV_t,C,First_,Rest_...>(S{}))::VALUE>();
     }
+    // TODO: Figure out if this should have First_ and Second_, so that overload resolution between
+    // this and the T ctor is mutually exclusive.
     template <
         typename First_,
         typename... Rest_,
@@ -628,13 +651,13 @@ public:
     #define LVD_DEFINE_INPLACE_OPERATOR_METHODS_FOR(op, opname) \
     SV_t &operator op (SV_t const &rhs) { \
         m_cv op rhs.cv(); \
-        check<S::__##opname##_SV__>(); \
+        check<decltype(check_policy_for__##opname##_SV(S{}))::VALUE>(); \
         return *this; \
     } \
     template <typename T_> \
     SV_t &operator op (T_ const &rhs) { \
         m_cv op rhs; \
-        check<S::template __##opname##_T__<SV_t,C,T_>()>(); \
+        check<decltype(check_policy_for__##opname##_T<SV_t,C,T_>(S{}))::VALUE>(); \
         return *this; \
     }
 
