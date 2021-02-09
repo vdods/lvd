@@ -302,6 +302,9 @@ inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
 // Functions that define CheckPolicy for various operations
 //
 
+// TODO: The SV_ template arguments seem to be wrong, since the semantic classes should not depend on SV_t.
+// Figure out if SV_ param should be removed.
+
 inline decltype(auto) constexpr check_policy_for__ctor_default (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
 
 inline decltype(auto) constexpr check_policy_for__ctor_copy_SV (Base_s) { return value_v<CheckPolicy,ALLOW__NO_CHECK>; }
@@ -386,11 +389,10 @@ inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Valu
 inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
-// TODO: Take out the args, since it shouldn't depend on the values, only the types.
-template <typename... Args_>
-inline decltype(auto) constexpr check_policy_for__call (Base_s, Args_&&...) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-template <typename T_>
-inline decltype(auto) constexpr check_policy_for__elem (Base_s, T_ &&) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+template <typename SV_, typename C_, typename... Args_>
+inline decltype(auto) constexpr check_policy_for__call (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+template <typename SV_, typename C_, typename T_>
+inline decltype(auto) constexpr check_policy_for__elem (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 
 inline decltype(auto) constexpr check_policy_for__deref (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
 inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
@@ -718,7 +720,7 @@ public:
     decltype(auto) operator() (Args_&&... args) const {
         auto retval = cv()(std::forward<Args_>(args)...);
         using RetvalSemanticType = decltype(S{}(std::forward<Args_>(args)...));
-        using CheckPolicyValueType = decltype(check_policy_for__call(S{}, std::forward<Args_>(args)...));
+        using CheckPolicyValueType = decltype(check_policy_for__call<SV_t,C,Args_...>(S{}));
         if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
             auto constexpr check_policy = CheckPolicyValueType::VALUE;
             auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
@@ -732,7 +734,7 @@ public:
     decltype(auto) operator[] (T_ &&arg) const {
         auto retval = cv()[std::forward<T_>(arg)];
         using RetvalSemanticType = decltype(S{}[std::forward<T_>(arg)]);
-        using CheckPolicyValueType = decltype(check_policy_for__elem(S{}, std::forward<T_>(arg)));
+        using CheckPolicyValueType = decltype(check_policy_for__elem<SV_t,C,T_>(S{}));
         if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
             auto constexpr check_policy = CheckPolicyValueType::VALUE;
             auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
