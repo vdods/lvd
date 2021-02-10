@@ -3,13 +3,14 @@
 #include <cmath>
 #include "lvd/IndexedTuple_t.hpp"
 #include "lvd/req.hpp"
-#include "lvd/semantic_subtype.hpp"
+#include "lvd/sst/SV_t.hpp"
 #include "lvd/test.hpp"
 #include "lvd/type.hpp"
 #include "lvd/type_string_of.hpp"
 #include <limits>
 
 namespace lvd {
+namespace sst {
 
 // Extended real line (this includes positive and negative infinity) with not-a-number value(s).
 struct NaNExtReal_s : virtual Base_s {
@@ -502,30 +503,32 @@ LVD_TEST_BEGIN(007__semantic_subtype__01__float__00)
     test_log << Log::dbg() << LVD_REFLECT(nn4) << '\n';
 LVD_TEST_END
 
+} // end namespace sst
 } // end namespace lvd
 
-LVD_DEFINE_TYPE_STRING(lvd::NaNExtReal_s);
-LVD_DEFINE_TYPE_STRING(lvd::NaN_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtReal_s);
-LVD_DEFINE_TYPE_STRING(lvd::Infinite_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtNonZero_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtNonNeg_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtNonPos_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtPos_s);
-LVD_DEFINE_TYPE_STRING(lvd::ExtNeg_s);
-LVD_DEFINE_TYPE_STRING(lvd::Infinity_s);
-LVD_DEFINE_TYPE_STRING(lvd::NegInfinity_s);
-LVD_DEFINE_TYPE_STRING(lvd::Real_s);
-LVD_DEFINE_TYPE_STRING(lvd::NonZero_s);
-LVD_DEFINE_TYPE_STRING(lvd::NonNeg_s);
-LVD_DEFINE_TYPE_STRING(lvd::NonPos_s);
-LVD_DEFINE_TYPE_STRING(lvd::Pos_s);
-LVD_DEFINE_TYPE_STRING(lvd::Neg_s);
-LVD_DEFINE_TYPE_STRING(lvd::Zero_s);
-LVD_DEFINE_TYPE_STRING(lvd::One_s);
-LVD_DEFINE_TYPE_STRING(lvd::NegOne_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NaNExtReal_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NaN_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtReal_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Infinite_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtNonZero_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtNonNeg_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtNonPos_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtPos_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::ExtNeg_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Infinity_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NegInfinity_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Real_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NonZero_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NonNeg_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NonPos_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Pos_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Neg_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::Zero_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::One_s);
+LVD_DEFINE_TYPE_STRING(lvd::sst::NegOne_s);
 
 namespace lvd {
+namespace sst {
 
 LVD_TEST_BEGIN(007__semantic_subtype__01__float__01)
     auto p1 = Pos{0.5};
@@ -830,4 +833,5 @@ LVD_TEST_BEGIN(007__semantic_subtype__01__float__02)
     test_ops_lhs_rhs(req_context, begin_indexed_tuple(all), begin_indexed_tuple(all));
 LVD_TEST_END
 
+} // end namespace sst
 } // end namespace lvd

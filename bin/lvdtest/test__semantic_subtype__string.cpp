@@ -1,7 +1,7 @@
 // 2021.01.28 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/req.hpp"
-#include "lvd/semantic_subtype.hpp"
+#include "lvd/sst/SV_t.hpp"
 #include "lvd/test.hpp"
 #include "lvd/type.hpp"
 #include "lvd/type_string_of.hpp"
@@ -9,6 +9,7 @@
 using namespace std::string_literals;
 
 namespace lvd {
+namespace sst {
 
 struct NonEmpty_s : public Base_s {
     template <typename S_>
@@ -99,4 +100,5 @@ LVD_TEST_BEGIN(007__semantic_subtype__00__string__00)
     LVD_TEST_REQ_EQ(s12[2], 'c');
 LVD_TEST_END
 
+} // end namespace sst
 } // end namespace lvd

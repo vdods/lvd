@@ -88,8 +88,9 @@ set(liblvd_HEADERS
     lib/lvd/remove_cv_recursive.hpp
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
-    lib/lvd/semantic_subtype.hpp
     lib/lvd/serialization.hpp
+    lib/lvd/sst/semantic_class.hpp
+    lib/lvd/sst/SV_t.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp

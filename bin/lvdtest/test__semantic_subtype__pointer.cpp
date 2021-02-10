@@ -1,12 +1,13 @@
 // 2021.02.03 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/req.hpp"
-#include "lvd/semantic_subtype.hpp"
+#include "lvd/sst/SV_t.hpp"
 #include "lvd/test.hpp"
 #include "lvd/type.hpp"
 #include "lvd/type_string_of.hpp"
 
 namespace lvd {
+namespace sst {
 
 struct NonNull_s : public Base_s {
     using Super_s = Base_s;
@@ -239,4 +240,5 @@ LVD_TEST_BEGIN(007__semantic_subtype__02__non_null_00)
     LVD_TEST_REQ_IS_TRUE((is_SV_t<decltype(n2)>));
 LVD_TEST_END
 
+} // end namespace sst
 } // end namespace lvd
