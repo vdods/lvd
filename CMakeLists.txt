@@ -186,6 +186,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_not_null.cpp
         bin/lvdtest/test_NullOstream.cpp
         bin/lvdtest/test_OstreamDelegate.cpp
+        bin/lvdtest/test_overload_resolution.cpp
         bin/lvdtest/test_PartiallyOrderedSet_t.cpp
         bin/lvdtest/test_PartialOrder.cpp
         bin/lvdtest/test_Pipe.cpp
