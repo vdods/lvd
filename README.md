@@ -179,6 +179,8 @@ files that were listed in the log.
 
 ## To-dos
 
+-   Use https://www.boost.org/doc/libs/1_36_0/doc/html/interprocess/streams.html for an `ostream` that
+    writes to a vector.
 -   Need to ensure that the serialization of `std::unordered_map` and `std::unordered_set` produce
     a deterministic output, probably by outputting the key/value pairs in key-sorted order.
 -   Maybe use http://aantron.github.io/better-enums/tutorial/Maps.html for enums.

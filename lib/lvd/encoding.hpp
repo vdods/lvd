@@ -82,8 +82,8 @@ private:
 };
 
 // This is implemented in lvd/read.hpp, which must be included or suffer a linker error.
-template <typename T_, typename Encoding_>
-std::istream &operator>> (std::istream &in, In_t<T_,Encoding_> const &i);
+template <typename CharT_, typename Traits_, typename T_, typename Encoding_>
+std::basic_istream<CharT_,Traits_> &operator>> (std::basic_istream<CharT_,Traits_> &in, In_t<T_,Encoding_> const &i);
 
 // This type facilitates << syntax.
 template <typename T_, typename Encoding_>
@@ -107,8 +107,8 @@ private:
 };
 
 // This is implemented in lvd/write.hpp, which must be included or suffer a linker error.
-template <typename T_, typename Encoding_>
-std::ostream &operator<< (std::ostream &out, Out_t<T_,Encoding_> const &o);
+template <typename CharT_, typename Traits_, typename T_, typename Encoding_>
+std::basic_ostream<CharT_,Traits_> &operator<< (std::basic_ostream<CharT_,Traits_> &out, Out_t<T_,Encoding_> const &o);
 
 
 // Binary encoding with endianness state variable.
@@ -132,8 +132,8 @@ public:
     }
     // For reading from a stream and producing a value, instead of populating it in-place.
     // Must include lvd/read.hpp for this to link.
-    template <typename T_>
-    T_ read (std::istream &in) const;
+    template <typename T_, typename CharT_, typename Traits_>
+    T_ read (std::basic_istream<CharT_,Traits_> &in) const;
 
     constexpr TypeEncoding type_encoding () const { return TYPE_ENCODING_; }
     Endianness endianness () const { return m_endianness; }
@@ -181,8 +181,8 @@ public:
     }
     // For reading from a stream and producing a value, instead of populating it in-place.
     // Must include lvd/read.hpp for this to link.
-    template <typename T_>
-    T_ read (std::istream &in) const;
+    template <typename T_, typename CharT_, typename Traits_>
+    T_ read (std::basic_istream<CharT_,Traits_> &in) const;
 
     constexpr TypeEncoding type_encoding () const { return TYPE_ENCODING_; }
 

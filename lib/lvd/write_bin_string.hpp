@@ -10,20 +10,23 @@ namespace lvd {
 
 template <typename... Types_, auto... Params_>
 struct WriteValue_t<std::basic_string<Types_...>,BinEncoding_t<Params_...>> {
-    std::ostream &operator() (std::ostream &out, BinEncoding_t<Params_...> const &enc, std::basic_string<Types_...> const &src_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, BinEncoding_t<Params_...> const &enc, std::basic_string<Types_...> const &src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << enc.with_demoted_type_encoding().out(type_of(src_val));
 
         // This will suppress unnecessary inner element type info, since it's already present in the given type.
         auto inner_enc = enc.with_demoted_type_encoding();
 
+        static_assert(sizeof(CharT_) == 1, "only supporting chars of size 1 for now");
+
         out << inner_enc.out(src_val.size()); // TODO: Limit to uint32_t
         if constexpr (sizeof(src_val[0]) == 1) {
             // No need to byte-order-swap in this case.
-            out.write(reinterpret_cast<char const *>(&src_val[0]), src_val.size()*sizeof(src_val[0]));
+            out.write(reinterpret_cast<CharT_ const *>(&src_val[0]), src_val.size()*sizeof(src_val[0]));
         } else if (machine_endianness() == enc.endianness()) {
             // No need to byte-order-swap in this case.
-            out.write(reinterpret_cast<char const *>(&src_val[0]), src_val.size()*sizeof(src_val[0]));
+            out.write(reinterpret_cast<CharT_ const *>(&src_val[0]), src_val.size()*sizeof(src_val[0]));
         } else {
             static_assert(sizeof(src_val[0]) > 1);
             // Have to write each element individually, and this will take care of the byte-swap.

@@ -12,7 +12,8 @@ struct WriteValue_Container_t;
 
 template <typename Container_, auto... Params_>
 struct WriteValue_Container_t<Container_,TextEncoding_t<Params_...>> {
-    std::ostream &operator() (std::ostream &out, TextEncoding_t<Params_...> const &enc, Container_ const &src_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, TextEncoding_t<Params_...> const &enc, Container_ const &src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << ty<Container_>;
 

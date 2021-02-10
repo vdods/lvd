@@ -12,7 +12,14 @@
 namespace lvd {
 
 // Template-specialize this in order to provide an implementation for writing a value to the stream.
-// Should provide `std::ostream &operator() (std::ostream &out, Encoding_ const &enc, T_ const &src_val) const`
+// Should provide:
+//
+// template <typename CharT_, typename Traits_>
+// std::basic_ostream<CharT_,Traits_> &operator() (
+//      std::basic_ostream<CharT_,Traits_> &out,
+//      Encoding_ const &enc,
+//      T_ const &src_val
+// ) const
 template <typename T_, typename Encoding_>
 struct WriteValue_t;
 
@@ -22,8 +29,8 @@ struct WriteValue_t;
 
 // NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
 // need to include <lvd/write_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
-template <typename T_, typename Encoding_>
-std::ostream &write_value (std::ostream &out, Encoding_ const &enc, T_ const &src_val) {
+template <typename CharT_, typename Traits_, typename T_, typename Encoding_>
+std::basic_ostream<CharT_,Traits_> &write_value (std::basic_ostream<CharT_,Traits_> &out, Encoding_ const &enc, T_ const &src_val) {
     return WriteValue_t<T_,Encoding_>()(out, enc, src_val);
 }
 
@@ -33,8 +40,8 @@ std::ostream &write_value (std::ostream &out, Encoding_ const &enc, T_ const &sr
 
 // NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
 // need to include <lvd/write_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
-template <typename T_, typename Encoding_>
-std::ostream &operator<< (std::ostream &out, Out_t<T_,Encoding_> const &o) {
+template <typename CharT_, typename Traits_, typename T_, typename Encoding_>
+std::basic_ostream<CharT_,Traits_> &operator<< (std::basic_ostream<CharT_,Traits_> &out, Out_t<T_,Encoding_> const &o) {
     return write_value(out, o.encoding(), o.src_val());
 }
 
@@ -48,9 +55,12 @@ struct WriteValue_Builtin_t;
 template <typename T_, auto... Params_>
 struct WriteValue_Builtin_t<T_,BinEncoding_t<Params_...>> {
     static_assert(is_endiannated_type_v<T_>);
-    std::ostream &operator() (std::ostream &out, BinEncoding_t<Params_...> const &enc, T_ src_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, BinEncoding_t<Params_...> const &enc, T_ src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << enc.with_demoted_type_encoding().out(type_of(src_val));
+
+        static_assert(sizeof(CharT_) == 1, "only supporting chars of size 1 for now");
 
         if constexpr (std::is_same_v<T_,bool>) {
             out.put(src_val ? uint8_t(1) : uint8_t(0));
@@ -59,7 +69,7 @@ struct WriteValue_Builtin_t<T_,BinEncoding_t<Params_...>> {
         } else {
             static_assert(sizeof(T_) > 1);
             endian_change(machine_endianness(), enc.endianness(), src_val);
-            out.write(reinterpret_cast<char const *>(&src_val), sizeof(src_val));
+            out.write(reinterpret_cast<CharT_ const *>(&src_val), sizeof(src_val));
         }
         return out;
     }
@@ -67,7 +77,8 @@ struct WriteValue_Builtin_t<T_,BinEncoding_t<Params_...>> {
 
 template <typename T_, auto... Params_>
 struct WriteValue_Builtin_t<T_,TextEncoding_t<Params_...>> {
-    std::ostream &operator() (std::ostream &out, TextEncoding_t<Params_...> const &enc, T_ src_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, TextEncoding_t<Params_...> const &enc, T_ src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << ty<T_> << '(';
 

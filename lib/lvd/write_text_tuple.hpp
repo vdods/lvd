@@ -10,7 +10,8 @@ namespace lvd {
 
 template <typename... Types_, auto... Params_>
 struct WriteValue_t<std::tuple<Types_...>,TextEncoding_t<Params_...>> {
-    std::ostream &operator() (std::ostream &out, TextEncoding_t<Params_...> const &enc, std::tuple<Types_...> const &src_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, TextEncoding_t<Params_...> const &enc, std::tuple<Types_...> const &src_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << ty<std::tuple<Types_...>>;
 

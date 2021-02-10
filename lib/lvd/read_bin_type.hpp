@@ -10,7 +10,8 @@ namespace lvd {
 
 template <typename T_, auto... Params_>
 struct ReadInPlace_t<Type_t<T_>,BinEncoding_t<Params_...>> {
-    std::istream &operator() (std::istream &in, BinEncoding_t<Params_...> const &enc, Type_t<T_> &dest_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_istream<CharT_,Traits_> &operator() (std::basic_istream<CharT_,Traits_> &in, BinEncoding_t<Params_...> const &enc, Type_t<T_> &dest_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED) {
             auto s = enc.with_demoted_type_encoding().template read<std::string>(in);
             if (s != "type") // This is somewhat informally defined and may need to change later.

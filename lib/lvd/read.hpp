@@ -12,14 +12,24 @@ namespace lvd {
 
 // Template-specialize this in order to provide an implementation for populating a value
 // using data from the stream.  Default implementation provides code for basic types.
-// Should provide `std::istream &operator() (std::istream &in, Encoding_ const &enc, T_ &dest_val) const`
+// Should provide
+//
+// template <typename CharT_, typename Traits_>
+// std::basic_istream<CharT_,Traits_> &operator() (
+//      std::basic_istream<CharT_,Traits_> &in,
+//      Encoding_ const &enc,
+//      T_ &dest_val
+// ) const
 template <typename T_, typename Encoding_>
 struct ReadInPlace_t;
 
 // Template-specialize this in order to provide an implementation for producing a value
 // from the stream.  This specialization is only needed for types that aren't default
 // constructible.  The default implementation is for types that are default constructible.
-// Should provide `T_ operator() (std::istream &in, Encoding_ const &enc) const`
+// Should provide
+//
+// template <typename CharT_, typename Traits_>
+// T_ operator() (std::basic_istream<CharT_,Traits_> &in, Encoding_ const &enc) const
 template <typename T_, typename Encoding_>
 struct ReadValue_t;
 
@@ -29,15 +39,15 @@ struct ReadValue_t;
 
 // NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
 // need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
-template <typename T_, typename Encoding_>
-inline std::istream &read_in_place (std::istream &in, Encoding_ const &enc, T_ &dest_val) {
+template <typename T_, typename CharT_, typename Traits_, typename Encoding_>
+inline std::basic_istream<CharT_,Traits_> &read_in_place (std::basic_istream<CharT_,Traits_> &in, Encoding_ const &enc, T_ &dest_val) {
     return ReadInPlace_t<T_,Encoding_>()(in, enc, dest_val);
 }
 
 // NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
 // need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
-template <typename T_, typename Encoding_>
-inline T_ read_value (std::istream &in, Encoding_ const &enc) {
+template <typename T_, typename CharT_, typename Traits_, typename Encoding_>
+inline T_ read_value (std::basic_istream<CharT_,Traits_> &in, Encoding_ const &enc) {
     return ReadValue_t<T_,Encoding_>()(in, enc);
 }
 
@@ -47,20 +57,20 @@ inline T_ read_value (std::istream &in, Encoding_ const &enc) {
 
 // NOTE: If you're getting a compile error like "invalid use of incomplete type...", then you
 // need to include <lvd/read_XXX.hpp> for some XXX, e.g. bin_array or text_pair.
-template <typename T_, typename Encoding_>
-std::istream &operator>> (std::istream &in, In_t<T_,Encoding_> const &i) {
+template <typename CharT_, typename Traits_, typename T_, typename Encoding_>
+std::basic_istream<CharT_,Traits_> &operator>> (std::basic_istream<CharT_,Traits_> &in, In_t<T_,Encoding_> const &i) {
     return read_in_place(in, i.encoding(), i.dest_val());
 }
 
 template <TypeEncoding TYPE_ENCODING_>
-template <typename T_>
-T_ BinEncoding_t<TYPE_ENCODING_>::read (std::istream &in) const {
+template <typename T_, typename CharT_, typename Traits_>
+T_ BinEncoding_t<TYPE_ENCODING_>::read (std::basic_istream<CharT_,Traits_> &in) const {
     return read_value<T_>(in, *this);
 }
 
 template <TypeEncoding TYPE_ENCODING_>
-template <typename T_>
-T_ TextEncoding_t<TYPE_ENCODING_>::read (std::istream &in) const {
+template <typename T_, typename CharT_, typename Traits_>
+T_ TextEncoding_t<TYPE_ENCODING_>::read (std::basic_istream<CharT_,Traits_> &in) const {
     return read_value<T_>(in, *this);
 }
 
@@ -74,9 +84,12 @@ struct ReadInPlace_Builtin_t;
 template <typename T_, auto... Params_>
 struct ReadInPlace_Builtin_t<T_,BinEncoding_t<Params_...>> {
     static_assert(is_endiannated_type_v<T_>);
-    std::istream &operator() (std::istream &in, BinEncoding_t<Params_...> const &enc, T_ &dest_val) const {
+    template <typename CharT_, typename Traits_>
+    std::basic_istream<CharT_,Traits_> &operator() (std::basic_istream<CharT_,Traits_> &in, BinEncoding_t<Params_...> const &enc, T_ &dest_val) const {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             in >> enc.with_demoted_type_encoding().in(type_of(dest_val)); // This will throw if the type doesn't match.
+
+        static_assert(sizeof(CharT_) == 1, "only supporting chars of size 1 for now");
 
         if constexpr (std::is_same_v<T_,bool>) {
             dest_val = in.get() != 0;
@@ -84,7 +97,7 @@ struct ReadInPlace_Builtin_t<T_,BinEncoding_t<Params_...>> {
             dest_val = T_(in.get());
         } else {
             static_assert(sizeof(T_) > 1);
-            in.read(reinterpret_cast<char *>(&dest_val), sizeof(dest_val));
+            in.read(reinterpret_cast<CharT_ *>(&dest_val), sizeof(dest_val));
             endian_change(enc.endianness(), machine_endianness(), dest_val);
         }
         return in;
@@ -112,8 +125,8 @@ template <typename Encoding_> struct ReadInPlace_t<double,Encoding_> : public Re
 // your type T_ and for the encodings you care about.
 template <typename T_, typename Encoding_>
 struct ReadValue_t {
-    template <typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
-    T_ operator() (std::istream &in, Encoding_ const &enc) const {
+    template <typename CharT_, typename Traits_, typename = std::enable_if_t<std::is_default_constructible_v<T_>>>
+    T_ operator() (std::basic_istream<CharT_,Traits_> &in, Encoding_ const &enc) const {
         T_ retval;
         ReadInPlace_t<T_,Encoding_>()(in, enc, retval);
         return retval;
