@@ -89,6 +89,7 @@ set(liblvd_HEADERS
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
     lib/lvd/serialization.hpp
+    lib/lvd/sst/mutation.hpp
     lib/lvd/sst/semantic_class.hpp
     lib/lvd/sst/SV_t.hpp
     lib/lvd/static_if.hpp

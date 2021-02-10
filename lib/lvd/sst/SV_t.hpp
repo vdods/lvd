@@ -16,6 +16,9 @@ struct NoCheck { };
 // Convenient value of type NoCheck which can be used in constructors to avoid validity check.
 inline static NoCheck const no_check = NoCheck{};
 
+// Need a forward declaration of Mutation_t<S_,C_> in order for the friend declaration inside SV_t to work.
+template <typename S_, typename C_> class Mutation_t;
+
 //
 // SV_t -- semantic value
 //
@@ -364,6 +367,8 @@ private:
     }
 
     C m_cv;
+
+    friend class Mutation_t<S_,C_>;
 };
 
 template <typename T_> struct is_SV_t_ : public std::false_type { };

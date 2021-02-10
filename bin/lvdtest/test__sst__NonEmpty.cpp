@@ -1,6 +1,7 @@
 // 2021.01.28 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/req.hpp"
+#include "lvd/sst/mutation.hpp"
 #include "lvd/sst/SV_t.hpp"
 #include "lvd/test.hpp"
 #include "lvd/type.hpp"
@@ -100,17 +101,100 @@ template <typename T_>
 using NonEmptyVector_t = NonEmpty_t<std::vector<T_>>;
 
 // Also test containers
-LVD_TEST_BEGIN(007__sst__00__string__01__vector)
+LVD_TEST_BEGIN(007__sst__00__string__01__vector__00)
 
     // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
 //     auto v1 = NonEmptyVector_t<int>{};
 //     std::ignore = v1;
 
+    auto src_vec_0 = std::vector<int>{{4,5,6}};
+    auto src_vec_1 = std::vector<int>{{4,5,6,7}};
+
     auto v2 = NonEmptyVector_t<int>{{4,5,6}};
     test_log << Log::dbg() << LVD_REFLECT(v2.cv()) << '\n';
     test_log << Log::dbg() << LVD_REFLECT(v2) << '\n';
 
-//     v2.push_back(4);
+    LVD_TEST_REQ_EQ(v2.cv(), src_vec_0);
+
+    {
+        test_log << Log::dbg() << "begin mutating v2...\n";
+        auto m2 = sst::mutation(v2);
+        // v2 should be considered inaccessible until m2 is destroyed.
+
+        test_log << Log::dbg() << LVD_REFLECT(m2.cv()) << '\n';
+
+        LVD_TEST_REQ_EQ(m2.cv(), src_vec_0);
+
+        // Mutate in place
+        m2.cv().push_back(7);
+        LVD_TEST_REQ_EQ(m2.cv(), src_vec_1);
+
+        // When m2 is destroyed, it will execute the appropriate assign-move check.
+        test_log << Log::dbg() << "done mutating v2...\n";
+    }
+    test_log << Log::dbg() << LVD_REFLECT(v2.cv()) << '\n';
+    LVD_TEST_REQ_IS_FALSE(v2.cv().empty());
+    LVD_TEST_REQ_EQ(v2.cv(), src_vec_1);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(007__sst__00__string__01__vector__1)
+    auto src_vec_0 = std::vector<int>{{4,5,6}};
+    auto src_vec_1 = std::vector<int>{{4,5,6,7}};
+
+    auto v3 = NonEmptyVector_t<int>{{4,5,6}};
+    test_log << Log::dbg() << LVD_REFLECT(v3.cv()) << '\n';
+    test_log << Log::dbg() << LVD_REFLECT(v3) << '\n';
+
+    // Manually mutating involves a copy and then an assign-move.
+
+    test_log << Log::dbg() << "begin mutating v3...\n";
+    std::vector<int> c3 = v3.cv();
+
+    test_log << Log::dbg() << LVD_REFLECT(c3) << '\n';
+
+    LVD_TEST_REQ_EQ(c3, src_vec_0);
+
+    // Mutate in place in such a way that violates the validity, so that the check
+    // fails when this code block ends and the Mutation_t is destroyed.
+    c3.push_back(7);
+    LVD_TEST_REQ_EQ(c3, src_vec_1);
+    LVD_TEST_REQ_IS_TRUE(NonEmpty_s::is_valid(c3));
+
+    test_log << Log::dbg() << LVD_REFLECT(c3) << '\n';
+
+    test_log << Log::dbg() << "done mutating v3...\n";
+    v3 = std::move(c3);
+    test_log << Log::dbg() << LVD_REFLECT(v3) << '\n';
+LVD_TEST_END
+
+LVD_TEST_BEGIN(007__sst__00__string__01__vector__2)
+    auto src_vec_0 = std::vector<int>{{4,5,6}};
+    auto src_vec_1 = std::vector<int>{{4,5,6,7}};
+
+    auto v3 = NonEmptyVector_t<int>{{4,5,6}};
+    test_log << Log::dbg() << LVD_REFLECT(v3.cv()) << '\n';
+    test_log << Log::dbg() << LVD_REFLECT(v3) << '\n';
+
+    // Manually mutating involves a copy and then an assign-move.
+    test::call_function_and_expect_exception<std::runtime_error>([&](){
+        test_log << Log::dbg() << "begin mutating v3... badly...\n";
+        std::vector<int> c3 = v3.cv();
+
+        test_log << Log::dbg() << LVD_REFLECT(c3) << '\n';
+
+        LVD_TEST_REQ_EQ(c3, src_vec_0);
+
+        // Mutate in place in such a way that violates the validity, so that the check
+        // fails when this code block ends and the Mutation_t is destroyed.
+        c3.clear();
+        LVD_TEST_REQ_IS_TRUE(c3.empty());
+        LVD_TEST_REQ_IS_FALSE(NonEmpty_s::is_valid(c3));
+
+        test_log << Log::dbg() << LVD_REFLECT(c3) << '\n';
+
+        test_log << Log::dbg() << "done mutating v3... badly...\n";
+        v3 = std::move(c3);
+    });
 LVD_TEST_END
 
 } // end namespace lvd
