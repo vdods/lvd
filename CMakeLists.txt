@@ -194,10 +194,10 @@ if(BUILD_lvdtest)
         bin/lvdtest/test_Range_t.cpp
         bin/lvdtest/test_read_write_bin.cpp
         bin/lvdtest/test_req.cpp
-        bin/lvdtest/test__sst__float.cpp
-        bin/lvdtest/test__sst__pointer.cpp
-        bin/lvdtest/test__sst__string.cpp
         bin/lvdtest/test_serialization.cpp
+        bin/lvdtest/test__sst__float.cpp
+        bin/lvdtest/test__sst__NonNull.cpp
+        bin/lvdtest/test__sst__NonEmpty.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_type.cpp
         bin/lvdtest/test_type_string_of.cpp

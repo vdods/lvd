@@ -5,6 +5,7 @@
 #include "lvd/test.hpp"
 #include "lvd/type.hpp"
 #include "lvd/type_string_of.hpp"
+#include "print.hpp"
 
 using namespace std::string_literals;
 
@@ -93,6 +94,23 @@ LVD_TEST_BEGIN(007__sst__00__string__00)
     LVD_TEST_REQ_EQ(s12[0], 'a');
     LVD_TEST_REQ_EQ(s12[1], 'b');
     LVD_TEST_REQ_EQ(s12[2], 'c');
+LVD_TEST_END
+
+template <typename T_>
+using NonEmptyVector_t = NonEmpty_t<std::vector<T_>>;
+
+// Also test containers
+LVD_TEST_BEGIN(007__sst__00__string__01__vector)
+
+    // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
+//     auto v1 = NonEmptyVector_t<int>{};
+//     std::ignore = v1;
+
+    auto v2 = NonEmptyVector_t<int>{{4,5,6}};
+    test_log << Log::dbg() << LVD_REFLECT(v2.cv()) << '\n';
+    test_log << Log::dbg() << LVD_REFLECT(v2) << '\n';
+
+//     v2.push_back(4);
 LVD_TEST_END
 
 } // end namespace lvd
