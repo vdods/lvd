@@ -202,6 +202,7 @@ inline CheckPolicy constexpr as_check_policy (ResultPolicy x) {
     }
 }
 
+// TODO: Maybe rename this to Any_s or Generic_s
 class Base_s {
 public:
 
@@ -222,32 +223,15 @@ public:
         return out << S_::template type_string<S_>() << cv;
     }
 
-    /*
-    #define LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(opname) \
-    inline static CheckPolicy constexpr __##opname##_SV__ = ALLOW__VERIFY_OR_THROW; \
-    template <typename SV_, typename C_, typename T_> static CheckPolicy constexpr __##opname##_T__ () { return ALLOW__VERIFY_OR_THROW; }
-
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(add_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(sub_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(mul_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(div_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(mod_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(xor_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(and_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(or_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(shl_eq)
-    LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR(shr_eq)
-
-    #undef LVD_DEFINE_INPLACE_OPERATOR_PROPERTIES_FOR
-    */
+    // Note that operator=, operator->, operator(), and operator[] must each be nonstatic methods; they can't be global functions.
 
     // Call operator
-    template <typename... Args_> decltype(auto) constexpr operator() (Args_&&... args) const { return Base_s{}; }
+    template <typename... Args_>
+    decltype(auto) constexpr operator() (Args_&&... args) const { return Base_s{}; }
     // Element operator
-    template <typename T_> decltype(auto) constexpr operator[] (T_ &&arg) const { return Base_s{}; }
-
-    // TODO: Move these out into global
-    decltype(auto) operator* () const { return Base_s{}; }
+    template <typename T_>
+    decltype(auto) constexpr operator[] (T_ &&arg) const { return Base_s{}; }
+    // Arrow operator.
     decltype(auto) operator-> () const { return Base_s{}; }
 };
 
@@ -261,6 +245,53 @@ template <typename T_, T_ VALUE_>
 inline static Value_t<T_,VALUE_> constexpr value_v = Value_t<T_,VALUE_>{};
 
 //
+// Macros for use in defining behavior of SV_t for various semantic classes and non-semantic-classes.
+//
+
+// This can be used to define overloads for binary ops and the corresponding check policies.
+// This should be placed in the namespace that the relevant semantic classes were defined in.
+#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; }
+
+// This is the same as LVD_DEFINE_SEMANTIC_BIN_OP except that it makes the same definition for the permutation of Lhs_s and Rhs_,
+// which is a convenience for commutative operations.
+// This should be placed in the namespace that the relevant semantic classes were defined in.
+#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
+inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
+inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
+inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; } \
+inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; }
+
+// This can be used to define overloads for unary ops and the corresponding check policies.
+// This should be placed in the namespace that the relevant semantic class was defined in.
+#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
+inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
+inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; }
+
+// Used for post-increment and post-decrement.
+#define LVD_DEFINE_SEMANTIC_UN_OP_POST(op, opname, Operand_s, Result_s, CHECK_POLICY) \
+inline decltype(auto) operator op (Operand_s, int) { return Result_s{}; } \
+inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY__SV_T(opname, SemanticClass_s, RESULT_POLICY) \
+template <typename SV_, typename C_, typename T_> \
+inline decltype(auto) constexpr result_policy_for__##opname##_SV_T (SemanticClass_s) { return lvd::sst::value_v<lvd::sst::ResultPolicy,RESULT_POLICY>; }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY__T_SV(opname, SemanticClass_s, RESULT_POLICY) \
+template <typename SV_, typename C_, typename T_> \
+inline decltype(auto) constexpr result_policy_for__##opname##_T_SV (SemanticClass_s) { return lvd::sst::value_v<lvd::sst::ResultPolicy,RESULT_POLICY>; }
+
+#define LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(opname, SemanticClass_s, RESULT_POLICY) \
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY__SV_T(opname, SemanticClass_s, RESULT_POLICY) \
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY__T_SV(opname, SemanticClass_s, RESULT_POLICY)
+
+#define LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(SemanticClass_s, opname, CHECK_POLICY) \
+inline decltype(auto) constexpr check_policy_for__##opname##_SV (SemanticClass_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; } \
+template <typename SV_, typename C_, typename T_> \
+inline decltype(auto) constexpr check_policy_for__##opname##_T (SemanticClass_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,CHECK_POLICY>; }
+
+//
 // Operator overloads
 //
 
@@ -272,28 +303,46 @@ inline static Value_t<T_,VALUE_> constexpr value_v = Value_t<T_,VALUE_>{};
 // inline decltype(auto) constexpr operator>= (Base_s, Base_s) { return Base_s{}; }
 // inline decltype(auto) constexpr operator> (Base_s, Base_s) { return Base_s{}; }
 
-inline decltype(auto) constexpr operator+ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator- (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator* (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator/ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator% (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator^ (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator& (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator| (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator<< (Base_s, Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator>> (Base_s, Base_s) { return Base_s{}; }
+// Operations are by default PROHIBIT'ed.
+LVD_DEFINE_SEMANTIC_BIN_OP(+, add, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(-, sub, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(*, mul, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(/, div, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(%, mod, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(^, xor, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(&, and, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(|, or, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(<<, shl, Base_s, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_BIN_OP(>>, shr, Base_s, Base_s, Base_s, PROHIBIT)
 
-inline decltype(auto) constexpr operator+ (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator- (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator~ (Base_s) { return Base_s{}; }
-inline decltype(auto) constexpr operator! (Base_s) { return Base_s{}; }
+// Default operations with non-SV_t values are to just use the result of the underlying concrete value operation.
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(add, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(sub, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(mul, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(div, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(mod, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(xor, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(and, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(or, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(shl, Base_s, DONT_CAST)
+LVD_DEFINE_SEMANTIC_BIN_OP_RESULT_POLICY_COMMUTATIVE__SV_T(shr, Base_s, DONT_CAST)
+
+// Operations are by default PROHIBIT'ed.
+LVD_DEFINE_SEMANTIC_UN_OP(+, pos, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP(-, neg, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP(~, not, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP(!, bang, Base_s, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP(*, deref, Base_s, Base_s, PROHIBIT)
+// This one is different because operator-> overloads have to be nonstatic methods, not global functions.
+// Thus, see `Base_s::operator->` for definition of semantic return type.
+inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return lvd::sst::value_v<lvd::sst::CheckPolicy,PROHIBIT>; }
 
 // Pre-increment/decrement
-inline decltype(auto) constexpr operator++ (Base_s &) { return Base_s{}; }
-inline decltype(auto) constexpr operator-- (Base_s &) { return Base_s{}; }
+LVD_DEFINE_SEMANTIC_UN_OP(++, preincr, Base_s &, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP(--, predecr, Base_s &, Base_s, PROHIBIT)
 // Post-increment/decrement
-inline decltype(auto) constexpr operator++ (Base_s &, int) { return Base_s{}; }
-inline decltype(auto) constexpr operator-- (Base_s &, int) { return Base_s{}; }
+LVD_DEFINE_SEMANTIC_UN_OP_POST(++, postincr, Base_s &, Base_s, PROHIBIT)
+LVD_DEFINE_SEMANTIC_UN_OP_POST(--, postdecr, Base_s &, Base_s, PROHIBIT)
 
 //
 // Functions that define CheckPolicy for various operations
@@ -340,17 +389,12 @@ template <typename SV_, typename C_, typename T_>
 inline decltype(auto) constexpr check_policy_for__assign_move_T (Base_s) { return value_v<CheckPolicy,ALLOW__VERIFY_OR_THROW>; }
 
 // NOTE: These are best defined in the plain way for now.  Only provide ability to override them later if needed.
-// inline decltype(auto) constexpr check_policy_for__eq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__neq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__leq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__lt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-// inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-#define LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(SemanticClass_s, opname, CHECK_POLICY) \
-    inline decltype(auto) constexpr check_policy_for__##opname##_SV (SemanticClass_s) { return value_v<CheckPolicy,CHECK_POLICY>; } \
-    template <typename SV_, typename C_, typename T_> \
-    inline decltype(auto) constexpr check_policy_for__##opname##_T (SemanticClass_s) { return value_v<CheckPolicy,CHECK_POLICY>; }
+// inline decltype(auto) constexpr check_policy_for__eq (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
+// inline decltype(auto) constexpr check_policy_for__neq (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
+// inline decltype(auto) constexpr check_policy_for__leq (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
+// inline decltype(auto) constexpr check_policy_for__lt (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
+// inline decltype(auto) constexpr check_policy_for__geq (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
+// inline decltype(auto) constexpr check_policy_for__gt (Base_s, Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
 
 LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, add_eq, ALLOW__VERIFY_OR_THROW)
 LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, sub_eq, ALLOW__VERIFY_OR_THROW)
@@ -363,37 +407,15 @@ LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, or_eq, ALLOW__VERIFY_OR_T
 LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, shl_eq, ALLOW__VERIFY_OR_THROW)
 LVD_DEFINE_INPLACE_OPERATOR_CHECK_POLICIES_FOR(Base_s, shr_eq, ALLOW__VERIFY_OR_THROW)
 
-// TODO: Make macros for these.
-// TODO: Make SV_SV and templatized ones: SV_T, and T_SV.
-inline decltype(auto) constexpr check_policy_for__add (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__sub (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__mul (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__div (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__mod (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__xor (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__and (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__or  (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__shl (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__shr (Base_s, Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__pos (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__neg (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__not (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__bang (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
-inline decltype(auto) constexpr check_policy_for__preincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__predecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__postincr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__postdecr (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-
 template <typename SV_, typename C_, typename... Args_>
-inline decltype(auto) constexpr check_policy_for__call (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__call (Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
 template <typename SV_, typename C_, typename T_>
-inline decltype(auto) constexpr check_policy_for__elem (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+inline decltype(auto) constexpr check_policy_for__elem (Base_s) { return value_v<CheckPolicy,PROHIBIT>; }
 
-inline decltype(auto) constexpr check_policy_for__deref (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
-inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_t<CheckPolicy,PROHIBIT>{}; }
+} // end namespace sst
+} // end namespace lvd
 
+// This can be used inside a semantic class to easily define the type_string method.
 #define LVD_DEFINE_SEMANTIC_CLASS_METHOD__TYPE_STRING(str) \
     template <typename S_> \
     static std::string const &type_string () { \
@@ -401,53 +423,11 @@ inline decltype(auto) constexpr check_policy_for__arrow (Base_s) { return Value_
         return STR; \
     }
 
-// This defines a static method with templatized concrete value; concrete type is C, concrete value is cv.
+// This can be used inside a semantic class to easily define the is_valid method, having
+// templatized concrete value; concrete type is C, concrete value is cv.
 #define LVD_DEFINE_SEMANTIC_CLASS_METHOD__IS_VALID(function_body) \
     template <typename C> \
     static bool constexpr is_valid (C const &cv) { \
         function_body \
     }
 
-} // end namespace sst
-} // end namespace lvd
-
-/*
-#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-namespace lvd { \
-namespace sst { \
-inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-} \
-}
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-namespace lvd { \
-namespace sst { \
-inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-} \
-}
-
-#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
-namespace lvd { \
-namespace sst { \
-inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-} \
-}*/
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_BIN_OP_COMMUTATIVE(op, opname, Lhs_s, Rhs_s, Result_s, CHECK_POLICY) \
-inline decltype(auto) operator op (Lhs_s, Rhs_s) { return Result_s{}; } \
-inline decltype(auto) operator op (Rhs_s, Lhs_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Lhs_s, Rhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Rhs_s, Lhs_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }
-
-#define LVD_DEFINE_SEMANTIC_UN_OP(op, opname, Operand_s, Result_s, CHECK_POLICY) \
-inline decltype(auto) operator op (Operand_s) { return Result_s{}; } \
-inline decltype(auto) constexpr check_policy_for__##opname (Operand_s) { return Value_t<CheckPolicy,CHECK_POLICY>{}; }

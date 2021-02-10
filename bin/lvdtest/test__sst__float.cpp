@@ -487,7 +487,7 @@ DEFINE_SEMANTIC_VALUE_TYPE(Zero)
 DEFINE_SEMANTIC_VALUE_TYPE(One)
 DEFINE_SEMANTIC_VALUE_TYPE(NegOne)
 
-LVD_TEST_BEGIN(007__semantic_subtype__01__float__00)
+LVD_TEST_BEGIN(007__sst__01__float__00)
     auto z1 = Zero{0};
 
     test_log << Log::dbg() << LVD_REFLECT(z1) << '\n';
@@ -530,7 +530,7 @@ LVD_DEFINE_TYPE_STRING(lvd::sst::NegOne_s);
 namespace lvd {
 namespace sst {
 
-LVD_TEST_BEGIN(007__semantic_subtype__01__float__01)
+LVD_TEST_BEGIN(007__sst__01__float__01)
     auto p1 = Pos{0.5};
     auto p2 = Pos{0.75};
 
@@ -647,7 +647,7 @@ void test_ops_lhs_rhs (req::Context &req_context, IndexedTuple_t<LHS_INDEX_,LhsA
     }
 }
 
-LVD_TEST_BEGIN(007__semantic_subtype__01__float__02)
+LVD_TEST_BEGIN(007__sst__01__float__02)
     auto ner0a = NaNExtReal{0};
     auto ner0b = NaNExtReal{-0};
     auto ner1a = NaNExtReal{std::numeric_limits<double>::denorm_min()};

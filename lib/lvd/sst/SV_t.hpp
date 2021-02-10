@@ -234,6 +234,7 @@ public:
     }
 
     // NOTE: These are best defined in the plain way for now.  Only provide ability to override them using global functions later if needed.
+    // TODO: Probably add SV_T and T_SV versions of these
     decltype(auto) operator== (SV_t const &rhs) const { return m_cv == rhs.cv(); }
     decltype(auto) operator!= (SV_t const &rhs) const { return m_cv != rhs.cv(); }
     decltype(auto) operator< (SV_t const &rhs) const { return m_cv < rhs.cv(); }
@@ -267,29 +268,15 @@ public:
 
     #undef LVD_DEFINE_INPLACE_OPERATOR_METHODS_FOR
 
+    // Note that operator=, operator->, operator(), and operator[] must each be nonstatic methods; they can't be global functions.
     // TODO: Figure out how to allow non-const version of this -- use scope guard with check at end
-    decltype(auto) operator* () const {
-        auto retval = *cv();
-        using RetvalSemanticType = decltype(*S{});
-        using CheckPolicyValueType = decltype(check_policy_for__deref(S{}));
-        if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-            auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
-            auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-            SV_retval.template check<CHECK_POLICY>();
-            return SV_retval;
-        } else {
-            return retval;
-        }
-    }
     decltype(auto) operator-> () const {
         // A bit of a hack, but apparently you can't call .operator->() as a method on built-in pointer types.
         auto retval = operator_arrow(cv());
         using RetvalSemanticType = decltype(S{}.operator->());
-        using CheckPolicyValueType = decltype(check_policy_for__arrow(S{}));
         if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-            auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
             auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-            SV_retval.template check<CHECK_POLICY>();
+            SV_retval.template check<decltype(check_policy_for__arrow(S{}))::VALUE>();
             return SV_retval;
         } else {
             return retval;
@@ -305,31 +292,29 @@ public:
         return *reinterpret_cast<SV_t<SuperS_,C> const *>(this);
     }
 
+    // Note that operator=, operator->, operator(), and operator[] must each be nonstatic methods; they can't be global functions.
     // TODO: Figure out how to allow non-const version of this -- it would be some delegate
     // that calls check<...>() after the value of this is changed.  Use a scope guard.
     template <typename... Args_>
     decltype(auto) operator() (Args_&&... args) const {
         auto retval = cv()(std::forward<Args_>(args)...);
         using RetvalSemanticType = decltype(S{}(std::forward<Args_>(args)...));
-        using CheckPolicyValueType = decltype(check_policy_for__call<SV_t,C,Args_...>(S{}));
         if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-            auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
             auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-            SV_retval.template check<CHECK_POLICY>();
+            SV_retval.template check<decltype(check_policy_for__call<SV_t,C,Args_...>(S{}))::VALUE>();
             return SV_retval;
         } else {
             return retval;
         }
     }
+    // Note that operator=, operator->, operator(), and operator[] must each be nonstatic methods; they can't be global functions.
     template <typename T_>
     decltype(auto) operator[] (T_ &&arg) const {
         auto retval = cv()[std::forward<T_>(arg)];
         using RetvalSemanticType = decltype(S{}[std::forward<T_>(arg)]);
-        using CheckPolicyValueType = decltype(check_policy_for__elem<SV_t,C,T_>(S{}));
         if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-            auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
             auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-            SV_retval.template check<CHECK_POLICY>();
+            SV_retval.template check<decltype(check_policy_for__elem<SV_t,C,T_>(S{}))::VALUE>();
             return SV_retval;
         } else {
             return retval;
@@ -420,11 +405,9 @@ template <typename LhsS_, typename RhsS_, typename C_> \
 decltype(auto) operator op (SV_t<LhsS_,C_> const &lhs, SV_t<RhsS_,C_> const &rhs) { \
     auto retval = lhs.cv() op rhs.cv(); \
     using RetvalSemanticType = decltype(LhsS_{} op RhsS_{}); \
-    using CheckPolicyValueType = decltype(check_policy_for__##opname(LhsS_{}, RhsS_{})); \
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE; \
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
-        SV_retval.template check<CHECK_POLICY>(); \
+        SV_retval.template check<decltype(check_policy_for__##opname(LhsS_{}, RhsS_{}))::VALUE>(); \
         return SV_retval; \
     } else { \
         return retval; \
@@ -433,9 +416,10 @@ decltype(auto) operator op (SV_t<LhsS_,C_> const &lhs, SV_t<RhsS_,C_> const &rhs
 template <typename S_, typename C_, typename T_> \
 decltype(auto) operator op (SV_t<S_,C_> const &lhs, T_ const &rhs) { \
     auto retval = lhs.cv() op rhs; \
-    if constexpr (S_::template __##opname##_SV_T__<SV_t<S_,C_>,C_,T_>() != DONT_CAST) { \
+    auto constexpr RESULT_POLICY = decltype(result_policy_for__##opname##_SV_T<SV_t<S_,C_>,C_,T_>(S_{}))::VALUE; \
+    if constexpr (RESULT_POLICY != DONT_CAST) { \
         auto SV_retval = SV_t<S_,C_>{no_check, retval}; \
-        SV_retval.template check<as_check_policy(S_::template __##opname##_SV_T__<SV_t<S_,C_>,C_,T_>())>(); \
+        SV_retval.template check<as_check_policy(RESULT_POLICY)>(); \
         return SV_retval; \
     } else { \
         return retval; \
@@ -444,9 +428,10 @@ decltype(auto) operator op (SV_t<S_,C_> const &lhs, T_ const &rhs) { \
 template <typename S_, typename C_, typename T_> \
 decltype(auto) operator op (T_ const &lhs, SV_t<S_,C_> const &rhs) { \
     auto retval = lhs op rhs.cv(); \
-    if constexpr (S_::template __##opname##_T_SV__<SV_t<S_,C_>,C_,T_>() != DONT_CAST) { \
+    auto constexpr RESULT_POLICY = decltype(result_policy_for__##opname##_T_SV<SV_t<S_,C_>,C_,T_>(S_{}))::VALUE; \
+    if constexpr (RESULT_POLICY != DONT_CAST) { \
         auto SV_retval = SV_t<S_,C_>{no_check, retval}; \
-        SV_retval.template check<as_check_policy(S_::template __##opname##_T_SV__<SV_t<S_,C_>,C_,T_>())>(); \
+        SV_retval.template check<as_check_policy(RESULT_POLICY)>(); \
         return SV_retval; \
     } else { \
         return retval; \
@@ -483,11 +468,9 @@ template <typename S_, typename C_> \
 decltype(auto) operator op (SV_t<S_,C_> const &operand) { \
     auto retval = op operand.cv(); \
     using RetvalSemanticType = decltype(op S_{}); \
-    using CheckPolicyValueType = decltype(check_policy_for__##opname(S_{})); \
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) { \
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE; \
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval}; \
-        SV_retval.template check<CHECK_POLICY>(); \
+        SV_retval.template check<decltype(check_policy_for__##opname(S_{}))::VALUE>(); \
         return SV_retval; \
     } else { \
         return retval; \
@@ -498,6 +481,7 @@ LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(+, pos)
 LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(-, neg)
 LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(~, not)
 LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(!, bang)
+LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR(*, deref)
 
 #undef LVD_DEFINE_GLOBAL_UNARY_OPERATOR_FOR
 
@@ -509,11 +493,9 @@ template <typename S_, typename C_>
 decltype(auto) operator++ (SV_t<S_,C_> &operand) {
     auto retval = ++operand.cv();
     using RetvalSemanticType = decltype(S_{}.operator++());
-    using CheckPolicyValueType = decltype(check_policy_for__preincr(S_{}));
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-        SV_retval.template check<CHECK_POLICY>();
+        SV_retval.template check<decltype(check_policy_for__preincr(S_{}))::VALUE>();
         return SV_retval;
     } else {
         return retval;
@@ -523,11 +505,9 @@ template <typename S_, typename C_>
 decltype(auto) operator-- (SV_t<S_,C_> &operand) {
     auto retval = --operand.cv();
     using RetvalSemanticType = decltype(S_{}.operator--());
-    using CheckPolicyValueType = decltype(check_policy_for__predecr(S_{}));
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-        SV_retval.template check<CHECK_POLICY>();
+        SV_retval.template check<decltype(check_policy_for__predecr(S_{}))::VALUE>();
         return SV_retval;
     } else {
         return retval;
@@ -538,11 +518,9 @@ template <typename S_, typename C_>
 decltype(auto) operator++ (SV_t<S_,C_> &operand, int dummy) {
     auto retval = operand.cv()++;
     using RetvalSemanticType = decltype(S_{}.operator++(dummy));
-    using CheckPolicyValueType = decltype(check_policy_for__postincr(S_{}));
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-        SV_retval.template check<CHECK_POLICY>();
+        SV_retval.template check<decltype(check_policy_for__postincr(S_{}))::VALUE>();
         return SV_retval;
     } else {
         return retval;
@@ -552,11 +530,9 @@ template <typename S_, typename C_>
 decltype(auto) operator-- (SV_t<S_,C_> &operand, int dummy) {
     auto retval = operand.cv()--;
     using RetvalSemanticType = decltype(S_{}.operator--(dummy));
-    using CheckPolicyValueType = decltype(check_policy_for__postdecr(S_{}));
     if constexpr (!std::is_same_v<RetvalSemanticType,Base_s>) {
-        auto constexpr CHECK_POLICY = CheckPolicyValueType::VALUE;
         auto SV_retval = SV_t<RetvalSemanticType,C_>{no_check, retval};
-        SV_retval.template check<CHECK_POLICY>();
+        SV_retval.template check<decltype(check_policy_for__postdecr(S_{}))::VALUE>();
         return SV_retval;
     } else {
         return retval;

@@ -102,7 +102,7 @@ inline std::ostream &operator<< (std::ostream &out, PointerLikeThing const &p) {
     return out << "PointerLikeThing(ptr = " << p.ptr() << ')';
 }
 
-LVD_TEST_BEGIN(007__semantic_subtype__02__non_null_00)
+LVD_TEST_BEGIN(007__sst__02__non_null_00)
     // Uncommenting this should cause a compile error "static assertion failed: you tried to use a PROHIBIT'ed method; ..."
 //     auto p_null = SV_t<NonNull_s,int*>{nullptr};
 //     std::ignore = p_null;
