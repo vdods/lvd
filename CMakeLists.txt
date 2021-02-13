@@ -77,6 +77,7 @@ set(liblvd_HEADERS
     lib/lvd/read_bin_container.hpp
     lib/lvd/read_bin_IndexedTuple_t.hpp
     lib/lvd/read_bin_map.hpp
+    lib/lvd/read_bin_optional.hpp
     lib/lvd/read_bin_pair.hpp
     lib/lvd/read_bin_set.hpp
     lib/lvd/read_bin_sst.hpp
@@ -100,6 +101,7 @@ set(liblvd_HEADERS
     lib/lvd/type_string_of.hpp
     lib/lvd/type_string_of_array.hpp
     lib/lvd/type_string_of_map.hpp
+    lib/lvd/type_string_of_optional.hpp
     lib/lvd/type_string_of_pair.hpp
     lib/lvd/type_string_of_set.hpp
     lib/lvd/type_string_of_tuple.hpp
@@ -113,6 +115,7 @@ set(liblvd_HEADERS
     lib/lvd/write_bin_container.hpp
     lib/lvd/write_bin_IndexedTuple_t.hpp
     lib/lvd/write_bin_map.hpp
+    lib/lvd/write_bin_optional.hpp
     lib/lvd/write_bin_pair.hpp
     lib/lvd/write_bin_set.hpp
     lib/lvd/write_bin_sst.hpp
@@ -126,6 +129,7 @@ set(liblvd_HEADERS
     lib/lvd/write_text_container.hpp
     lib/lvd/write_text_IndexedTuple_t.hpp
     lib/lvd/write_text_map.hpp
+    lib/lvd/write_text_optional.hpp
     lib/lvd/write_text_pair.hpp
     lib/lvd/write_text_set.hpp
     lib/lvd/write_text_sst.hpp

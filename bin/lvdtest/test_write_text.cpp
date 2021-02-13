@@ -6,6 +6,7 @@
 #include "lvd/test.hpp"
 #include "lvd/write_text_array.hpp"
 #include "lvd/write_text_map.hpp"
+#include "lvd/write_text_optional.hpp"
 #include "lvd/write_text_pair.hpp"
 #include "lvd/write_text_set.hpp"
 #include "lvd/write_text_string.hpp"
@@ -42,6 +43,9 @@ LVD_TEST_BEGIN(232__write_text__00__txt)
     txt_test_case(req_context, ty<int32_t>, "int32_t");
     txt_test_case(req_context, ty<std::string>, "string");
     txt_test_case(req_context, ty<std::vector<std::map<std::byte,bool>>>, "vector<map<byte,bool>>");
+    txt_test_case(req_context, std::optional(uint32_t(123)), "123");
+    txt_test_case(req_context, std::optional(true), "true");
+    txt_test_case(req_context, std::optional<char>(std::nullopt), "nullopt");
     txt_test_case(req_context, std::pair('x',true), "('x', true)");
     txt_test_case(req_context, std::tuple<>(), "()");
     txt_test_case(req_context, std::tuple(int8_t(123)), "(123,)");
@@ -74,6 +78,9 @@ LVD_TEST_BEGIN(232__write_text__01__lit)
     lit_test_case(req_context, ty<int32_t>, "type(int32_t)");
     lit_test_case(req_context, ty<std::string>, "type(string)");
     lit_test_case(req_context, ty<std::vector<std::map<std::byte,bool>>>, "type(vector<map<byte,bool>>)");
+    lit_test_case(req_context, std::optional(uint32_t(123)), "optional<uint32_t>(123)");
+    lit_test_case(req_context, std::optional(true), "optional<bool>(true)");
+    lit_test_case(req_context, std::optional<char>(std::nullopt), "optional<char>(nullopt)");
     lit_test_case(req_context, std::pair('x',true), "pair<char,bool>('x', true)");
     lit_test_case(req_context, std::tuple<>(), "tuple<>()");
     lit_test_case(req_context, std::tuple(int8_t(123)), "tuple<int8_t>(123,)");

@@ -7,12 +7,14 @@
 #include "lvd/IndexedTuple_t.hpp"
 #include "lvd/remove_cv_recursive.hpp"
 #include <map>
+#include <optional>
 #include <random>
 #include <set>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace lvd {

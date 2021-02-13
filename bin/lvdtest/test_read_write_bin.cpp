@@ -5,6 +5,7 @@
 #include "lvd/random.hpp"
 #include "lvd/read_bin_array.hpp"
 #include "lvd/read_bin_map.hpp"
+#include "lvd/read_bin_optional.hpp"
 #include "lvd/read_bin_pair.hpp"
 #include "lvd/read_bin_set.hpp"
 #include "lvd/read_bin_string.hpp"
@@ -17,6 +18,7 @@
 #include "lvd/test.hpp"
 #include "lvd/write_bin_array.hpp"
 #include "lvd/write_bin_map.hpp"
+#include "lvd/write_bin_optional.hpp"
 #include "lvd/write_bin_pair.hpp"
 #include "lvd/write_bin_set.hpp"
 #include "lvd/write_bin_string.hpp"
@@ -104,6 +106,8 @@ void bin_roundtrip_encoding_test_case_random (req::Context &req_context, Encodin
     bin_roundtrip_test_case_random<float>(req_context, enc);
     bin_roundtrip_test_case_random<double>(req_context, enc);
     bin_roundtrip_test_case_random<std::string>(req_context, enc);
+    bin_roundtrip_test_case_random<std::optional<uint32_t>>(req_context, enc);
+    bin_roundtrip_test_case_random<std::optional<std::string>>(req_context, enc);
     bin_roundtrip_test_case_random<std::pair<char,uint8_t>>(req_context, enc);
     bin_roundtrip_test_case_random<std::tuple<int8_t>>(req_context, enc);
     bin_roundtrip_test_case_random<std::tuple<bool,int8_t>>(req_context, enc);
