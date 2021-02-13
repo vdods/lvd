@@ -79,6 +79,7 @@ set(liblvd_HEADERS
     lib/lvd/read_bin_map.hpp
     lib/lvd/read_bin_pair.hpp
     lib/lvd/read_bin_set.hpp
+    lib/lvd/read_bin_sst.hpp
     lib/lvd/read_bin_string.hpp
     lib/lvd/read_bin_tuple.hpp
     lib/lvd/read_bin_type.hpp
@@ -114,6 +115,7 @@ set(liblvd_HEADERS
     lib/lvd/write_bin_map.hpp
     lib/lvd/write_bin_pair.hpp
     lib/lvd/write_bin_set.hpp
+    lib/lvd/write_bin_sst.hpp
     lib/lvd/write_bin_string.hpp
     lib/lvd/write_bin_tuple.hpp
     lib/lvd/write_bin_type.hpp
@@ -126,6 +128,7 @@ set(liblvd_HEADERS
     lib/lvd/write_text_map.hpp
     lib/lvd/write_text_pair.hpp
     lib/lvd/write_text_set.hpp
+    lib/lvd/write_text_sst.hpp
     lib/lvd/write_text_string.hpp
     lib/lvd/write_text_tuple.hpp
     lib/lvd/write_text_type.hpp
@@ -177,6 +180,9 @@ if(BUILD_lvdtest)
         bin/lvdtest/DerivedString_random.hpp
         bin/lvdtest/DerivedString_serialization.hpp
         bin/lvdtest/main.cpp
+        bin/lvdtest/NonEmpty.hpp
+        bin/lvdtest/NonNull.hpp
+        bin/lvdtest/print.hpp
         bin/lvdtest/test_abort.cpp
         bin/lvdtest/test_ANSIColor.cpp
         bin/lvdtest/test_endian.cpp
@@ -199,6 +205,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test__sst__float.cpp
         bin/lvdtest/test__sst__NonNull.cpp
         bin/lvdtest/test__sst__NonEmpty.cpp
+        bin/lvdtest/test__sst__read_write.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_type.cpp
         bin/lvdtest/test_type_string_of.cpp

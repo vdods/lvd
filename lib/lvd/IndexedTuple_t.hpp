@@ -21,6 +21,7 @@
 namespace lvd {
 
 // Simple semantic subtype for for handling tuples.
+// TODO: Should this actually use a reference to a tuple, so there's no copy/move?
 template <size_t INDEX_, typename... Types_>
 class IndexedTuple_t : public std::tuple<Types_...> {
 public:

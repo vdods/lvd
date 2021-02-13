@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/sst/semantic_class.hpp"
+#include "lvd/type_string_of.hpp"
 #include <ostream>
 #include <stdexcept>
 #include <type_traits>
@@ -33,6 +34,7 @@ public:
     using S = S_;
     using C = C_;
 
+    template <typename = std::enable_if_t<decltype(check_policy_for__ctor_default(S{}))::VALUE != PROHIBIT>>
     SV_t ()
         :   m_cv{}
     {
@@ -552,4 +554,13 @@ inline std::ostream &operator<< (std::ostream &out, SV_t<S_,C_> const &sv) {
 }
 
 } // end namespace sst
+
+template <typename S_, typename C_>
+struct TypeString_t<sst::SV_t<S_,C_>> {
+    static std::string const &get () {
+        static std::string const STR{S_::template type_string<S_>() + '<' + TypeString_t<C_>::get() + '>'};
+        return STR;
+    }
+};
+
 } // end namespace lvd
