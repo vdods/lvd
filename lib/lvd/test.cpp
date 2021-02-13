@@ -24,6 +24,8 @@ void print_help_message (std::string const &program_title, std::string const &ar
              "--failure-behavior=<Y> : If present, sets the test failure behavior to <Y>, where <Y> must be one of:\n"
              "                         abort (halt program at point of failure), or throw (catch test failure and\n"
              "                         continue running rest of tests).  Default behavior is throw.\n"
+             "--list-tests           : If present, print a list of the [filtered] tests, and then exit.  Note that if\n"
+             "                         a filter is to be specified, then it must come before the --list-tests argument.\n"
              "--help                 : If present, prints this help message.\n"
              "<test-filter>          : If present, specifies the filter with which to decide which tests to run.\n";
 }
@@ -92,6 +94,16 @@ int basic_test_main (std::string const &program_title, int argc_, char **argv_)
                 print_help_message(program_title, argv[0]);
                 return 1;
             }
+        } else if (arg == "--list-tests") {
+            g_log.set_log_level_threshold(lvd::LogLevel::INF);
+            if (filter.empty())
+                g_log << Log::inf() << "Listing tests (no filter specified) ...\n";
+            else
+                g_log << Log::inf() << "Listing tests with filter " << filter << " ...\n";
+
+            auto test_context = lvd::test::Context(g_log).with_filter(filter);
+            lvd::test::root_test_group_singleton().list_tests(test_context);
+            return 0;
         } else if (arg.substr(0, 1) == "/") {
             filter = arg;
         } else {
@@ -197,6 +209,10 @@ std::ostream &operator << (std::ostream &out, Node const &node) {
 // Function
 //
 
+void Function::list_tests (Context &context) const {
+    context.log() << Log::inf() << *this << (is_test_group() ? " : Group\n" : " : Function\n");
+}
+
 void Function::run (Context &context) const {
     switch (context.failure_behavior()) {
         default: assert(false && "invalid FailureBehavior"); // But fall through.
@@ -227,6 +243,15 @@ void Function::run (Context &context) const {
 //
 // Group
 //
+
+void Group::list_tests (Context &context) const {
+    context.log() << Log::inf() << *this << (is_test_group() ? " : Group\n" : " : Function\n");
+    for (auto const &[name, node] : m_nodes) {
+        assert(!name.empty());
+        if (node->passes_filter(context.filter()))
+            node->list_tests(context);
+    }
+}
 
 void Group::run (Context &context) const {
     auto previous_test_count = context.test_count();

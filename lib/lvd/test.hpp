@@ -114,6 +114,7 @@ public:
 
     virtual bool is_test_function () const { return false; }
     virtual bool is_test_group () const { return false; }
+    virtual void list_tests (Context &context) const = 0;
     virtual void run (Context &context) const = 0;
     virtual void print (std::ostream &out) const;
 
@@ -156,6 +157,7 @@ public:
     }
 
     virtual bool is_test_function () const override { return true; }
+    virtual void list_tests (Context &context) const override;
     virtual void run (Context &context) const override;
 
 private:
@@ -178,6 +180,7 @@ public:
     { }
 
     virtual bool is_test_group () const override { return true; }
+    virtual void list_tests (Context &context) const override;
     virtual void run (Context &context) const override;
     virtual void print (std::ostream &out) const override;
 

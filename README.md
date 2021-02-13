@@ -192,7 +192,6 @@ files that were listed in the log.
 -   Improve `PartiallyOrderedSet_t` with an optional way to linearly sort children and parents.  This will make the
     part of the search algorithms where it must sift through children and parents much faster, and perhaps it will
     bring the algorithms up to a reasonably optimal level.
--   Make an option in `basic_test_main` to print out names of all tests (also subject to the filter).
 -   Make the `make package` include the source files as well; everything needed to compile from source.
 -   Logging should accept a lambda via `std::function` parameter which actually does the computation to do the
     printing, so that if the logging level causes a particular logging command to be suppressed, that computation
