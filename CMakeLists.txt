@@ -94,6 +94,7 @@ set(liblvd_HEADERS
     lib/lvd/sst/mutation.hpp
     lib/lvd/sst/semantic_class.hpp
     lib/lvd/sst/SV_t.hpp
+    lib/lvd/StaticAssociation_t.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
     lib/lvd/TotalOrder.hpp
@@ -210,6 +211,7 @@ if(BUILD_lvdtest)
         bin/lvdtest/test__sst__NonNull.cpp
         bin/lvdtest/test__sst__NonEmpty.cpp
         bin/lvdtest/test__sst__read_write.cpp
+        bin/lvdtest/test__StaticAssociation_t.cpp
         bin/lvdtest/test_TotalOrder.cpp
         bin/lvdtest/test_type.cpp
         bin/lvdtest/test_type_string_of.cpp

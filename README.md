@@ -176,6 +176,27 @@ files that were listed in the log.
         -   Compression/decompression of stream
 
 -   Idea: For semantic subtypes, use a template metafunction to return the concrete type for a semantic subtype.
+-   "Static Association" pattern design notes
+    -   Goal is to have a header-only implementation of a pattern which allows registration of functions and
+        other data associated with types, e.g. to implement a kind of run-time type polymorphism.  Example use cases:
+        -   Serialization/deserialization of the `std::any` type.
+        -   Implementation of a particular function with type polymorphism in one or multiple arguments, such as
+            `abstract_type_of` or `equals` or `partial_order`.
+        -   Using more-advanced type polymorphism, such as multiple-parameter polymorphism, or the poset of subtypes.
+    -   What's a good name for this?  The essential properties are that it allows static-init-time definition of
+        associative containers (NOT sequential containers, because the order of initialization is ill-defined).
+        -   Static association?  This is a C++-specific use of "static" though, so it doesn't perfectly represent
+            the abstract pattern.
+    -   Simplest implementation is just to have a a static, global associative container whose elements are generated
+        by type-specific instantiations of some other thing at initialize time (static var initialization).
+    -   Next implementation is function overloading, where parameter types must match exactly.
+    -   Next implementation is function overloading for single-parameter functions, using subtype poset to determine
+        matching overload.  Note that it's possible, when a type is not exactly equal to one of the nodes in the
+        poset, for the poset to produce multiple matching supertypes for a given type, and therefore the overload
+        would be ambiguous -- the resolution is to refine the poset so that matches are always unambiguous.
+    -   Next implementation is function overloading for multiple-parameter functions, using subtype poset to determine
+        matching overload.  Conjecture: this is equivalent to subtype poset on the parameter tuples, where the subtype
+        relation on tuples is a simple "and" of the component subtype relations.
 
 ## To-dos
 
@@ -198,7 +219,8 @@ files that were listed in the log.
     isn't invoked.  Could potentially also return a no-op `std::ostream` which ignores all input, and ideally
     the optimizer will figure this out and not bother calling the stuff.
 -   All the `req` functions should accept lambdas via `std::function` for their parameter description and message
-    so that that code isn't run unless the requirement condition fails.
+    so that that code isn't run unless the requirement condition fails.  Otherwise that string is getting made regardless
+    of if the condition fails.  Generally, make the `req` checks as fast as possible.
 -   Probably should take out the `const` from `P_ const &` in `not_null.hpp`:
 
         // Conversion operator to the underlying pointed-at value.  Note that this is only a reasonable
@@ -231,10 +253,6 @@ files that were listed in the log.
     NOTE TO SELF: The reason is because the log level is not equal to DBG in the first example, and for some
     reason, that prevents the newline from being printed.
 
--   Probably have `req` checks pass in a `std::function` that produces the explanation instead of a direct
-    string, otherwise that string is getting made regardless of if the condition fails.  Generally, make the
-    `req` checks as fast as possible.
--   Make a `g_req_context` which the app can control, i.e. to set the output `Log` and the `FailureBehavior`.
 -   Is there a way to print the values of all parameters of the current function?  This would be a nice
     way to make something a little more verbose than LVD_CALL_SITE() for caveman debugging purposes.
 -   Ideally, Log would implement std::ostream, and then all this business about HasCustomLogOutputOverload

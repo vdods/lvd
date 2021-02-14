@@ -9,6 +9,7 @@
 #include <map>
 #include <ostream>
 #include <set>
+#include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -93,6 +94,10 @@ inline ostream &operator << (ostream &out, optional<T_> const &x) {
     else
         out << "<no-value>";
     return out << ')';
+}
+
+inline ostream &operator << (ostream &out, type_index const &ti) {
+    return out << ti.name();
 }
 
 } // end namespace std
