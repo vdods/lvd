@@ -298,6 +298,10 @@ struct Log
     Log &operator << (T_&& t)
     {
         std::ostringstream out;
+        // Copy state flags and values from underlying ostream.
+        out.setf(m_out.flags());
+        out.precision(m_out.precision());
+        out.width(m_out.width());
         out << std::forward<T_>(t);
         return *this << out.str();
     }
