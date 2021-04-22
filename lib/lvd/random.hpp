@@ -6,6 +6,8 @@
 #include "lvd/abort.hpp"
 #include "lvd/IndexedTuple_t.hpp"
 #include "lvd/remove_cv_recursive.hpp"
+#include "lvd/type.hpp"
+#include "lvd/variant.hpp"
 #include <map>
 #include <optional>
 #include <random>
@@ -295,6 +297,24 @@ struct PopulateRandom_t<std::optional<T_>> {
             dest = make_random<T_>(rng);
         else
             dest = std::nullopt;
+    }
+};
+
+// Generates a random std::variant with uniform likelihood of generating each alternative type.
+template <typename... Types_>
+struct PopulateRandom_t<std::variant<Types_...>> {
+    template <typename Rng_>
+    void operator() (std::variant<Types_...> &dest, Rng_ &rng) const {
+        auto index = std::uniform_int_distribution<size_t>(0, sizeof...(Types_)-1)(rng);
+        call_on_indexed_type<0,Types_...>(
+            index,
+            [&dest, &rng](auto &&t){
+                static_assert(is_Type_t_v<std::decay_t<decltype(t)>>);
+                using T_ = typename std::decay_t<decltype(t)>::T;
+                if constexpr (!std::is_same_v<T_,void>)
+                    dest = make_random<T_>(rng);
+            }
+        );
     }
 };
 

@@ -19,6 +19,9 @@ template <typename T_>
 class Type_t : public Type {
 public:
 
+    // For accessing the underlying type.
+    using T = T_;
+
     // Use of singletons allows ty<T_> (defined below) to be uniquely identified by address,
     // and therefore can be used as a runtime value for distinction or mapping.  This singleton
     // doesn't need to be const, because there's no state that can be changed anyway..
@@ -78,5 +81,9 @@ template <typename T_> struct is_Type_t : public std::false_type { };
 template <typename T_> inline bool constexpr is_Type_t_v = is_Type_t<T_>::value;
 
 template <typename T_> struct is_Type_t<Type_t<T_>> : public std::true_type { };
+
+// Helper for representing variadic sequences of types.
+template <typename... Types_>
+struct VariadicSequence_t { };
 
 } // end namespace lvd

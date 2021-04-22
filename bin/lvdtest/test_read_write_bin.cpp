@@ -13,6 +13,7 @@
 #include "lvd/read_bin_type.hpp"
 #include "lvd/read_bin_unordered_map.hpp"
 #include "lvd/read_bin_unordered_set.hpp"
+#include "lvd/read_bin_variant.hpp"
 #include "lvd/read_bin_vector.hpp"
 #include "lvd/req.hpp"
 #include "lvd/test.hpp"
@@ -26,6 +27,7 @@
 #include "lvd/write_bin_type.hpp"
 #include "lvd/write_bin_unordered_map.hpp"
 #include "lvd/write_bin_unordered_set.hpp"
+#include "lvd/write_bin_variant.hpp"
 #include "lvd/write_bin_vector.hpp"
 #include "print.hpp"
 #include <sstream>
@@ -113,6 +115,10 @@ void bin_roundtrip_encoding_test_case_random (req::Context &req_context, Encodin
     bin_roundtrip_test_case_random<std::tuple<bool,int8_t>>(req_context, enc);
     bin_roundtrip_test_case_random<std::tuple<char,bool,int8_t>>(req_context, enc);
     bin_roundtrip_test_case_random<std::array<float,4>>(req_context, enc);
+    bin_roundtrip_test_case_random<std::variant<uint8_t>>(req_context, enc);
+    bin_roundtrip_test_case_random<std::variant<uint8_t,float>>(req_context, enc);
+    bin_roundtrip_test_case_random<std::variant<uint8_t,float,bool>>(req_context, enc);
+    bin_roundtrip_test_case_random<std::variant<uint8_t,float,bool,std::variant<bool,double>>>(req_context, enc);
     bin_roundtrip_test_case_random<std::vector<std::byte>>(req_context, enc);
     bin_roundtrip_test_case_random<std::map<char,double>>(req_context, enc);
     bin_roundtrip_test_case_random<std::set<double>>(req_context, enc);

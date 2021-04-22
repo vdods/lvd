@@ -10,6 +10,7 @@
 #include <random>
 #include <set>
 #include <string>
+#include <variant>
 
 namespace lvd {
 
@@ -148,20 +149,32 @@ LVD_TEST_BEGIN(321__random__035)
     test_random_generation_for_type<std::vector<std::map<uint32_t,std::string>>>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__090)
+LVD_TEST_BEGIN(321__random__080)
     test_random_generation_for_type<std::optional<bool>>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__091)
+LVD_TEST_BEGIN(321__random__081)
     test_random_generation_for_type<std::optional<uint8_t>>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__092)
+LVD_TEST_BEGIN(321__random__082)
     test_random_generation_for_type<std::optional<std::string>>(req_context);
 LVD_TEST_END
 
-LVD_TEST_BEGIN(321__random__093)
+LVD_TEST_BEGIN(321__random__090)
     test_random_generation_for_type<std::optional<std::optional<uint16_t>>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__091)
+    test_random_generation_for_type<std::variant<float>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__092)
+    test_random_generation_for_type<std::variant<float,uint32_t>>(req_context);
+LVD_TEST_END
+
+LVD_TEST_BEGIN(321__random__093)
+    test_random_generation_for_type<std::variant<float,uint32_t,std::array<int16_t,3>>>(req_context);
 LVD_TEST_END
 
 //

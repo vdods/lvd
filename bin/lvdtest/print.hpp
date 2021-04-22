@@ -6,6 +6,7 @@
 #include <cstddef>
 #include "lvd/comma.hpp"
 #include "lvd/IndexedTuple_t.hpp"
+#include "lvd/variant.hpp"
 #include <map>
 #include <ostream>
 #include <set>
@@ -93,6 +94,18 @@ inline ostream &operator << (ostream &out, optional<T_> const &x) {
         out << x.value();
     else
         out << "<no-value>";
+    return out << ')';
+}
+
+template <typename... Types_>
+inline ostream &operator << (ostream &out, variant<Types_...> const &x) {
+    out << "Variant(";
+    std::visit(
+        lvd::Visitor_t{
+            [&out](auto &&y){ out << y; }
+        },
+        x
+    );
     return out << ')';
 }
 

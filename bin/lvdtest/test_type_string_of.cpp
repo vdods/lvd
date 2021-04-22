@@ -8,6 +8,7 @@
 #include "lvd/type_string_of_set.hpp"
 #include "lvd/type_string_of_unordered_map.hpp"
 #include "lvd/type_string_of_unordered_set.hpp"
+#include "lvd/type_string_of_variant.hpp"
 #include "lvd/type_string_of_vector.hpp"
 
 namespace lvd {
@@ -29,6 +30,7 @@ LVD_TEST_BEGIN(006__TypeString_t__00)
     LVD_TEST_REQ_EQ(type_string_of<std::string>(), "string");
     LVD_TEST_REQ_EQ(type_string_of<Type_t<std::byte>>(), "byte");
     LVD_TEST_REQ_EQ(type_string_of(ty<std::byte>), "byte");
+    LVD_TEST_REQ_EQ((type_string_of<std::variant<uint32_t,std::string,bool>>()), "variant<uint32_t,string,bool>");
     LVD_TEST_REQ_EQ(type_string_of<std::vector<uint32_t>>(), "vector<uint32_t>");
     LVD_TEST_REQ_EQ((type_string_of<std::pair<uint32_t,std::string>>()), "pair<uint32_t,string>");
     LVD_TEST_REQ_EQ((type_string_of<std::map<uint32_t,bool>>()), "map<uint32_t,bool>");

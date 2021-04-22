@@ -86,6 +86,7 @@ set(liblvd_HEADERS
     lib/lvd/read_bin_type.hpp
     lib/lvd/read_bin_unordered_map.hpp
     lib/lvd/read_bin_unordered_set.hpp
+    lib/lvd/read_bin_variant.hpp
     lib/lvd/read_bin_vector.hpp
     lib/lvd/remove_cv_recursive.hpp
     lib/lvd/req.hpp
@@ -108,6 +109,7 @@ set(liblvd_HEADERS
     lib/lvd/type_string_of_tuple.hpp
     lib/lvd/type_string_of_unordered_map.hpp
     lib/lvd/type_string_of_unordered_set.hpp
+    lib/lvd/type_string_of_variant.hpp
     lib/lvd/type_string_of_vector.hpp
     lib/lvd/util.hpp
     lib/lvd/variant.hpp
@@ -125,6 +127,7 @@ set(liblvd_HEADERS
     lib/lvd/write_bin_type.hpp
     lib/lvd/write_bin_unordered_map.hpp
     lib/lvd/write_bin_unordered_set.hpp
+    lib/lvd/write_bin_variant.hpp
     lib/lvd/write_bin_vector.hpp
     lib/lvd/write_text_array.hpp
     lib/lvd/write_text_container.hpp

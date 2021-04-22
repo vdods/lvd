@@ -2,9 +2,42 @@
 
 #pragma once
 
+#include "lvd/type.hpp"
 #include <variant>
 
 namespace lvd {
+
+// TODO: Change the macros to use the visitor pattern with `Visitor_t`.
+// References:
+// - https://en.cppreference.com/w/cpp/utility/variant/visit
+// - https://stackoverflow.com/questions/57726401/stdvariant-vs-inheritance-vs-other-ways-performance
+
+// Helper for std::visit
+template <typename... Types_> struct Visitor_t : Types_... {
+    Visitor_t (Types_...) = delete;
+    using Types_::operator()...;
+};
+
+// This is a way to essentially do a switch statement on a variadic sequence of types using
+// an index that's only known at runtime.  Should pass in a lambda of the form
+//
+//     [...](auto &&t){
+//         static_assert(is_Type_t_v<std::decay_t<decltype(t)>>);
+//         using T_ = typename std::decay_t<decltype(t)>::T;
+//         <do something that is specific to T_>
+//     }
+//
+// The passed-in t will range through Types_... via Type_t.
+template <size_t TRY_INDEX_, typename... Types_, typename Function_>
+void call_on_indexed_type (size_t index, Function_ const &function) {
+    if (index == TRY_INDEX_) {
+        function(ty<std::tuple_element_t<TRY_INDEX_,std::tuple<Types_...>>>);
+    } else if constexpr (TRY_INDEX_+1 < sizeof...(Types_)) {
+        call_on_indexed_type<TRY_INDEX_+1,Types_...>(index, function);
+    } else {
+        throw std::runtime_error("invalid index for variadic type sequence");
+    }
+}
 
 // Used to represent a value of a given type without needing to actually instantiate it.
 template <typename T_>

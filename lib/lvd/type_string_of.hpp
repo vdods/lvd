@@ -26,10 +26,6 @@ struct TypeString_t;
 //     }
 // };
 
-// Helper for printing variadic sequences of types
-template <typename... Types_>
-struct VariadicSequence_t { };
-
 template <>
 struct TypeString_t<VariadicSequence_t<>> {
     static std::string const &get () {
