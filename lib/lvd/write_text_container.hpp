@@ -4,6 +4,8 @@
 
 #include "lvd/write.hpp"
 
+#include "lvd/comma.hpp"
+
 namespace lvd {
 
 // Helper template
@@ -17,7 +19,7 @@ struct WriteValue_Container_t<Container_,TextEncoding_t<Params_...>> {
         if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
             out << ty<Container_>;
 
-        auto d = make_comma_space_delimiter();
+        auto d = lvd::make_comma_space_delimiter();
         // This will suppress unnecessary inner element type info, since it's already present in the given type.
         auto inner_enc = enc.with_demoted_type_encoding();
         out << '(';

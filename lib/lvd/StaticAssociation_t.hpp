@@ -44,7 +44,8 @@ struct StaticAssociationRegistrar_t {
 // work if there's a template type with a comma in it, because the C preprocessor parses it as
 // < and > operators instead of as template expressions.
 #define LVD_STATIC_ASSOCIATION_DEFINE(Name, Container_) struct Name { using Container = Container_; };
-// Use this macro to add an element to the given StaticAssociation.
+// Use this macro to add an element to the given StaticAssociation.  This will pass the arguments
+// after unique_id to StaticAssociationDefinition::Container::emplace.
 #define LVD_STATIC_ASSOCIATION_REGISTER(StaticAssociationDefinition, unique_id, ...) namespace { inline static lvd::StaticAssociationRegistrar_t<StaticAssociationDefinition> __##StaticAssociationDefinition##__##unique_id{lvd::FiLoc(__FILE__, __LINE__), __VA_ARGS__}; }
 
 } // end namespace lvd

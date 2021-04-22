@@ -200,6 +200,11 @@ files that were listed in the log.
 
 ## To-dos
 
+-   The package created should be `liblvd-X.Y.Z.deb` instead of `lvd-X.Y.Z.deb`.  This would involve
+    changing the cmake project name from `lvd` to `liblvd`.
+-   Consider also adding the major revision number to the library name, so that different major revisions
+    can be installed at the same time.  This would also involve changing the include dir name to include
+    the major revision number.
 -   Use https://www.boost.org/doc/libs/1_36_0/doc/html/interprocess/streams.html for an `ostream` that
     writes to a vector.
 -   Need to ensure that the serialization of `std::unordered_map` and `std::unordered_set` produce
