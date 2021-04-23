@@ -3,7 +3,7 @@
 #pragma once
 
 #include "DerivedString.hpp"
-#include "lvd/random.hpp"
+#include "lvd/random_string.hpp"
 
 namespace lvd {
 

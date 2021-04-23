@@ -4,20 +4,8 @@
 
 #include <cstddef>
 #include "lvd/abort.hpp"
-#include "lvd/IndexedTuple_t.hpp"
-#include "lvd/remove_cv_recursive.hpp"
-#include "lvd/type.hpp"
-#include "lvd/variant.hpp"
-#include <map>
-#include <optional>
+#include "lvd/Empty.hpp"
 #include <random>
-#include <set>
-#include <string>
-#include <tuple>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
-#include <vector>
 
 namespace lvd {
 
@@ -178,143 +166,12 @@ struct MakeRandom_t {
     }
 };
 
-//
-// Other useful template specializations of PopulateRandom_t.  Each of these is default constructible,
-// so no implementation of MakeRandom_t is needed.
-//
-
-// Generates a random std::string of size within [0,10] and only printable ascii chars.
+// Empty is very easy to make.
 template <>
-struct PopulateRandom_t<std::string> {
-    static bool ascii_char_is_printable (char c) { return ' ' <= c && c <= '~'; }
-
+struct PopulateRandom_t<Empty> {
     template <typename Rng_>
-    void operator() (std::string &dest, Rng_ &rng) const {
-        dest.resize(std::uniform_int_distribution<size_t>(0, 10)(rng), ' ');
-        for (auto &c : dest)
-            populate_random(c, rng, ascii_char_is_printable);
-    }
-};
-
-// Generates a random std::vector of size within [0,10].
-template <typename... Types_>
-struct PopulateRandom_t<std::vector<Types_...>> {
-    using Vector = std::vector<Types_...>;
-    template <typename Rng_>
-    void operator() (Vector &dest, Rng_ &rng) const {
-        dest.resize(std::uniform_int_distribution<size_t>(0, 10)(rng));
-        for (auto &c : dest)
-            populate_random(c, rng);
-    }
-};
-
-// Generates a random std::array.
-template <typename T_, size_t N_>
-struct PopulateRandom_t<std::array<T_,N_>> {
-    template <typename Rng_>
-    void operator() (std::array<T_,N_> &dest, Rng_ &rng) const {
-        for (auto &c : dest)
-            populate_random(c, rng);
-    }
-};
-
-// Generates a random std::pair.
-template <typename F_, typename S_>
-struct PopulateRandom_t<std::pair<F_,S_>> {
-    template <typename Rng_>
-    void operator() (std::pair<F_,S_> &dest, Rng_ &rng) const {
-        populate_random(dest.first, rng);
-        populate_random(dest.second, rng);
-    }
-};
-
-// Generates a random std::tuple.
-template <size_t INDEX_, typename... Types_>
-struct PopulateRandom_t<IndexedTuple_t<INDEX_,Types_...>> {
-    template <typename Rng_>
-    void operator() (IndexedTuple_t<INDEX_,Types_...> &dest, Rng_ &rng) const {
-        if constexpr (!dest.has_ended()) {
-            populate_random(dest.current(), rng);
-            populate_random(dest.incremented(), rng);
-        }
-    }
-};
-
-// Generates a random std::tuple.
-template <typename... Types_>
-struct PopulateRandom_t<std::tuple<Types_...>> {
-    template <typename Rng_>
-    void operator() (std::tuple<Types_...> &dest, Rng_ &rng) const {
-        populate_random(begin_indexed_tuple(dest), rng);
-    }
-};
-
-// Helper implementation for associative containers.  Generates a container having size between 0 and 10, inclusive.
-template <typename Container_>
-struct PopulateRandom_AssociativeContainer_t {
-    template <typename Rng_>
-    void operator() (Container_ &dest, Rng_ &rng) const {
-        using ValueType = remove_cv_recursive_t<typename Container_::value_type>;
-        auto desired_size = std::uniform_int_distribution<size_t>(0, 10)(rng);
-        dest.clear();
-        size_t i = 0;
-        // WATCHDOG_LIMIT is needed because it's possible that the generated keys will collide,
-        // and it's further possible that desired_size is not achievable (e.g. std::set<bool>
-        // can't be any bigger than size 2).
-        size_t constexpr WATCHDOG_LIMIT = 100;
-        while (dest.size() < desired_size && i < WATCHDOG_LIMIT) {
-            dest.emplace(make_random<ValueType>(rng));
-            ++i;
-        }
-    }
-};
-
-//
-// Definitions for specific associative containers.
-// -    std::map
-// -    std::set
-// -    std::unordered_map
-// -    std::unordered_set
-// -    NOTE: Would add std::multimap, std::multiset, std::unordered_multimap, std::unordered_multiset here.
-//
-
-template <typename... Types_>
-struct PopulateRandom_t<std::map<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::map<Types_...>> { };
-template <typename... Types_>
-struct PopulateRandom_t<std::set<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::set<Types_...>> { };
-template <typename... Types_>
-struct PopulateRandom_t<std::unordered_map<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::unordered_map<Types_...>> { };
-template <typename... Types_>
-struct PopulateRandom_t<std::unordered_set<Types_...>> : public PopulateRandom_AssociativeContainer_t<std::unordered_set<Types_...>> { };
-
-// Generates a random std::optional with 75% likelihood of holding a value.
-template <typename T_>
-struct PopulateRandom_t<std::optional<T_>> {
-    template <typename Rng_>
-    void operator() (std::optional<T_> &dest, Rng_ &rng) const {
-        bool has_value = std::uniform_int_distribution<size_t>(0, 3)(rng) != 0;
-        if (has_value)
-            dest = make_random<T_>(rng);
-        else
-            dest = std::nullopt;
-    }
-};
-
-// Generates a random std::variant with uniform likelihood of generating each alternative type.
-template <typename... Types_>
-struct PopulateRandom_t<std::variant<Types_...>> {
-    template <typename Rng_>
-    void operator() (std::variant<Types_...> &dest, Rng_ &rng) const {
-        auto index = std::uniform_int_distribution<size_t>(0, sizeof...(Types_)-1)(rng);
-        call_on_indexed_type<0,Types_...>(
-            index,
-            [&dest, &rng](auto &&t){
-                static_assert(is_Type_t_v<std::decay_t<decltype(t)>>);
-                using T_ = typename std::decay_t<decltype(t)>::T;
-                if constexpr (!std::is_same_v<T_,void>)
-                    dest = make_random<T_>(rng);
-            }
-        );
+    void operator() (Empty &dest, Rng_ &rng) const {
+        // Do nothing, Empty has no content.
     }
 };
 

@@ -3,6 +3,17 @@
 #include "lvd/comma.hpp"
 #include "lvd/literal.hpp"
 #include "lvd/random.hpp"
+#include "lvd/random_map.hpp"
+#include "lvd/random_array.hpp"
+#include "lvd/random_optional.hpp"
+#include "lvd/random_pair.hpp"
+#include "lvd/random_set.hpp"
+#include "lvd/random_string.hpp"
+#include "lvd/random_tuple.hpp"
+#include "lvd/random_unordered_map.hpp"
+#include "lvd/random_unordered_set.hpp"
+#include "lvd/random_variant.hpp"
+#include "lvd/random_vector.hpp"
 #include "lvd/read_bin_array.hpp"
 #include "lvd/read_bin_map.hpp"
 #include "lvd/read_bin_optional.hpp"
@@ -94,6 +105,7 @@ void bin_roundtrip_test_case_random (req::Context &req_context, Encoding_ const 
 
 template <typename Encoding_>
 void bin_roundtrip_encoding_test_case_random (req::Context &req_context, Encoding_ const &enc) {
+    bin_roundtrip_test_case_random<Empty>(req_context, enc);
     bin_roundtrip_test_case_random<bool>(req_context, enc);
     bin_roundtrip_test_case_random<std::byte>(req_context, enc);
     bin_roundtrip_test_case_random<char>(req_context, enc);

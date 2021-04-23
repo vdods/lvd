@@ -73,6 +73,19 @@ set(liblvd_HEADERS
     lib/lvd/PartialOrder.hpp
     lib/lvd/Pipe.hpp
     lib/lvd/random.hpp
+    lib/lvd/random_array.hpp
+    lib/lvd/random_container.hpp
+    lib/lvd/random_IndexedTuple_t.hpp
+    lib/lvd/random_map.hpp
+    lib/lvd/random_optional.hpp
+    lib/lvd/random_pair.hpp
+    lib/lvd/random_set.hpp
+    lib/lvd/random_string.hpp
+    lib/lvd/random_tuple.hpp
+    lib/lvd/random_unordered_map.hpp
+    lib/lvd/random_unordered_set.hpp
+    lib/lvd/random_variant.hpp
+    lib/lvd/random_vector.hpp
     lib/lvd/Range_t.hpp
     lib/lvd/read.hpp
     lib/lvd/read_bin_array.hpp
