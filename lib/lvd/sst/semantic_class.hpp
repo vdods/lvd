@@ -148,6 +148,8 @@ TODO
         Should have one corresponding to xor as well as the `and` and `or` of intersection and union.
 -   IDEA: Could add "clamp" to extend checkpolicy, e.g. when float underflow happens, but it's desired
     to have a strictly positive value, clamp the value to the smallest [subnormal] positive value.
+-   IDEA: Could use "clamp" or "project" or "correct" to generate random concrete values that
+    adhere to the semantic class' validity condition.
 
 Random notes
 -   Here's a conceptually similar, but awkward proto-attempt at solving the problem that semantic subtyping solves:

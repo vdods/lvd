@@ -7,11 +7,13 @@
 #include "lvd/random_optional.hpp"
 #include "lvd/random_pair.hpp"
 #include "lvd/random_set.hpp"
+#include "lvd/random_sst.hpp"
 #include "lvd/random_unordered_map.hpp"
 #include "lvd/random_unordered_set.hpp"
 #include "lvd/random_variant.hpp"
 #include "lvd/random_vector.hpp"
 #include "lvd/req.hpp"
+#include "lvd/sst/semantic_class.hpp"
 #include "lvd/test.hpp"
 #include "print.hpp"
 
@@ -178,6 +180,43 @@ LVD_TEST_END
 
 LVD_TEST_BEGIN(321__random__093)
     test_random_generation_for_type<std::variant<float,uint32_t,std::array<int16_t,3>>>(req_context);
+LVD_TEST_END
+
+struct EvenLength_s : public sst::Base_s {
+    template <typename S_>
+    static std::string const &type_string () {
+        static std::string const STR{"EvenLength"};
+        return STR;
+    }
+    template <typename C_>
+    static bool const is_valid (C_ const &cv) {
+        return cv.size() % 2 == 0;
+    }
+};
+
+LVD_TEST_BEGIN(321__random__094)
+    test_random_generation_for_type<sst::SV_t<EvenLength_s,std::string>>(req_context);
+LVD_TEST_END
+
+struct Unlikely_s : public sst::Base_s {
+    template <typename S_>
+    static std::string const &type_string () {
+        static std::string const STR{"Unlikely"};
+        return STR;
+    }
+    template <typename C_>
+    static bool const is_valid (C_ const &cv) {
+        return cv.size() >= 1 && cv[0] == 'a';
+//         // This condition is less than 26^-3 likely to happen, which is less than 10^-3 (the watchdog limit)
+//         return cv.size() >= 3 && cv.substr(0, 3) == "abc";
+    }
+};
+
+// Disallow default construction, since that would not start with "abc"
+inline decltype(auto) constexpr check_policy_for__ctor_default (Unlikely_s) { return sst::value_v<sst::CheckPolicy,sst::PROHIBIT>; }
+
+LVD_TEST_BEGIN(321__random__095)
+    test_random_generation_for_type<sst::SV_t<Unlikely_s,std::string>>(req_context);
 LVD_TEST_END
 
 //
