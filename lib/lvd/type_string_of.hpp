@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include "lvd/Empty.hpp"
 #include "lvd/fmt.hpp"
 #include "lvd/type.hpp"
 #include <ostream>
@@ -123,3 +124,4 @@ LVD_DEFINE_TYPE_STRING(uint64_t)
 LVD_DEFINE_TYPE_STRING(float)
 LVD_DEFINE_TYPE_STRING(double)
 LVD_DEFINE_TYPE_STRING_EXPLICIT(std::string, "string")
+LVD_DEFINE_TYPE_STRING_EXPLICIT(lvd::Empty, "Empty")

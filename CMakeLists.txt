@@ -52,6 +52,7 @@ set(liblvd_HEADERS
     lib/lvd/ANSIColor.hpp
     lib/lvd/call_site.hpp
     lib/lvd/comma.hpp
+    lib/lvd/Empty.hpp
     lib/lvd/encoding.hpp
     lib/lvd/endian.hpp
     lib/lvd/FiLoc.hpp
@@ -60,6 +61,7 @@ set(liblvd_HEADERS
     lib/lvd/fmt.hpp
     lib/lvd/g_log.hpp
     lib/lvd/g_req_context.hpp
+    lib/lvd/hash.hpp
     lib/lvd/IndexedTuple_t.hpp
     lib/lvd/literal.hpp
     lib/lvd/Log.hpp
@@ -92,9 +94,6 @@ set(liblvd_HEADERS
     lib/lvd/req.hpp
     lib/lvd/ScopeGuard.hpp
     lib/lvd/serialization.hpp
-    lib/lvd/sst/mutation.hpp
-    lib/lvd/sst/semantic_class.hpp
-    lib/lvd/sst/SV_t.hpp
     lib/lvd/StaticAssociation_t.hpp
     lib/lvd/static_if.hpp
     lib/lvd/test.hpp
@@ -144,6 +143,12 @@ set(liblvd_HEADERS
     lib/lvd/write_text_unordered_set.hpp
     lib/lvd/write_text_vector.hpp
 )
+# This is a bit of a hack to preserve dir structure upon install.  See below.
+set(liblvd_sst_HEADERS
+    lib/lvd/sst/mutator.hpp
+    lib/lvd/sst/semantic_class.hpp
+    lib/lvd/sst/SV_t.hpp
+)
 
 set(liblvd_SOURCES
     lib/lvd/ANSIColor.cpp
@@ -160,7 +165,7 @@ set(liblvd_SOURCES
     lib/lvd/variant.hpp
 )
 
-add_library(liblvd ${liblvd_HEADERS} ${liblvd_SOURCES})
+add_library(liblvd ${liblvd_HEADERS} ${liblvd_sst_HEADERS} ${liblvd_SOURCES})
 # This is to prevent cmake from prepending `lib` to `liblvd`.
 set_target_properties(liblvd PROPERTIES PREFIX "")
 
@@ -238,6 +243,11 @@ install(
 install(
     FILES ${liblvd_HEADERS}
     DESTINATION include/lvd                     # This is relative to CMAKE_INSTALL_PREFIX
+)
+# This is a bit of a hack in order to preserve the subdirectory structure under lib/lvd.
+install(
+    FILES ${liblvd_sst_HEADERS}
+    DESTINATION include/lvd/sst                 # This is relative to CMAKE_INSTALL_PREFIX
 )
 install(
     FILES                                       # Important files

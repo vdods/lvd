@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include "lvd/Empty.hpp"
 #include "lvd/encoding.hpp"
 #include "lvd/type.hpp"
 #include "lvd/type_string_of.hpp"
@@ -130,6 +131,17 @@ struct ReadValue_t {
         T_ retval;
         ReadInPlace_t<T_,Encoding_>()(in, enc, retval);
         return retval;
+    }
+};
+
+template <auto... Params_>
+struct ReadInPlace_t<Empty,BinEncoding_t<Params_...>> {
+    template <typename CharT_, typename Traits_>
+    std::basic_istream<CharT_,Traits_> &operator() (std::basic_istream<CharT_,Traits_> &in, BinEncoding_t<Params_...> const &enc, Empty &dest_val) const {
+        if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
+            in >> enc.with_demoted_type_encoding().in(type_of(dest_val)); // This will throw if the type doesn't match.
+        // No content.
+        return in;
     }
 };
 

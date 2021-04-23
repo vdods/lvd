@@ -1,7 +1,7 @@
 // 2021.01.28 - Copyright Victor Dods - Licensed under Apache 2.0
 
 #include "lvd/req.hpp"
-#include "lvd/sst/mutation.hpp"
+#include "lvd/sst/mutator.hpp"
 #include "lvd/test.hpp"
 #include "NonEmpty.hpp"
 #include "print.hpp"
@@ -91,7 +91,7 @@ LVD_TEST_BEGIN(007__sst__00__string__01__vector__00)
 
     {
         test_log << Log::dbg() << "begin mutating v2...\n";
-        auto m2 = sst::mutation(v2);
+        auto m2 = sst::mutator(v2);
         // v2 should be considered inaccessible until m2 is destroyed.
 
         test_log << Log::dbg() << LVD_REFLECT(m2.cv()) << '\n';
@@ -128,7 +128,7 @@ LVD_TEST_BEGIN(007__sst__00__string__01__vector__1)
     LVD_TEST_REQ_EQ(c3, src_vec_0);
 
     // Mutate in place in such a way that violates the validity, so that the check
-    // fails when this code block ends and the Mutation_t is destroyed.
+    // fails when this code block ends and the Mutator_t is destroyed.
     c3.push_back(7);
     LVD_TEST_REQ_EQ(c3, src_vec_1);
     LVD_TEST_REQ_IS_TRUE(NonEmpty_s::is_valid(c3));
@@ -158,7 +158,7 @@ LVD_TEST_BEGIN(007__sst__00__string__01__vector__2)
         LVD_TEST_REQ_EQ(c3, src_vec_0);
 
         // Mutate in place in such a way that violates the validity, so that the check
-        // fails when this code block ends and the Mutation_t is destroyed.
+        // fails when this code block ends and the Mutator_t is destroyed.
         c3.clear();
         LVD_TEST_REQ_IS_TRUE(c3.empty());
         LVD_TEST_REQ_IS_FALSE(NonEmpty_s::is_valid(c3));

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <iomanip>
+#include "lvd/Empty.hpp"
 #include "lvd/encoding.hpp"
 #include "lvd/literal.hpp"
 #include "lvd/type_string_of.hpp"
@@ -121,5 +122,31 @@ template <typename Encoding_> struct WriteValue_t<int64_t,Encoding_> : public Wr
 template <typename Encoding_> struct WriteValue_t<uint64_t,Encoding_> : public WriteValue_Builtin_t<uint64_t,Encoding_> { };
 template <typename Encoding_> struct WriteValue_t<float,Encoding_> : public WriteValue_Builtin_t<float,Encoding_> { };
 template <typename Encoding_> struct WriteValue_t<double,Encoding_> : public WriteValue_Builtin_t<double,Encoding_> { };
+
+//
+// One for Empty, which has no content besides its type.
+//
+
+template <auto... Params_>
+struct WriteValue_t<Empty,BinEncoding_t<Params_...>> {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, BinEncoding_t<Params_...> const &enc, Empty const &src_val) const {
+        if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
+            out << enc.with_demoted_type_encoding().out(type_of(src_val));
+        // No content.
+        return out;
+    }
+};
+
+template <auto... Params_>
+struct WriteValue_t<Empty,TextEncoding_t<Params_...>> {
+    template <typename CharT_, typename Traits_>
+    std::basic_ostream<CharT_,Traits_> &operator() (std::basic_ostream<CharT_,Traits_> &out, TextEncoding_t<Params_...> const &enc, Empty const &src_val) const {
+        if constexpr (enc.type_encoding() == TypeEncoding::INCLUDED)
+            out << ty<Empty>;
+        // No content.
+        return out;
+    }
+};
 
 } // end namespace lvd

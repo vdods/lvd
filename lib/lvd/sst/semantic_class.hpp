@@ -89,6 +89,8 @@ Implementation notes
     of `SV_t<A,C>`.  This might change later.
 
 TODO
+-   If is_valid always returns true, then there should be an rvalue-reference-returning cv method
+    in SV_t that allows direct mutation.
 -   Allow custom behavior for assert and throw, defined by `S`, with defaults in `Base_s`.
 -   Develop some theory and code regarding an actionable subtype hierarchy of semantic types and
     the corresponding semantic subtypes.  For example, let `NonEmpty_s`, `EmailAddr_s`, and `NormedEmailAddr_s`
@@ -430,4 +432,3 @@ inline decltype(auto) constexpr check_policy_for__elem (Base_s) { return value_v
     static bool constexpr is_valid (C const &cv) { \
         function_body \
     }
-

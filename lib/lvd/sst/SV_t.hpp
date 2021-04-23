@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "lvd/hash.hpp"
 #include "lvd/sst/semantic_class.hpp"
 #include "lvd/type_string_of.hpp"
 #include <ostream>
@@ -17,8 +18,8 @@ struct NoCheck { };
 // Convenient value of type NoCheck which can be used in constructors to avoid validity check.
 inline static NoCheck const no_check = NoCheck{};
 
-// Need a forward declaration of Mutation_t<S_,C_> in order for the friend declaration inside SV_t to work.
-template <typename S_, typename C_> class Mutation_t;
+// Need a forward declaration of Mutator_t<S_,C_> in order for the friend declaration inside SV_t to work.
+template <typename S_, typename C_> class Mutator_t;
 
 //
 // SV_t -- semantic value
@@ -370,7 +371,7 @@ private:
 
     C m_cv;
 
-    friend class Mutation_t<S_,C_>;
+    friend class Mutator_t<S_,C_>;
 };
 
 template <typename T_> struct is_SV_t_ : public std::false_type { };
@@ -555,6 +556,7 @@ inline std::ostream &operator<< (std::ostream &out, SV_t<S_,C_> const &sv) {
 
 } // end namespace sst
 
+// There must be a definition for TypeString_t<S_> for this to work.
 template <typename S_, typename C_>
 struct TypeString_t<sst::SV_t<S_,C_>> {
     static std::string const &get () {
@@ -564,3 +566,15 @@ struct TypeString_t<sst::SV_t<S_,C_>> {
 };
 
 } // end namespace lvd
+
+namespace std {
+
+// There must be a definition for std::hash<S_> for this to work.
+template <typename S_, typename C_>
+struct hash<lvd::sst::SV_t<S_,C_>> {
+    size_t operator() (lvd::sst::SV_t<S_,C_> const &sv) const {
+        return lvd::hash(S_{}, sv.cv());
+    }
+};
+
+} // end namespace std
