@@ -18,15 +18,16 @@ struct Empty { };
 // Singleton instance of Empty
 inline static Empty const empty;
 
-// Empty is a singleton.
-inline bool operator== (Empty const &lhs, Empty const &rhs) {
-    return true;
-}
+//
+// Empty is a singleton, so the comparison operators are constexpr.
+//
 
-// Empty is a singleton.
-inline bool operator< (Empty const &lhs, Empty const &rhs) {
-    return false;
-}
+inline bool constexpr operator== (Empty const &lhs, Empty const &rhs) { return true; }
+inline bool constexpr operator!= (Empty const &lhs, Empty const &rhs) { return false; }
+inline bool constexpr operator<= (Empty const &lhs, Empty const &rhs) { return true; }
+inline bool constexpr operator< (Empty const &lhs, Empty const &rhs) { return false; }
+inline bool constexpr operator>= (Empty const &lhs, Empty const &rhs) { return true; }
+inline bool constexpr operator> (Empty const &lhs, Empty const &rhs) { return false; }
 
 inline std::ostream &operator<< (std::ostream &out, Empty const &) {
     return out << "Empty";
