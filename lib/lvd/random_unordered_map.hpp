@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lvd/random_container.hpp"
+#include "lvd/random_pair.hpp"
 #include <unordered_map>
 
 namespace lvd {

@@ -80,6 +80,7 @@ set(liblvd_HEADERS
     lib/lvd/random_optional.hpp
     lib/lvd/random_pair.hpp
     lib/lvd/random_set.hpp
+    lib/lvd/random_sst.hpp
     lib/lvd/random_string.hpp
     lib/lvd/random_tuple.hpp
     lib/lvd/random_unordered_map.hpp
