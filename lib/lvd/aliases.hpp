@@ -25,10 +25,17 @@ template <typename T_, typename Deleter_ = std::default_delete<T_>>
 using up = std::unique_ptr<T_,Deleter_>;
 
 template <typename T_>
+using wp = std::weak_ptr<T_>;
+
+template <typename T_>
 using nnsp = gsl::not_null<std::shared_ptr<T_>>;
 
 template <typename T_, typename Deleter_ = std::default_delete<T_>>
 using nnup = gsl::not_null<std::unique_ptr<T_,Deleter_>>;
+
+// Note that because std::weak_ptr can't be assigned nullptr, gsl::not_null suffers a static_assert failure,
+// so a type `template <typename T_> using nnwp = gsl::not_null<std::weak_ptr<T_>>` can't actually work
+// without changing gsl::not_null or using a different not_null implementation.
 
 //
 // Analogs to std::make_* functions
