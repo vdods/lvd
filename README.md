@@ -24,6 +24,7 @@ Versioning system is [semantic versioning](https://semver.org/).
 
 |Version|Notes|
 |-------|-----|
+|`v0.12.0`|Added `TotalOrder`, random value generation for a lot of types (see `random*.hpp`), `endian.hpp`, most of a decently robust and general (de)serialization mechanism (see `read*.hpp` and `write*.hpp`), improved `test.hpp`, added `variant.hpp`, added `type.hpp` and `type_string_of.hpp`, added prototype of "semantic subtypes" (see `sst/semantic_class.hpp` and `sst/SV_t.hpp`), added `StaticAssociation_t.hpp`, added `Empty.hpp`, and improved specializations of `gsl::not_null`.|
 |`v0.11.0`|Added `PartialOrder` and `PartiallyOrderedSet_t` which provide rudimentary poset container creation and search.|
 |`v0.10.2`|Fixed a bug in which test-running code didn't honor the failure behavior setting.|
 |`v0.10.1`|Fixed a bug in the implementation of static_move_cast for `nnp<T>`.|
